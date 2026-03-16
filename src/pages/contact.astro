@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import Icon from '../components/Icon.astro';
 ---
 <MainLayout title="Contact Us - Tahin Spare Suppliers" activeNav="contact">
   <section class="page-hero">
@@ -14,19 +15,19 @@ import MainLayout from '../layouts/MainLayout.astro';
     <div class="container">
       <div class="contact-grid">
         <div class="contact-card">
-          <i class="fas fa-map-marker-alt"></i>
+          <Icon name="map-marker-alt" size={36} class="contact-icon" />
           <h3>Our Location</h3>
           <p>Chittagong, Bangladesh</p>
           <p>Ship Breaking Yard Area</p>
         </div>
         <div class="contact-card">
-          <i class="fas fa-phone-alt"></i>
+          <Icon name="phone-alt" size={36} class="contact-icon" />
           <h3>Call Us</h3>
           <p>+880 1674-784019</p>
           <p>Available: Sat - Thu</p>
         </div>
         <div class="contact-card">
-          <i class="fas fa-envelope"></i>
+          <Icon name="envelope" size={36} class="contact-icon" />
           <h3>Email Us</h3>
           <p>tahinship@gmail.com</p>
           <p>We reply within 24 hours</p>
@@ -102,8 +103,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   }
-  .contact-card i {
-    font-size: 36px;
+  .contact-card :global(.contact-icon) {
     color: #c0392b;
     margin-bottom: 15px;
   }
@@ -145,7 +145,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter), 'Inter', sans-serif;
     transition: border-color 0.3s;
   }
   .form-group input:focus,

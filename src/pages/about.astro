@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import Icon from '../components/Icon.astro';
 ---
 <MainLayout title="About Us - Tahin Spare Suppliers" activeNav="about">
   <section class="page-hero">
@@ -33,22 +34,22 @@ import MainLayout from '../layouts/MainLayout.astro';
       <p class="section-subtitle" style="color:#555;">Comprehensive marine spare parts and equipment solutions</p>
       <div class="offer-grid">
         <div class="offer-card">
-          <i class="fas fa-ship"></i>
+          <Icon name="ship" size={36} class="offer-icon" />
           <h3>Marine Navigation</h3>
           <p>Complete range of navigation equipment including radar, gyrocompass, GPS, ECDIS and more.</p>
         </div>
         <div class="offer-card">
-          <i class="fas fa-cogs"></i>
+          <Icon name="cogs" size={36} class="offer-icon" />
           <h3>Engine & Machineries</h3>
           <p>Main and auxiliary engines from top manufacturers like B&W, MAN, Sulzer, Caterpillar.</p>
         </div>
         <div class="offer-card">
-          <i class="fas fa-bolt"></i>
+          <Icon name="bolt" size={36} class="offer-icon" />
           <h3>Electrical Equipment</h3>
           <p>Marine electrical devices, generators, switchboards, and control systems.</p>
         </div>
         <div class="offer-card">
-          <i class="fas fa-microchip"></i>
+          <Icon name="microchip" size={36} class="offer-icon" />
           <h3>Automation Systems</h3>
           <p>Nor Control, Kongsberg, Lyngsø marine automation systems and spare parts.</p>
         </div>
@@ -127,8 +128,7 @@ import MainLayout from '../layouts/MainLayout.astro';
   .offer-card:hover {
     transform: translateY(-5px);
   }
-  .offer-card i {
-    font-size: 36px;
+  .offer-card :global(.offer-icon) {
     color: #c0392b;
     margin-bottom: 15px;
   }

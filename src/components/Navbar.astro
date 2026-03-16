@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 interface Props {
   activeNav?: string;
 }
@@ -14,10 +15,10 @@ const { activeNav = 'home' } = Astro.props;
       <li><a href="/contact" class:list={[{ active: activeNav === 'contact' }]}>Contact Us</a></li>
     </ul>
     <button class="search-btn" aria-label="Search">
-      <i class="fas fa-search"></i>
+      <Icon name="search" size={14} />
     </button>
     <button class="mobile-menu-btn" aria-label="Menu">
-      <i class="fas fa-bars"></i>
+      <Icon name="bars" size={20} />
     </button>
   </div>
 </nav>
@@ -51,7 +52,7 @@ const { activeNav = 'home' } = Astro.props;
     padding: 12px 20px;
     display: block;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter), 'Inter', sans-serif;
     font-weight: 500;
     transition: background 0.3s, color 0.3s;
   }

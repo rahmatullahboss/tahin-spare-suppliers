@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 ---
 <footer class="site-footer">
   <div class="footer-top">
@@ -20,17 +21,17 @@
       <div class="footer-col">
         <h3>Contact Info</h3>
         <ul class="contact-list">
-          <li><i class="fas fa-phone"></i> +880 1674-784019</li>
-          <li><i class="fas fa-envelope"></i> tahinship@gmail.com</li>
-          <li><i class="fas fa-map-marker-alt"></i> Chittagong, Bangladesh</li>
+          <li><Icon name="phone" size={14} class="contact-icon" /> +880 1674-784019</li>
+          <li><Icon name="envelope" size={14} class="contact-icon" /> tahinship@gmail.com</li>
+          <li><Icon name="map-marker-alt" size={14} class="contact-icon" /> Chittagong, Bangladesh</li>
         </ul>
       </div>
       <div class="footer-col">
         <h3>Follow Us</h3>
         <div class="footer-social">
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          <a href="#" aria-label="Facebook"><Icon name="facebook-f" size={14} /></a>
+          <a href="#" aria-label="Twitter"><Icon name="twitter" size={14} /></a>
+          <a href="#" aria-label="YouTube"><Icon name="youtube" size={14} /></a>
         </div>
       </div>
     </div>
@@ -42,7 +43,7 @@
 
 <style>
   .site-footer {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter), 'Inter', sans-serif;
   }
   .footer-top {
     background: #1a1a2e;
@@ -98,11 +99,13 @@
   .contact-list li {
     font-size: 14px;
     color: #aaa;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .contact-list i {
+  .contact-list :global(.contact-icon) {
     color: #c0392b;
-    margin-right: 8px;
-    width: 16px;
+    flex-shrink: 0;
   }
   .footer-social {
     display: flex;

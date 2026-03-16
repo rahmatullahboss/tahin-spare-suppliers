@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 ---
 <header class="top-header">
   <div class="header-container">
@@ -14,9 +15,9 @@
       </div>
     </div>
     <div class="social-icons">
-      <a href="#" class="social-icon facebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-      <a href="#" class="social-icon twitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-      <a href="#" class="social-icon youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+      <a href="#" class="social-icon facebook" aria-label="Facebook"><Icon name="facebook-f" size={14} /></a>
+      <a href="#" class="social-icon twitter" aria-label="Twitter"><Icon name="twitter" size={14} /></a>
+      <a href="#" class="social-icon youtube" aria-label="YouTube"><Icon name="youtube" size={14} /></a>
     </div>
   </div>
 </header>
@@ -55,10 +56,10 @@
     color: #fff;
     font-size: 24px;
     font-weight: 700;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter), 'Inter', sans-serif;
   }
   .company-name {
-    font-family: 'Dancing Script', cursive;
+    font-family: var(--font-dancing), 'Dancing Script', cursive;
     font-size: 28px;
     color: #d4a00a;
     margin: 0;
@@ -69,7 +70,7 @@
     font-size: 11px;
     color: #333;
     margin: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter), 'Inter', sans-serif;
   }
   .social-icons {
     display: flex;

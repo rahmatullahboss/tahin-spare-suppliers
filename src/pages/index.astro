@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import Icon from '../components/Icon.astro';
 ---
 <MainLayout activeNav="home">
   <!-- Hero Section -->
@@ -83,8 +84,8 @@ import MainLayout from '../layouts/MainLayout.astro';
             <img src="/images/engine.png" alt="Engine Parts" />
           </div>
         </div>
-        <button class="ps-nav ps-prev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
-        <button class="ps-nav ps-next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+        <button class="ps-nav ps-prev" aria-label="Previous"><Icon name="chevron-left" size={16} /></button>
+        <button class="ps-nav ps-next" aria-label="Next"><Icon name="chevron-right" size={16} /></button>
       </div>
     </div>
   </section>
@@ -97,9 +98,9 @@ import MainLayout from '../layouts/MainLayout.astro';
           <h2 class="why-title">WHY CHOOSE US?</h2>
           <div class="accordion-item">
             <button class="accordion-btn active">
-              <i class="fas fa-plus"></i>
+              <Icon name="plus" size={12} class="acc-plus" />
               <span>Large inventory of spares</span>
-              <i class="fas fa-chevron-right accordion-arrow"></i>
+              <Icon name="chevron-right" size={12} class="accordion-arrow" />
             </button>
             <div class="accordion-content open">
               <p>We maintain one of the largest inventories of marine spare parts in Bangladesh, sourced from ship breaking yards in Chittagong. Our warehouse contains thousands of items ready for immediate dispatch.</p>
@@ -107,9 +108,9 @@ import MainLayout from '../layouts/MainLayout.astro';
           </div>
           <div class="accordion-item">
             <button class="accordion-btn">
-              <i class="fas fa-plus"></i>
+              <Icon name="plus" size={12} class="acc-plus" />
               <span>We make sure for timely delivery</span>
-              <i class="fas fa-chevron-right accordion-arrow"></i>
+              <Icon name="chevron-right" size={12} class="accordion-arrow" />
             </button>
             <div class="accordion-content">
               <p>Our logistics team ensures your orders are processed and shipped within the shortest possible time. We partner with reliable shipping companies to deliver worldwide.</p>
@@ -117,9 +118,9 @@ import MainLayout from '../layouts/MainLayout.astro';
           </div>
           <div class="accordion-item">
             <button class="accordion-btn">
-              <i class="fas fa-plus"></i>
+              <Icon name="plus" size={12} class="acc-plus" />
               <span>Well managed & Vast experience</span>
-              <i class="fas fa-chevron-right accordion-arrow"></i>
+              <Icon name="chevron-right" size={12} class="accordion-arrow" />
             </button>
             <div class="accordion-content">
               <p>With years of experience in the marine spare parts industry, our team has the expertise to help you find exactly what you need. We ensure quality and reliability in every transaction.</p>
@@ -160,7 +161,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     font-size: 32px;
     font-weight: 700;
     margin-bottom: 10px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter), 'Inter', sans-serif;
   }
   .hero-subtitle {
     color: #f1c40f;
@@ -266,7 +267,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     color: #fff;
     font-size: 28px;
     margin-bottom: 10px;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), 'Playfair Display', serif;
   }
   .ps-contact {
     text-align: center;
@@ -357,16 +358,16 @@ import MainLayout from '../layouts/MainLayout.astro';
     font-weight: 500;
     color: #333;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter), 'Inter', sans-serif;
     transition: color 0.3s;
   }
   .accordion-btn:hover,
   .accordion-btn.active {
     color: #c0392b;
   }
-  .accordion-btn .fa-plus {
+  .accordion-btn :global(.acc-plus) {
     color: #c0392b;
-    font-size: 12px;
+    flex-shrink: 0;
   }
   .accordion-arrow {
     margin-left: auto;

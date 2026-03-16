@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import Icon from '../components/Icon.astro';
 ---
 <MainLayout title="Enquiry - Tahin Spare Suppliers" activeNav="enquiry">
   <section class="page-hero">
@@ -18,21 +19,21 @@ import MainLayout from '../layouts/MainLayout.astro';
           <p>Looking for specific marine spare parts or equipment? Fill out the form and our team will get back to you with a price quote within 24 hours.</p>
           <div class="info-items">
             <div class="info-item">
-              <i class="fas fa-phone-alt"></i>
+              <Icon name="phone-alt" size={20} class="info-icon" />
               <div>
                 <h4>Call Us</h4>
                 <p>+880 1674-784019</p>
               </div>
             </div>
             <div class="info-item">
-              <i class="fas fa-envelope"></i>
+              <Icon name="envelope" size={20} class="info-icon" />
               <div>
                 <h4>Email Us</h4>
                 <p>tahinship@gmail.com</p>
               </div>
             </div>
             <div class="info-item">
-              <i class="fas fa-clock"></i>
+              <Icon name="clock" size={20} class="info-icon" />
               <div>
                 <h4>Working Hours</h4>
                 <p>Sat - Thu: 9:00 AM - 6:00 PM</p>
@@ -108,10 +109,10 @@ import MainLayout from '../layouts/MainLayout.astro';
     gap: 15px;
     align-items: flex-start;
   }
-  .info-item i {
-    font-size: 20px;
+  .info-item :global(.info-icon) {
     color: #c0392b;
     margin-top: 3px;
+    flex-shrink: 0;
   }
   .info-item h4 {
     font-size: 15px;
@@ -143,7 +144,7 @@ import MainLayout from '../layouts/MainLayout.astro';
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter), 'Inter', sans-serif;
     transition: border-color 0.3s;
   }
   .form-group input:focus,
