@@ -8,9 +8,10 @@ import '../styles/global.css';
 interface Props {
   title?: string;
   activeNav?: string;
+  preloadImage?: string;
 }
 
-const { title = 'Tahin Spare Suppliers - Supply & Export All Kinds Of Marine Spare Parts', activeNav = 'home' } = Astro.props;
+const { title = 'Tahin Spare Suppliers - Supply & Export All Kinds Of Marine Spare Parts', activeNav = 'home', preloadImage } = Astro.props;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -21,6 +22,7 @@ const { title = 'Tahin Spare Suppliers - Supply & Export All Kinds Of Marine Spa
     <Font cssVariable="--font-inter" preload />
     <Font cssVariable="--font-playfair" preload />
     <Font cssVariable="--font-dancing" preload />
+    {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
     <title>{title}</title>
   </head>
   <body>
