@@ -1,0 +1,101 @@
+---
+---
+<header class="top-header">
+  <div class="header-container">
+    <div class="logo">
+      <div class="logo-icon">
+        <div class="logo-circle">
+          <span class="logo-t">T</span>
+        </div>
+      </div>
+      <div class="logo-text">
+        <h1 class="company-name">Tahin Spare Suppliers</h1>
+        <p class="company-tagline">Supply & Export All Kinds Of Marine Spare Parts</p>
+      </div>
+    </div>
+    <div class="social-icons">
+      <a href="#" class="social-icon facebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" class="social-icon twitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" class="social-icon youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .top-header {
+    background: #fff;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-circle {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #cc0000, #990000);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #cc0000;
+  }
+  .logo-t {
+    color: #fff;
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+  }
+  .company-name {
+    font-family: 'Dancing Script', cursive;
+    font-size: 28px;
+    color: #d4a00a;
+    margin: 0;
+    line-height: 1.1;
+    font-weight: 700;
+  }
+  .company-tagline {
+    font-size: 11px;
+    color: #333;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+  }
+  .social-icons {
+    display: flex;
+    gap: 6px;
+  }
+  .social-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    text-decoration: none;
+    transition: opacity 0.3s;
+  }
+  .social-icon:hover {
+    opacity: 0.8;
+  }
+  .social-icon.facebook { background: #3b5998; }
+  .social-icon.twitter { background: #1da1f2; }
+  .social-icon.youtube { background: #ff0000; }
+
+  @media (max-width: 600px) {
+    .company-name { font-size: 20px; }
+    .header-container { flex-direction: column; gap: 10px; }
+  }
+</style>

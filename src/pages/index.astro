@@ -1,0 +1,438 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+<MainLayout activeNav="home">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h2 class="hero-title">Marine spare parts suppliers from Bangladesh</h2>
+      <p class="hero-subtitle">We have large stock of Automation Equipments</p>
+      <p class="hero-desc">We procure from ship breaking yard and maintain large stock at Bangladesh</p>
+      <a href="/products" class="btn btn-primary">Find Products</a>
+    </div>
+  </section>
+
+  <!-- Who We Are -->
+  <section class="section who-we-are">
+    <div class="container">
+      <h2 class="section-title">WHO WE ARE</h2>
+      <p class="section-subtitle">Leading marine machinery and spares parts supplier in Bangladesh</p>
+      <p class="who-desc">
+        Tahin Spare Suppliers is a company that exports and supplies reconditioned marine navigation and communication equipment and spare parts obtained from a shipbreaking yard in Chittagong, Bangladesh. We specialize in providing high-quality marine equipment at competitive prices, ensuring our customers receive the best value for their investment. Our team of experienced professionals carefully inspects and tests each item before shipping to guarantee functionality and reliability.
+      </p>
+    </div>
+  </section>
+
+  <!-- Our Stock Spares -->
+  <section class="section stock-spares">
+    <div class="container">
+      <h2 class="stock-title">Our Stock Spares</h2>
+      <p class="stock-subtitle">Search you product from our stock or contact us for your inquiry</p>
+      <div class="stock-grid">
+        <div class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/engine.png" alt="Engine & Machineries" />
+          </div>
+          <h3>Engine & Machineries</h3>
+          <p>Main / Aux Engines : B&W, MITSUBISHI, SULZER, MAK, DEUTZ, MWM, PIELSTICK, DAIHATSU, YANMAR, MAN, CATERPILLAR, MTU, SKL.</p>
+        </div>
+        <div class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/marine-electrical.png" alt="Marine electrical devices" />
+          </div>
+          <h3>Marine electrical devices</h3>
+          <p>We have stock of Radar (JRC JMA-9923 7XA, JRC JMA-9922 6XA) Gyro compass TG-5000 & (STD 22,31,14,12,06,04) and many more</p>
+        </div>
+        <div class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/automation.png" alt="Automation Equipments" />
+          </div>
+          <h3>Automation Equipments</h3>
+          <p>Our major stock contains Nor Control / Kongsberg / Lyngsø Marine Automation & spares. We possess the largest inventory</p>
+        </div>
+        <div class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/marine-electronics.png" alt="Marine Electronics equipments" />
+          </div>
+          <h3>Marine Electronics equipments</h3>
+          <p>Main / Aux Engines : B&W, MITSUBISHI, SULZER, MAK, DEUTZ, MWM, PIELSTICK, DAIHATSU, YANMAR, MAN, CATERPILLAR, MTU, SKL.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product & Services -->
+  <section class="product-services">
+    <div class="ps-overlay"></div>
+    <div class="container ps-content">
+      <h2 class="ps-title">Product & Services</h2>
+      <p class="ps-contact">For price quote pls call us: +880 1674-784019 or mail: tahinship@gmail.com</p>
+      <div class="ps-carousel">
+        <div class="ps-carousel-track">
+          <div class="ps-card">
+            <img src="/images/marine-electrical.png" alt="Radar System" />
+          </div>
+          <div class="ps-card">
+            <img src="/images/automation.png" alt="Navigation Equipment" />
+          </div>
+          <div class="ps-card">
+            <img src="/images/marine-electronics.png" alt="Marine Electronics" />
+          </div>
+          <div class="ps-card">
+            <img src="/images/engine.png" alt="Engine Parts" />
+          </div>
+        </div>
+        <button class="ps-nav ps-prev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+        <button class="ps-nav ps-next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose Us -->
+  <section class="section why-choose">
+    <div class="container">
+      <div class="why-grid">
+        <div class="why-accordion">
+          <h2 class="why-title">WHY CHOOSE US?</h2>
+          <div class="accordion-item">
+            <button class="accordion-btn active">
+              <i class="fas fa-plus"></i>
+              <span>Large inventory of spares</span>
+              <i class="fas fa-chevron-right accordion-arrow"></i>
+            </button>
+            <div class="accordion-content open">
+              <p>We maintain one of the largest inventories of marine spare parts in Bangladesh, sourced from ship breaking yards in Chittagong. Our warehouse contains thousands of items ready for immediate dispatch.</p>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <button class="accordion-btn">
+              <i class="fas fa-plus"></i>
+              <span>We make sure for timely delivery</span>
+              <i class="fas fa-chevron-right accordion-arrow"></i>
+            </button>
+            <div class="accordion-content">
+              <p>Our logistics team ensures your orders are processed and shipped within the shortest possible time. We partner with reliable shipping companies to deliver worldwide.</p>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <button class="accordion-btn">
+              <i class="fas fa-plus"></i>
+              <span>Well managed & Vast experience</span>
+              <i class="fas fa-chevron-right accordion-arrow"></i>
+            </button>
+            <div class="accordion-content">
+              <p>With years of experience in the marine spare parts industry, our team has the expertise to help you find exactly what you need. We ensure quality and reliability in every transaction.</p>
+            </div>
+          </div>
+        </div>
+        <div class="why-badge">
+          <img src="/images/satisfaction.png" alt="100% Customer Satisfaction Guaranteed" />
+        </div>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  /* Hero Section */
+  .hero {
+    position: relative;
+    height: 450px;
+    background: url('/images/hero-bg.png') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    padding: 20px;
+  }
+  .hero-title {
+    color: #fff;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    font-family: 'Inter', sans-serif;
+  }
+  .hero-subtitle {
+    color: #f1c40f;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .hero-desc {
+    color: #ddd;
+    font-size: 14px;
+    margin-bottom: 25px;
+  }
+
+  /* Who We Are */
+  .who-we-are {
+    text-align: center;
+    background: #fff;
+  }
+  .who-desc {
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.8;
+  }
+
+  /* Stock Spares */
+  .stock-spares {
+    background: #f9f9f9;
+  }
+  .stock-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 8px;
+  }
+  .stock-subtitle {
+    text-align: center;
+    color: #c0392b;
+    font-size: 15px;
+    margin-bottom: 40px;
+    font-weight: 500;
+  }
+  .stock-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+  }
+  .stock-card {
+    text-align: center;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .stock-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  }
+  .stock-card-img {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    overflow: hidden;
+  }
+  .stock-card-img img {
+    max-height: 140px;
+    object-fit: contain;
+  }
+  .stock-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 10px;
+  }
+  .stock-card p {
+    font-size: 12px;
+    color: #c0392b;
+    line-height: 1.6;
+  }
+
+  /* Product & Services */
+  .product-services {
+    position: relative;
+    background: url('/images/hero-bg.png') center/cover no-repeat;
+    padding: 60px 0;
+  }
+  .ps-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(80, 20, 120, 0.75);
+  }
+  .ps-content {
+    position: relative;
+    z-index: 1;
+  }
+  .ps-title {
+    text-align: center;
+    color: #fff;
+    font-size: 28px;
+    margin-bottom: 10px;
+    font-family: 'Playfair Display', serif;
+  }
+  .ps-contact {
+    text-align: center;
+    color: #f1c40f;
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
+  .ps-carousel {
+    position: relative;
+    overflow: hidden;
+  }
+  .ps-carousel-track {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .ps-card {
+    width: 200px;
+    height: 160px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  .ps-card img {
+    max-height: 140px;
+    object-fit: contain;
+  }
+  .ps-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.9);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+    z-index: 2;
+  }
+  .ps-nav:hover {
+    background: #fff;
+  }
+  .ps-prev { left: 10px; }
+  .ps-next { right: 10px; }
+
+  /* Why Choose Us */
+  .why-choose {
+    background: #fff;
+  }
+  .why-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .why-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 25px;
+  }
+  .accordion-item {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+  }
+  .accordion-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: color 0.3s;
+  }
+  .accordion-btn:hover,
+  .accordion-btn.active {
+    color: #c0392b;
+  }
+  .accordion-btn .fa-plus {
+    color: #c0392b;
+    font-size: 12px;
+  }
+  .accordion-arrow {
+    margin-left: auto;
+    font-size: 12px;
+    color: #999;
+    transition: transform 0.3s;
+  }
+  .accordion-btn.active .accordion-arrow {
+    transform: rotate(90deg);
+  }
+  .accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding: 0 10px;
+  }
+  .accordion-content.open {
+    max-height: 200px;
+    padding: 0 10px 15px;
+  }
+  .accordion-content p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.7;
+  }
+  .why-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .why-badge img {
+    max-width: 250px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .stock-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .why-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .stock-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero-title { font-size: 24px; }
+    .hero { height: 350px; }
+    .ps-carousel-track { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 0 10px; }
+  }
+</style>
+
+<script>
+  // Accordion functionality
+  document.querySelectorAll('.accordion-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const wasActive = btn.classList.contains('active');
+      // Close all
+      document.querySelectorAll('.accordion-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
+      // Open clicked if wasn't active
+      if (!wasActive) {
+        btn.classList.add('active');
+        btn.closest('.accordion-item')?.querySelector('.accordion-content')?.classList.add('open');
+      }
+    });
+  });
+</script>

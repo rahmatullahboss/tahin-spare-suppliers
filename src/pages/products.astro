@@ -1,0 +1,204 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+
+const products = [
+  {
+    name: 'luffing winch (gearbox drum brake) 4.27mm',
+    category: 'Hydraulic Winch',
+    image: '/images/winch.png',
+  },
+  {
+    name: '150 KVA Caterpillar Diesel generator',
+    category: 'Generator',
+    image: '/images/generator.png',
+  },
+  {
+    name: 'JRC JMA-5300 Marine Radar',
+    category: 'Marine Electronics',
+    image: '/images/marine-electrical.png',
+  },
+  {
+    name: 'Navi-Master 24X HD Navigation System',
+    category: 'Marine Electronics',
+    image: '/images/automation.png',
+  },
+  {
+    name: 'B&W 6G80ME-C Marine Diesel Engine',
+    category: 'Engine',
+    image: '/images/engine.png',
+  },
+  {
+    name: 'ECDIS Navigation System',
+    category: 'Marine Electronics',
+    image: '/images/marine-electronics.png',
+  },
+];
+
+const categories = ['All Projects', 'Generator', 'Hydraulic Winch', 'Marine Electronics', 'Engine'];
+---
+<MainLayout title="Products - Tahin Spare Suppliers" activeNav="products">
+  <section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1>Products</h1>
+      <p>Home / Products</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="filter-tabs" id="filter-tabs">
+        {categories.map((cat) => (
+          <button class:list={['filter-btn', { active: cat === 'All Projects' }]} data-category={cat}>
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div class="products-grid" id="products-grid">
+        {products.map((product) => (
+          <div class="product-card" data-category={product.category}>
+            <div class="product-img">
+              <img src={product.image} alt={product.name} />
+            </div>
+            <div class="product-info">
+              <h3>{product.name}</h3>
+              <span class="product-cat">{product.category}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero {
+    position: relative;
+    height: 250px;
+    background: url('/images/hero-bg.png') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .page-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+  }
+  .page-hero-content {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+  }
+  .page-hero-content h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .page-hero-content p {
+    font-size: 14px;
+    color: #ddd;
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 8px 20px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #555;
+  }
+  .filter-btn:hover,
+  .filter-btn.active {
+    background: #c0392b;
+    color: #fff;
+    border-color: #c0392b;
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+  }
+  .product-card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+  .product-card.hidden {
+    display: none;
+  }
+  .product-img {
+    height: 220px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    padding: 15px;
+  }
+  .product-img img {
+    max-height: 200px;
+    object-fit: contain;
+    transition: transform 0.3s;
+  }
+  .product-card:hover .product-img img {
+    transform: scale(1.05);
+  }
+  .product-info {
+    padding: 15px 20px 20px;
+    background: #1a1a2e;
+    color: #fff;
+  }
+  .product-info h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    line-height: 1.4;
+  }
+  .product-cat {
+    font-size: 12px;
+    color: #aaa;
+  }
+
+  @media (max-width: 768px) {
+    .products-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .products-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const category = btn.dataset.category;
+      document.querySelectorAll('.product-card').forEach(card => {
+        if (category === 'All Projects' || card.dataset.category === category) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  });
+</script>

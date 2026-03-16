@@ -1,0 +1,154 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+<MainLayout title="About Us - Tahin Spare Suppliers" activeNav="about">
+  <section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1>About Us</h1>
+      <p>Home / About Us</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text">
+          <h2 class="section-title" style="text-align:left;">WHO WE ARE</h2>
+          <p class="about-lead">Leading marine machinery and spares parts supplier in Bangladesh</p>
+          <p>Tahin Spare Suppliers is a company that exports and supplies reconditioned marine navigation and communication equipment and spare parts obtained from a shipbreaking yard in Chittagong, Bangladesh.</p>
+          <p>We specialize in providing high-quality marine equipment at competitive prices, ensuring our customers receive the best value for their investment. Our team of experienced professionals carefully inspects and tests each item before shipping to guarantee functionality and reliability.</p>
+          <p>With years of presence in the industry, we have built a reputation for excellence, serving clients across the globe. Our extensive network in the Chittagong shipbreaking yards gives us access to a vast inventory of marine spare parts and equipment.</p>
+        </div>
+        <div class="about-image">
+          <img src="/images/hero-bg.png" alt="Ship Bridge" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:#f9f9f9;">
+    <div class="container">
+      <h2 class="section-title">What We Offer</h2>
+      <p class="section-subtitle" style="color:#555;">Comprehensive marine spare parts and equipment solutions</p>
+      <div class="offer-grid">
+        <div class="offer-card">
+          <i class="fas fa-ship"></i>
+          <h3>Marine Navigation</h3>
+          <p>Complete range of navigation equipment including radar, gyrocompass, GPS, ECDIS and more.</p>
+        </div>
+        <div class="offer-card">
+          <i class="fas fa-cogs"></i>
+          <h3>Engine & Machineries</h3>
+          <p>Main and auxiliary engines from top manufacturers like B&W, MAN, Sulzer, Caterpillar.</p>
+        </div>
+        <div class="offer-card">
+          <i class="fas fa-bolt"></i>
+          <h3>Electrical Equipment</h3>
+          <p>Marine electrical devices, generators, switchboards, and control systems.</p>
+        </div>
+        <div class="offer-card">
+          <i class="fas fa-microchip"></i>
+          <h3>Automation Systems</h3>
+          <p>Nor Control, Kongsberg, Lyngsø marine automation systems and spare parts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero {
+    position: relative;
+    height: 250px;
+    background: url('/images/hero-bg.png') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .page-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+  }
+  .page-hero-content {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+  }
+  .page-hero-content h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .page-hero-content p {
+    font-size: 14px;
+    color: #ddd;
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  .about-lead {
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 20px;
+  }
+  .about-text p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 15px;
+  }
+  .about-image img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+
+  .offer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+  }
+  .offer-card {
+    text-align: center;
+    padding: 30px 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+  }
+  .offer-card:hover {
+    transform: translateY(-5px);
+  }
+  .offer-card i {
+    font-size: 36px;
+    color: #c0392b;
+    margin-bottom: 15px;
+  }
+  .offer-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #222;
+  }
+  .offer-card p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .offer-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .offer-grid { grid-template-columns: 1fr; }
+  }
+</style>
