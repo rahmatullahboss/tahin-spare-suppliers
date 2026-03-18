@@ -1,0 +1,229 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Icon from '../components/Icon.astro';
+---
+<MainLayout title="Our Services - Tahin Spare Suppliers" activeNav="services">
+  <section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1>Our Services</h1>
+      <p>Home / Services</p>
+    </div>
+  </section>
+
+  <!-- Services Intro -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">WHAT WE DO</h2>
+      <p class="services-intro reveal">Tahin Spare Suppliers has a well-organized workshop with qualified and experienced workers for proper dismantling, repairing, overhauling, assembling and testing of marine engines and other marine parts. We provide comprehensive ship-related services to our clients.</p>
+    </div>
+  </section>
+
+  <!-- Service 1: Ship Repair -->
+  <section class="section" style="background:#f9f9f9;">
+    <div class="container">
+      <div class="service-detail">
+        <div class="service-detail-text reveal-left">
+          <div class="service-badge"><Icon name="ship" size={24} /></div>
+          <h2>Ship Repair & Rebuilding</h2>
+          <p>Our skilled team provides comprehensive ship repair and rebuilding services. All the individuals involved in ship repairs have had key positions in technical departments and bring extensive practical experience.</p>
+          <ul>
+            <li><Icon name="check" size={14} class="svc-check" /> Engine overhaul and rebuilding</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Mechanical system repairs</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Hull and structural repairs</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Electrical system maintenance</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Piping and plumbing works</li>
+          </ul>
+          <a href="/enquiry" class="btn btn-primary">Request Service Quote</a>
+        </div>
+        <div class="service-detail-img">
+          <img src="/images/marine-engine.webp" alt="Ship Repair Service" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service 2: Ship Breaking -->
+  <section class="section">
+    <div class="container">
+      <div class="service-detail reverse">
+        <div class="service-detail-text reveal-right">
+          <div class="service-badge"><Icon name="industry" size={24} /></div>
+          <h2>Ship Breaking & Recycling</h2>
+          <p>Located near the Chattogram Ship-Breaking Yards — one of the world's largest ship recycling hubs — we have direct access to vessels being dismantled. Our team ensures safe and efficient recycling processes.</p>
+          <ul>
+            <li><Icon name="check" size={14} class="svc-check" /> Safe dismantling of vessels</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Recovery of reusable marine equipment</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Steel and metal recycling</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Environmental compliance</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Inventory management of recovered parts</li>
+          </ul>
+          <a href="/enquiry" class="btn btn-primary">Contact Us</a>
+        </div>
+        <div class="service-detail-img">
+          <img src="/images/shipbreaking-yard.webp" alt="Ship Breaking Yard" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service 3: Engine Repower -->
+  <section class="section" style="background:#f9f9f9;">
+    <div class="container">
+      <div class="service-detail">
+        <div class="service-detail-text reveal-left">
+          <div class="service-badge"><Icon name="tools" size={24} /></div>
+          <h2>Engine Repower / Rebuilding</h2>
+          <p>Our workshop specializes in complete engine reconditioning and rebuilding for all major marine engine brands including Yanmar, Daihatsu, Caterpillar, MAN B&W, Sulzer, and more.</p>
+          <ul>
+            <li><Icon name="check" size={14} class="svc-check" /> Complete engine disassembly and inspection</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Component cleaning and reconditioning</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Precision assembly and calibration</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Load testing and performance verification</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Warranty on rebuilt engines</li>
+          </ul>
+          <a href="/enquiry" class="btn btn-primary">Get a Quote</a>
+        </div>
+        <div class="service-detail-img">
+          <img src="/images/spare-parts.webp" alt="Engine Rebuilding" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-overlay"></div>
+    <div class="container cta-content">
+      <h2>Need Marine Equipment or Services?</h2>
+      <p>Contact us today for a free quote. We're ready to help with your marine needs.</p>
+      <div class="cta-btns">
+        <a href="/enquiry" class="btn btn-primary">Send Enquiry</a>
+        <a href="tel:+8801674784019" class="btn btn-outline">Call: +88-01674784019</a>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero {
+    position: relative;
+    height: 250px;
+    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+  .page-hero-content p { font-size: 14px; color: #ddd; }
+
+  .services-intro {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 15px;
+    color: #555;
+    line-height: 1.8;
+  }
+
+  .service-detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  .service-detail.reverse {
+    direction: rtl;
+  }
+  .service-detail.reverse > * {
+    direction: ltr;
+  }
+  .service-badge {
+    width: 56px;
+    height: 56px;
+    background: #c0392b;
+    color: #fff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .service-detail-text h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 15px;
+  }
+  .service-detail-text p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+  .service-detail-text ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 25px;
+  }
+  .service-detail-text li {
+    font-size: 14px;
+    color: #555;
+    padding: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .service-detail-text :global(.svc-check) {
+    color: #2ecc71;
+    flex-shrink: 0;
+  }
+  .service-detail-img img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+
+  /* CTA */
+  .cta-section {
+    position: relative;
+    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    padding: 80px 0;
+    text-align: center;
+  }
+  .cta-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(80, 20, 120, 0.8);
+  }
+  .cta-content {
+    position: relative;
+    z-index: 1;
+  }
+  .cta-content h2 {
+    color: #fff;
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    font-family: var(--font-playfair), 'Playfair Display', serif;
+  }
+  .cta-content p {
+    color: #ddd;
+    font-size: 16px;
+    margin-bottom: 30px;
+  }
+  .cta-btns {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) {
+    .service-detail { grid-template-columns: 1fr; }
+    .service-detail.reverse { direction: ltr; }
+  }
+</style>

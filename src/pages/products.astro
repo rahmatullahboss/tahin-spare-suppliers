@@ -3,70 +3,106 @@ import MainLayout from '../layouts/MainLayout.astro';
 
 const products = [
   {
-    name: 'luffing winch (gearbox drum brake) 4.27mm',
-    category: 'Hydraulic Winch',
-    image: '/images/winch.webp',
+    name: 'Yanmar 6N18AL Marine Diesel Engine',
+    category: 'Marine Engines',
+    image: '/images/marine-engine.webp',
   },
   {
-    name: '150 KVA Caterpillar Diesel generator',
-    category: 'Generator',
-    image: '/images/generator.webp',
+    name: '500 KVA Caterpillar Diesel Generator Set',
+    category: 'Diesel Generators',
+    image: '/images/diesel-generator.webp',
   },
   {
-    name: 'JRC JMA-5300 Marine Radar',
-    category: 'Marine Electronics',
-    image: '/images/marine-electrical.webp',
+    name: 'Hydraulic Luffing Winch System',
+    category: 'Hydraulic Equipment',
+    image: '/images/hydraulic-crane.webp',
   },
   {
-    name: 'Navi-Master 24X HD Navigation System',
-    category: 'Marine Electronics',
-    image: '/images/automation.webp',
+    name: 'ABB VTR Marine Turbocharger',
+    category: 'Turbochargers',
+    image: '/images/turbocharger.webp',
   },
   {
-    name: 'B&W 6G80ME-C Marine Diesel Engine',
-    category: 'Engine',
+    name: 'Marine Water Pump & Air Compressor',
+    category: 'Pumps & Compressors',
+    image: '/images/pump-compressor.webp',
+  },
+  {
+    name: 'Fresh Water Generator & Heat Exchanger',
+    category: 'Heat Exchangers',
+    image: '/images/heat-exchanger.webp',
+  },
+  {
+    name: 'Engine Spare Parts — Pistons, Liners, Bearings',
+    category: 'Spare Parts',
+    image: '/images/spare-parts.webp',
+  },
+  {
+    name: 'Daihatsu 6DK-20 Auxiliary Engine',
+    category: 'Marine Engines',
     image: '/images/engine.webp',
   },
   {
-    name: 'ECDIS Navigation System',
-    category: 'Marine Electronics',
-    image: '/images/marine-electronics.webp',
+    name: 'Caterpillar 3512 Marine Propulsion Engine',
+    category: 'Marine Engines',
+    image: '/images/marine-engine.webp',
+  },
+  {
+    name: '150 KVA Caterpillar Diesel Generator',
+    category: 'Diesel Generators',
+    image: '/images/generator.webp',
+  },
+  {
+    name: 'Deck Crane Hydraulic System',
+    category: 'Hydraulic Equipment',
+    image: '/images/winch.webp',
+  },
+  {
+    name: 'MHI MET Marine Turbocharger',
+    category: 'Turbochargers',
+    image: '/images/turbocharger.webp',
   },
 ];
 
-const categories = ['All Projects', 'Generator', 'Hydraulic Winch', 'Marine Electronics', 'Engine'];
+const categories = ['All Products', 'Marine Engines', 'Diesel Generators', 'Hydraulic Equipment', 'Turbochargers', 'Pumps & Compressors', 'Heat Exchangers', 'Spare Parts'];
 ---
 <MainLayout title="Products - Tahin Spare Suppliers" activeNav="products">
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
-      <h1>Products</h1>
+      <h1>Our Products</h1>
       <p>Home / Products</p>
     </div>
   </section>
 
   <section class="section">
     <div class="container">
-      <div class="filter-tabs" id="filter-tabs">
+      <p class="products-intro reveal">As a full-range supplier, Tahin Spare Suppliers has access to a complete spectrum of reconditioned marine engines, generator sets, auxiliary engines, hydraulic equipment, and spare parts from the top brands.</p>
+
+      <div class="filter-tabs reveal" id="filter-tabs">
         {categories.map((cat) => (
-          <button class:list={['filter-btn', { active: cat === 'All Projects' }]} data-category={cat}>
+          <button class:list={['filter-btn', { active: cat === 'All Products' }]} data-category={cat}>
             {cat}
           </button>
         ))}
       </div>
 
-      <div class="products-grid" id="products-grid">
+      <div class="products-grid reveal-stagger" id="products-grid">
         {products.map((product) => (
           <div class="product-card" data-category={product.category}>
             <div class="product-img">
-              <img src={product.image} alt={product.name} />
+              <img src={product.image} alt={product.name} loading="lazy" />
             </div>
-            <div class="product-info">
-              <h3>{product.name}</h3>
+            <div class="product-overlay">
               <span class="product-cat">{product.category}</span>
+              <h3>{product.name}</h3>
             </div>
           </div>
         ))}
+      </div>
+
+      <div class="products-cta">
+        <p>Can't find what you're looking for? <a href="/enquiry">Send us an enquiry</a> and we'll check our inventory.</p>
       </div>
     </div>
   </section>
@@ -82,24 +118,18 @@ const categories = ['All Projects', 'Generator', 'Hydraulic Winch', 'Marine Elec
     justify-content: center;
     text-align: center;
   }
-  .page-hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-  }
-  .page-hero-content {
-    position: relative;
-    z-index: 1;
-    color: #fff;
-  }
-  .page-hero-content h1 {
-    font-size: 36px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-  .page-hero-content p {
-    font-size: 14px;
-    color: #ddd;
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+  .page-hero-content p { font-size: 14px; color: #ddd; }
+
+  .products-intro {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 30px;
+    font-size: 15px;
+    color: #555;
+    line-height: 1.7;
   }
 
   .filter-tabs {
@@ -107,6 +137,7 @@ const categories = ['All Projects', 'Generator', 'Hydraulic Winch', 'Marine Elec
     gap: 8px;
     margin-bottom: 30px;
     flex-wrap: wrap;
+    justify-content: center;
   }
   .filter-btn {
     padding: 8px 20px;
@@ -129,53 +160,84 @@ const categories = ['All Projects', 'Generator', 'Hydraulic Winch', 'Marine Elec
   .products-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
+    gap: 20px;
   }
   .product-card {
-    background: #fff;
-    border-radius: 10px;
+    position: relative;
+    height: 300px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    cursor: pointer;
   }
   .product-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
   }
-  .product-card.hidden {
-    display: none;
-  }
+  .product-card.hidden { display: none; }
   .product-img {
-    height: 220px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f5f5f5;
-    padding: 15px;
+    position: absolute;
+    inset: 0;
   }
   .product-img img {
-    max-height: 200px;
-    object-fit: contain;
-    transition: transform 0.3s;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
   }
   .product-card:hover .product-img img {
-    transform: scale(1.05);
+    transform: scale(1.06);
   }
-  .product-info {
-    padding: 15px 20px 20px;
-    background: #1a1a2e;
+  .product-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(
+      to top,
+      rgba(26, 26, 46, 0.92) 0%,
+      rgba(26, 26, 46, 0.5) 60%,
+      transparent 100%
+    );
     color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 50%;
   }
-  .product-info h3 {
-    font-size: 15px;
+  .product-overlay h3 {
+    font-size: 16px;
     font-weight: 600;
-    margin-bottom: 5px;
     line-height: 1.4;
+    margin-top: 4px;
   }
   .product-cat {
-    font-size: 12px;
-    color: #aaa;
+    font-size: 11px;
+    color: #c0392b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(255,255,255,0.12);
+    padding: 2px 10px;
+    border-radius: 3px;
+    width: fit-content;
+  }
+
+  .products-cta {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 15px;
+    color: #555;
+  }
+  .products-cta a {
+    color: #c0392b;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .products-cta a:hover {
+    color: #a93226;
   }
 
   @media (max-width: 768px) {
@@ -193,7 +255,7 @@ const categories = ['All Projects', 'Generator', 'Hydraulic Winch', 'Marine Elec
       btn.classList.add('active');
       const category = btn.dataset.category;
       document.querySelectorAll('.product-card').forEach(card => {
-        if (category === 'All Projects' || card.dataset.category === category) {
+        if (category === 'All Products' || card.dataset.category === category) {
           card.classList.remove('hidden');
         } else {
           card.classList.add('hidden');

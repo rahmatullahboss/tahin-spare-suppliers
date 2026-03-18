@@ -14,44 +14,125 @@ import Icon from '../components/Icon.astro';
   <section class="section">
     <div class="container">
       <div class="about-grid">
-        <div class="about-text">
-          <h2 class="section-title" style="text-align:left;">WHO WE ARE</h2>
-          <p class="about-lead">Leading marine machinery and spares parts supplier in Bangladesh</p>
-          <p>Tahin Spare Suppliers is a company that exports and supplies reconditioned marine navigation and communication equipment and spare parts obtained from a shipbreaking yard in Chittagong, Bangladesh.</p>
-          <p>We specialize in providing high-quality marine equipment at competitive prices, ensuring our customers receive the best value for their investment. Our team of experienced professionals carefully inspects and tests each item before shipping to guarantee functionality and reliability.</p>
-          <p>With years of presence in the industry, we have built a reputation for excellence, serving clients across the globe. Our extensive network in the Chittagong shipbreaking yards gives us access to a vast inventory of marine spare parts and equipment.</p>
+        <div class="about-text reveal-left">
+          <h2 class="section-title" style="text-align:left;">TAHIN SPARE SUPPLIERS</h2>
+          <p class="about-lead">Trusted Exporters & Suppliers of Reconditioned Marine Equipment</p>
+          <p>Tahin Spare Suppliers was established at the Chattogram Ship-Breaking Hub in Sitakunda, Bangladesh — one of the largest ship recycling yards in the world. Under the leadership of Md. Jamal Uddin (Proprietor), we have grown into a globally trusted supplier and exporter of reconditioned marine engines, generators, and all kinds of ship marine products.</p>
+          <p>We specialize in Yanmar, Daihatsu, and Caterpillar marine engines and generators. Our team of experienced professionals carefully inspects, reconditions, and tests each item in our workshop before shipping to guarantee functionality and reliability.</p>
+          <p>With direct access to the Chattogram Ship-Breaking Yards, we source high-quality marine equipment at competitive prices. Our extensive network allows us to serve clients across the globe — from shipping companies and shipyards to marine contractors and dealers.</p>
         </div>
-        <div class="about-image">
-          <img src="/images/hero-bg.webp" alt="Ship Bridge" />
+        <div class="about-image reveal-right img-zoom">
+          <img src="/images/shipbreaking-yard.webp" alt="Chattogram Ship Breaking Yard" loading="lazy" />
         </div>
       </div>
     </div>
   </section>
 
+  <!-- Our Strength -->
   <section class="section" style="background:#f9f9f9;">
     <div class="container">
-      <h2 class="section-title">What We Offer</h2>
-      <p class="section-subtitle" style="color:#555;">Comprehensive marine spare parts and equipment solutions</p>
+      <h2 class="section-title">OUR STRENGTH</h2>
+      <p class="section-subtitle" style="color:#555;">What makes Tahin Spare Suppliers your reliable partner</p>
+      <div class="strength-grid reveal-stagger">
+        <div class="strength-card">
+          <Icon name="warehouse" size={40} class="strength-icon" />
+          <h3>Ready Inventory</h3>
+          <p>We maintain a large stock of reconditioned marine engines, generators, spare parts, and equipment — ready for immediate dispatch.</p>
+        </div>
+        <div class="strength-card">
+          <Icon name="users" size={40} class="strength-icon" />
+          <h3>Skilled Workforce</h3>
+          <p>Our qualified technicians have years of hands-on experience in dismantling, repairing, overhauling, and testing marine machinery.</p>
+        </div>
+        <div class="strength-card">
+          <Icon name="globe" size={40} class="strength-icon" />
+          <h3>Global Export</h3>
+          <p>We export worldwide with reliable logistics partners, ensuring timely delivery to customers across Asia, Africa, Middle East, and Europe.</p>
+        </div>
+        <div class="strength-card">
+          <Icon name="check-circle" size={40} class="strength-icon" />
+          <h3>Quality Assured</h3>
+          <p>Every item is thoroughly inspected, tested, and reconditioned before delivery. We guarantee functionality and customer satisfaction.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What We Offer -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">WHAT WE OFFER</h2>
+      <p class="section-subtitle" style="color:#555;">Complete range of marine equipment and spare parts</p>
       <div class="offer-grid">
         <div class="offer-card">
-          <Icon name="ship" size={36} class="offer-icon" />
-          <h3>Marine Navigation</h3>
-          <p>Complete range of navigation equipment including radar, gyrocompass, GPS, ECDIS and more.</p>
-        </div>
-        <div class="offer-card">
           <Icon name="cogs" size={36} class="offer-icon" />
-          <h3>Engine & Machineries</h3>
-          <p>Main and auxiliary engines from top manufacturers like B&W, MAN, Sulzer, Caterpillar.</p>
+          <h3>Marine Engines</h3>
+          <p>Main & auxiliary engines from Yanmar, Daihatsu, Caterpillar, MAN B&W, Sulzer, MAK, Deutz, MWM, MTU, SKL.</p>
         </div>
         <div class="offer-card">
           <Icon name="bolt" size={36} class="offer-icon" />
-          <h3>Electrical Equipment</h3>
-          <p>Marine electrical devices, generators, switchboards, and control systems.</p>
+          <h3>Diesel Generators</h3>
+          <p>Diesel & marine generator sets from 50 KVA to 2000 KVA. Export & import of all generator types.</p>
         </div>
         <div class="offer-card">
-          <Icon name="microchip" size={36} class="offer-icon" />
-          <h3>Automation Systems</h3>
-          <p>Nor Control, Kongsberg, Lyngsø marine automation systems and spare parts.</p>
+          <Icon name="anchor" size={36} class="offer-icon" />
+          <h3>Hydraulic Equipment</h3>
+          <p>Hydraulic crane equipment, deck cranes, winches, and complete hydraulic systems.</p>
+        </div>
+        <div class="offer-card">
+          <Icon name="fan" size={36} class="offer-icon" />
+          <h3>Turbochargers</h3>
+          <p>Reconditioned turbochargers from ABB, MHI, IHI, Napier for all marine engine types.</p>
+        </div>
+        <div class="offer-card">
+          <Icon name="tint" size={36} class="offer-icon" />
+          <h3>Pumps & Compressors</h3>
+          <p>Water pumps, air compressors, purifiers, and all types of auxiliary machinery.</p>
+        </div>
+        <div class="offer-card">
+          <Icon name="thermometer-half" size={36} class="offer-icon" />
+          <h3>Heat Exchangers</h3>
+          <p>Fresh water generators, heat exchangers, coolers, and condensers for marine applications.</p>
+        </div>
+        <div class="offer-card">
+          <Icon name="tools" size={36} class="offer-icon" />
+          <h3>Engine Spare Parts</h3>
+          <p>Pistons, cylinder liners, bearings, gaskets, valves, connecting rods, and complete engine spare parts.</p>
+        </div>
+        <div class="offer-card">
+          <Icon name="layer-group" size={36} class="offer-icon" />
+          <h3>MS Plates & Steel</h3>
+          <p>Prime quality MS plates and ship-grade steel materials for industrial use.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quality Policy -->
+  <section class="section quality-policy" style="background:#1a1a2e;">
+    <div class="container">
+      <h2 class="section-title" style="color:#fff;">QUALITY POLICY</h2>
+      <p class="qp-text">At Tahin Spare Suppliers, quality is our top priority. Every piece of equipment goes through a rigorous process of inspection, reconditioning, and testing before being offered to our customers. We are committed to providing marine equipment that meets international standards of quality, safety, and reliability. Our goal is 100% customer satisfaction — every time.</p>
+      <div class="qp-steps">
+        <div class="qp-step">
+          <div class="qp-num">1</div>
+          <h4>Source & Inspect</h4>
+          <p>Equipment sourced from ship-breaking yards is thoroughly inspected for condition and usability.</p>
+        </div>
+        <div class="qp-step">
+          <div class="qp-num">2</div>
+          <h4>Recondition & Repair</h4>
+          <p>Our skilled team reconditions, repairs, and overhauls each item in our workshop.</p>
+        </div>
+        <div class="qp-step">
+          <div class="qp-num">3</div>
+          <h4>Test & Certify</h4>
+          <p>Every product undergoes rigorous testing to ensure full functionality before delivery.</p>
+        </div>
+        <div class="qp-step">
+          <div class="qp-num">4</div>
+          <h4>Pack & Ship</h4>
+          <p>Products are properly packed and shipped worldwide with reliable logistics partners.</p>
         </div>
       </div>
     </div>
@@ -68,25 +149,10 @@ import Icon from '../components/Icon.astro';
     justify-content: center;
     text-align: center;
   }
-  .page-hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-  }
-  .page-hero-content {
-    position: relative;
-    z-index: 1;
-    color: #fff;
-  }
-  .page-hero-content h1 {
-    font-size: 36px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-  .page-hero-content p {
-    font-size: 14px;
-    color: #ddd;
-  }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+  .page-hero-content p { font-size: 14px; color: #ddd; }
 
   .about-grid {
     display: grid;
@@ -112,6 +178,38 @@ import Icon from '../components/Icon.astro';
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
   }
 
+  /* Strength */
+  .strength-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+  }
+  .strength-card {
+    text-align: center;
+    padding: 35px 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+  }
+  .strength-card:hover { transform: translateY(-5px); }
+  .strength-card :global(.strength-icon) {
+    color: #c0392b;
+    margin-bottom: 15px;
+  }
+  .strength-card h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #222;
+  }
+  .strength-card p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  /* What We Offer */
   .offer-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -120,14 +218,12 @@ import Icon from '../components/Icon.astro';
   .offer-card {
     text-align: center;
     padding: 30px 20px;
-    background: #fff;
+    background: #f9f9f9;
     border-radius: 10px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 15px rgba(0,0,0,0.06);
     transition: transform 0.3s;
   }
-  .offer-card:hover {
-    transform: translateY(-5px);
-  }
+  .offer-card:hover { transform: translateY(-5px); }
   .offer-card :global(.offer-icon) {
     color: #c0392b;
     margin-bottom: 15px;
@@ -144,11 +240,60 @@ import Icon from '../components/Icon.astro';
     line-height: 1.6;
   }
 
+  /* Quality Policy */
+  .qp-text {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 40px;
+    font-size: 15px;
+    color: #bbb;
+    line-height: 1.8;
+  }
+  .qp-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+  }
+  .qp-step {
+    text-align: center;
+    padding: 30px 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .qp-num {
+    width: 50px;
+    height: 50px;
+    background: #c0392b;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 auto 15px;
+  }
+  .qp-step h4 {
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .qp-step p {
+    font-size: 13px;
+    color: #999;
+    line-height: 1.6;
+  }
+
   @media (max-width: 768px) {
     .about-grid { grid-template-columns: 1fr; }
     .offer-grid { grid-template-columns: repeat(2, 1fr); }
+    .strength-grid { grid-template-columns: repeat(2, 1fr); }
+    .qp-steps { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 480px) {
     .offer-grid { grid-template-columns: 1fr; }
+    .strength-grid { grid-template-columns: 1fr; }
+    .qp-steps { grid-template-columns: 1fr; }
   }
 </style>

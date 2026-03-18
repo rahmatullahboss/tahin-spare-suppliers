@@ -16,6 +16,7 @@ body {
   color: #333;
   line-height: 1.6;
   background: #fff;
+  overflow-x: hidden;
 }
 
 img {
@@ -61,36 +62,170 @@ h1, h2, h3, h4 {
   margin-bottom: 30px;
 }
 
-/* Buttons */
+/* ═══════════════════════════════════════════════
+   BUTTON SYSTEM — Single Color, Minimal
+   ═══════════════════════════════════════════════ */
 .btn {
   display: inline-block;
-  padding: 10px 28px;
+  padding: 12px 32px;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
   border: none;
   text-decoration: none;
   font-family: var(--font-inter), 'Inter', sans-serif;
+  letter-spacing: 0.3px;
 }
 
 .btn-primary {
-  background: #e67e22;
+  background: #c0392b;
   color: #fff;
 }
 
 .btn-primary:hover {
-  background: #d35400;
+  background: #a93226;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-outline {
   background: transparent;
   color: #fff;
-  border: 2px solid #fff;
+  border: 2px solid rgba(255, 255, 255, 0.7);
 }
 
 .btn-outline:hover {
   background: #fff;
   color: #333;
+  border-color: #fff;
+}
+
+/* ═══════════════════════════════════════════════
+   SCROLL REVEAL — Subtle, Minimal
+   ═══════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(25px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered children */
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal-stagger.visible > *:nth-child(1) { transition-delay: 0.03s; }
+.reveal-stagger.visible > *:nth-child(2) { transition-delay: 0.06s; }
+.reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.09s; }
+.reveal-stagger.visible > *:nth-child(4) { transition-delay: 0.12s; }
+.reveal-stagger.visible > *:nth-child(5) { transition-delay: 0.15s; }
+.reveal-stagger.visible > *:nth-child(6) { transition-delay: 0.18s; }
+.reveal-stagger.visible > *:nth-child(7) { transition-delay: 0.21s; }
+.reveal-stagger.visible > *:nth-child(8) { transition-delay: 0.24s; }
+.reveal-stagger.visible > *:nth-child(9) { transition-delay: 0.27s; }
+.reveal-stagger.visible > *:nth-child(10) { transition-delay: 0.3s; }
+.reveal-stagger.visible > *:nth-child(11) { transition-delay: 0.33s; }
+.reveal-stagger.visible > *:nth-child(12) { transition-delay: 0.36s; }
+
+.reveal-stagger.visible > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide from left/right */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-left.visible,
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Scale up */
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ═══════════════════════════════════════════════
+   SUBTLE MICRO-INTERACTION UTILITIES
+   ═══════════════════════════════════════════════ */
+
+/* Image zoom on hover */
+.img-zoom {
+  overflow: hidden;
+}
+.img-zoom img {
+  transition: transform 0.5s ease;
+}
+.img-zoom:hover img {
+  transform: scale(1.05);
+}
+
+/* Section title underline */
+.section-title {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+.section-title::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 3px;
+  background: #c0392b;
+  margin: 10px auto 0;
+  transition: width 0.6s ease;
+}
+.section-title.visible::after,
+.reveal.visible .section-title::after,
+.visible .section-title::after {
+  width: 50px;
+}
+
+/* Smooth page entrance */
+main {
+  animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Focus states */
+.btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid #c0392b;
+  outline-offset: 3px;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(192, 57, 43, 0.15);
+  color: #1a1a2e;
 }

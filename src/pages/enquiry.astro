@@ -6,7 +6,7 @@ import Icon from '../components/Icon.astro';
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
-      <h1>Enquiry</h1>
+      <h1>Request a Quote</h1>
       <p>Home / Enquiry</p>
     </div>
   </section>
@@ -14,15 +14,16 @@ import Icon from '../components/Icon.astro';
   <section class="section">
     <div class="container">
       <div class="enquiry-grid">
-        <div class="enquiry-info">
+        <div class="enquiry-info reveal-left">
           <h2>Make an Enquiry</h2>
-          <p>Looking for specific marine spare parts or equipment? Fill out the form and our team will get back to you with a price quote within 24 hours.</p>
+          <p>Looking for specific marine engines, generators, spare parts or equipment? Fill out the form and our team will get back to you with a price quote within 24 hours.</p>
           <div class="info-items">
             <div class="info-item">
               <Icon name="phone-alt" size={20} class="info-icon" />
               <div>
                 <h4>Call Us</h4>
-                <p>+880 1674-784019</p>
+                <p>+88-01674784019</p>
+                <p>+88-01710917904</p>
               </div>
             </div>
             <div class="info-item">
@@ -30,6 +31,13 @@ import Icon from '../components/Icon.astro';
               <div>
                 <h4>Email Us</h4>
                 <p>tahinship@gmail.com</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <Icon name="map-marker-alt" size={20} class="info-icon" />
+              <div>
+                <h4>Our Location</h4>
+                <p>Kadamrasul (Saleh Carpet), D.T. Road, Bhatiary, Sitakunda, Chattogram, Bangladesh</p>
               </div>
             </div>
             <div class="info-item">
@@ -41,7 +49,7 @@ import Icon from '../components/Icon.astro';
             </div>
           </div>
         </div>
-        <div class="enquiry-form-wrap">
+        <div class="enquiry-form-wrap reveal-right">
           <form class="enquiry-form">
             <div class="form-group">
               <label for="name">Your Name *</label>
@@ -56,12 +64,23 @@ import Icon from '../components/Icon.astro';
               <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" />
             </div>
             <div class="form-group">
-              <label for="subject">Subject *</label>
-              <input type="text" id="subject" name="subject" required placeholder="What is your enquiry about?" />
+              <label for="product">Product Category</label>
+              <select id="product" name="product">
+                <option value="">Select a category</option>
+                <option value="marine-engines">Marine Engines</option>
+                <option value="diesel-generators">Diesel Generators</option>
+                <option value="hydraulic-equipment">Hydraulic Crane Equipment</option>
+                <option value="turbochargers">Turbochargers</option>
+                <option value="pumps-compressors">Pumps & Compressors</option>
+                <option value="heat-exchangers">Heat Exchangers & FW Generators</option>
+                <option value="spare-parts">Engine Spare Parts</option>
+                <option value="ms-plates">MS Plates & Steel</option>
+                <option value="other">Other</option>
+              </select>
             </div>
             <div class="form-group full-width">
               <label for="message">Your Message *</label>
-              <textarea id="message" name="message" rows="5" required placeholder="Describe the parts or equipment you need..."></textarea>
+              <textarea id="message" name="message" rows="5" required placeholder="Describe the parts or equipment you need, including model numbers if available..."></textarea>
             </div>
             <button type="submit" class="btn btn-primary">Send Enquiry</button>
           </form>
@@ -139,16 +158,19 @@ import Icon from '../components/Icon.astro';
     margin-bottom: 6px;
   }
   .form-group input,
-  .form-group textarea {
+  .form-group textarea,
+  .form-group select {
     padding: 10px 14px;
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
     font-family: var(--font-inter), 'Inter', sans-serif;
     transition: border-color 0.3s;
+    background: #fff;
   }
   .form-group input:focus,
-  .form-group textarea:focus {
+  .form-group textarea:focus,
+  .form-group select:focus {
     outline: none;
     border-color: #c0392b;
   }

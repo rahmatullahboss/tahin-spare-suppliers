@@ -8,81 +8,202 @@ import Icon from '../components/Icon.astro';
     <img src="/images/hero-bg.webp" alt="" class="hero-bg" fetchpriority="high" loading="eager" decoding="sync" width="1200" height="450" />
     <div class="hero-overlay"></div>
     <div class="hero-content">
-      <h2 class="hero-title">Marine spare parts suppliers from Bangladesh</h2>
-      <p class="hero-subtitle">We have large stock of Automation Equipments</p>
-      <p class="hero-desc">We procure from ship breaking yard and maintain large stock at Bangladesh</p>
-      <a href="/products" class="btn btn-primary">Find Products</a>
+      <h2 class="hero-title">Global Supplier of Reconditioned Marine Engines & Generators</h2>
+      <p class="hero-subtitle">Specialized in Yanmar, Daihatsu & Caterpillar</p>
+      <p class="hero-desc">Ready Stock at Chattogram Ship-Breaking Hub, Bangladesh</p>
+      <div class="hero-btns">
+        <a href="/products" class="btn btn-primary">View Products</a>
+        <a href="/enquiry" class="btn btn-outline">Request Quote</a>
+      </div>
+    </div>
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator">
+      <div class="scroll-mouse">
+        <div class="scroll-wheel"></div>
+      </div>
     </div>
   </section>
 
   <!-- Who We Are -->
   <section class="section who-we-are">
     <div class="container">
-      <h2 class="section-title">WHO WE ARE</h2>
-      <p class="section-subtitle">Leading marine machinery and spares parts supplier in Bangladesh</p>
-      <p class="who-desc">
-        Tahin Spare Suppliers is a company that exports and supplies reconditioned marine navigation and communication equipment and spare parts obtained from a shipbreaking yard in Chittagong, Bangladesh. We specialize in providing high-quality marine equipment at competitive prices, ensuring our customers receive the best value for their investment. Our team of experienced professionals carefully inspects and tests each item before shipping to guarantee functionality and reliability.
+      <h2 class="section-title reveal">WHO WE ARE</h2>
+      <p class="section-subtitle reveal">Leading Marine Machinery & Spare Parts Supplier from Bangladesh</p>
+      <p class="who-desc reveal">
+        Tahin Spare Suppliers is a trusted exporter and supplier of all kinds of reconditioned marine engines, engine spare parts, hydraulic crane equipment, diesel generators, purifiers, turbochargers, air compressors, water pumps, fresh water generators, heat exchangers, prime quality MS plates and all kinds of ship marine products. Located near the Chattogram Ship-Breaking Yards in Sitakunda, Bangladesh, we have direct access to a vast inventory of quality marine equipment at competitive prices.
       </p>
     </div>
   </section>
 
-  <!-- Our Stock Spares -->
+  <!-- Our Products -->
   <section class="section stock-spares">
     <div class="container">
-      <h2 class="stock-title">Our Stock Spares</h2>
-      <p class="stock-subtitle">Search you product from our stock or contact us for your inquiry</p>
-      <div class="stock-grid">
-        <div class="stock-card">
+      <h2 class="stock-title reveal">Our Products</h2>
+      <p class="stock-subtitle reveal">Your one-stop solution for reconditioned marine engines & equipment</p>
+      <div class="stock-grid reveal-stagger">
+        <a href="/products" class="stock-card">
           <div class="stock-card-img">
-            <img src="/images/engine.webp" alt="Engine & Machineries" />
+            <img src="/images/marine-engine.webp" alt="Marine Engines" loading="lazy" />
           </div>
-          <h3>Engine & Machineries</h3>
-          <p>Main / Aux Engines : B&W, MITSUBISHI, SULZER, MAK, DEUTZ, MWM, PIELSTICK, DAIHATSU, YANMAR, MAN, CATERPILLAR, MTU, SKL.</p>
+          <div class="stock-card-overlay">
+            <span class="stock-card-tag">Engines</span>
+            <h3>Marine Engines</h3>
+            <p>Yanmar, Daihatsu, Caterpillar, MAN B&W, Sulzer, MAK, Deutz, MTU</p>
+            <span class="stock-card-cta">Explore →</span>
+          </div>
+        </a>
+        <a href="/products" class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/diesel-generator.webp" alt="Diesel Generator Sets" loading="lazy" />
+          </div>
+          <div class="stock-card-overlay">
+            <span class="stock-card-tag">Generators</span>
+            <h3>Diesel Generator Sets</h3>
+            <p>Caterpillar, Cummins — 50 KVA to 2000 KVA</p>
+            <span class="stock-card-cta">Explore →</span>
+          </div>
+        </a>
+        <a href="/products" class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/hydraulic-crane.webp" alt="Hydraulic Crane Equipment" loading="lazy" />
+          </div>
+          <div class="stock-card-overlay">
+            <span class="stock-card-tag">Hydraulic</span>
+            <h3>Hydraulic Crane Equipment</h3>
+            <p>Winches, deck cranes, luffing gears & complete systems</p>
+            <span class="stock-card-cta">Explore →</span>
+          </div>
+        </a>
+        <a href="/products" class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/turbocharger.webp" alt="Turbochargers" loading="lazy" />
+          </div>
+          <div class="stock-card-overlay">
+            <span class="stock-card-tag">Turbo</span>
+            <h3>Turbochargers</h3>
+            <p>ABB, MHI, IHI, Napier — all marine engine types</p>
+            <span class="stock-card-cta">Explore →</span>
+          </div>
+        </a>
+        <a href="/products" class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/pump-compressor.webp" alt="Pumps & Compressors" loading="lazy" />
+          </div>
+          <div class="stock-card-overlay">
+            <span class="stock-card-tag">Auxiliary</span>
+            <h3>Pumps & Compressors</h3>
+            <p>Water pumps, air compressors, purifiers & more</p>
+            <span class="stock-card-cta">Explore →</span>
+          </div>
+        </a>
+        <a href="/products" class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/heat-exchanger.webp" alt="Heat Exchangers & FW Generators" loading="lazy" />
+          </div>
+          <div class="stock-card-overlay">
+            <span class="stock-card-tag">Thermal</span>
+            <h3>Heat Exchangers & FW Generators</h3>
+            <p>Fresh water generators, coolers & condensers</p>
+            <span class="stock-card-cta">Explore →</span>
+          </div>
+        </a>
+        <a href="/products" class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/spare-parts.webp" alt="Engine Spare Parts" loading="lazy" />
+          </div>
+          <div class="stock-card-overlay">
+            <span class="stock-card-tag">Parts</span>
+            <h3>Engine Spare Parts</h3>
+            <p>Pistons, liners, bearings, gaskets, valves & more</p>
+            <span class="stock-card-cta">Explore →</span>
+          </div>
+        </a>
+        <a href="/products" class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/engine.webp" alt="MS Plates & Steel" loading="lazy" />
+          </div>
+          <div class="stock-card-overlay">
+            <span class="stock-card-tag">Steel</span>
+            <h3>MS Plates & Steel</h3>
+            <p>Prime quality MS plates and ship-grade materials</p>
+            <span class="stock-card-cta">Explore →</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Our Services -->
+  <section class="section services-section">
+    <div class="container">
+      <h2 class="section-title reveal" style="color:#222;">OUR SERVICES</h2>
+      <p class="section-subtitle reveal">A well-equipped workshop with a skilled team</p>
+      <div class="services-grid reveal-stagger">
+        <a href="/services" class="service-card">
+          <div class="service-icon"><Icon name="ship" size={40} /></div>
+          <h3>Ship Repair & Rebuilding</h3>
+          <p>Complete ship repair services including engine overhaul, hull repairs, and mechanical system rebuilding with experienced technicians.</p>
+        </a>
+        <a href="/services" class="service-card">
+          <div class="service-icon"><Icon name="cogs" size={40} /></div>
+          <h3>Ship Breaking & Recycling</h3>
+          <p>Safe and efficient ship dismantling and recycling services at the Chattogram Ship-Breaking Yards.</p>
+        </a>
+        <a href="/services" class="service-card">
+          <div class="service-icon"><Icon name="tools" size={40} /></div>
+          <h3>Engine Repower / Rebuilding</h3>
+          <p>Expert engine reconditioning, overhauling, testing and rebuilding for all major marine engine brands.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workshop & Facility -->
+  <section class="workshop-section">
+    <div class="ws-overlay"></div>
+    <div class="container ws-content">
+      <div class="ws-grid">
+        <div class="ws-text reveal-left">
+          <h2>Our Workshop & Facility</h2>
+          <p>Tahin Spare Suppliers has a well-organized workshop at Sitakunda, near the Chattogram Ship-Breaking Yards. Our team of qualified and experienced workers handles proper dismantling, repairing, overhauling, assembling and testing of marine engines and other marine parts.</p>
+          <ul class="ws-features">
+            <li><Icon name="check" size={14} class="ws-check" /> Ready stock of reconditioned equipment</li>
+            <li><Icon name="check" size={14} class="ws-check" /> Skilled workforce with years of experience</li>
+            <li><Icon name="check" size={14} class="ws-check" /> Quality testing before delivery</li>
+            <li><Icon name="check" size={14} class="ws-check" /> Worldwide export capabilities</li>
+            <li><Icon name="check" size={14} class="ws-check" /> Competitive pricing from ship-breaking source</li>
+          </ul>
+          <a href="/contact" class="btn btn-primary">Get in Touch</a>
         </div>
-        <div class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/marine-electrical.webp" alt="Marine electrical devices" />
-          </div>
-          <h3>Marine electrical devices</h3>
-          <p>We have stock of Radar (JRC JMA-9923 7XA, JRC JMA-9922 6XA) Gyro compass TG-5000 & (STD 22,31,14,12,06,04) and many more</p>
-        </div>
-        <div class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/automation.webp" alt="Automation Equipments" />
-          </div>
-          <h3>Automation Equipments</h3>
-          <p>Our major stock contains Nor Control / Kongsberg / Lyngsø Marine Automation & spares. We possess the largest inventory</p>
-        </div>
-        <div class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/marine-electronics.webp" alt="Marine Electronics equipments" />
-          </div>
-          <h3>Marine Electronics equipments</h3>
-          <p>Main / Aux Engines : B&W, MITSUBISHI, SULZER, MAK, DEUTZ, MWM, PIELSTICK, DAIHATSU, YANMAR, MAN, CATERPILLAR, MTU, SKL.</p>
+        <div class="ws-image reveal-right img-zoom">
+          <img src="/images/shipbreaking-yard.webp" alt="Chattogram Ship Breaking Yard" loading="lazy" />
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Product & Services -->
+  <!-- Product & Services CTA -->
   <section class="product-services">
     <div class="ps-overlay"></div>
     <div class="container ps-content">
-      <h2 class="ps-title">Product & Services</h2>
-      <p class="ps-contact">For price quote pls call us: +880 1674-784019 or mail: tahinship@gmail.com</p>
-      <div class="ps-carousel">
+      <h2 class="ps-title reveal-scale">Looking for Marine Equipment?</h2>
+      <p class="ps-contact reveal">Call us: +88-01674784019 / +88-01710917904 or Email: tahinship@gmail.com</p>
+      <div class="ps-carousel reveal">
         <div class="ps-carousel-track">
           <div class="ps-card">
-            <img src="/images/marine-electrical.webp" alt="Radar System" />
+            <img src="/images/marine-engine.webp" alt="Marine Engine" loading="lazy" />
           </div>
           <div class="ps-card">
-            <img src="/images/automation.webp" alt="Navigation Equipment" />
+            <img src="/images/diesel-generator.webp" alt="Diesel Generator" loading="lazy" />
           </div>
           <div class="ps-card">
-            <img src="/images/marine-electronics.webp" alt="Marine Electronics" />
+            <img src="/images/turbocharger.webp" alt="Turbocharger" loading="lazy" />
           </div>
           <div class="ps-card">
-            <img src="/images/engine.webp" alt="Engine Parts" />
+            <img src="/images/hydraulic-crane.webp" alt="Hydraulic Crane" loading="lazy" />
+          </div>
+          <div class="ps-card">
+            <img src="/images/spare-parts.webp" alt="Spare Parts" loading="lazy" />
           </div>
         </div>
         <button class="ps-nav ps-prev" aria-label="Previous"><Icon name="chevron-left" size={16} /></button>
@@ -95,40 +216,50 @@ import Icon from '../components/Icon.astro';
   <section class="section why-choose">
     <div class="container">
       <div class="why-grid">
-        <div class="why-accordion">
+        <div class="why-accordion reveal-left">
           <h2 class="why-title">WHY CHOOSE US?</h2>
           <div class="accordion-item">
             <button class="accordion-btn active">
               <Icon name="plus" size={12} class="acc-plus" />
-              <span>Large inventory of spares</span>
+              <span>Ready inventory & large stock</span>
               <Icon name="chevron-right" size={12} class="accordion-arrow" />
             </button>
             <div class="accordion-content open">
-              <p>We maintain one of the largest inventories of marine spare parts in Bangladesh, sourced from ship breaking yards in Chittagong. Our warehouse contains thousands of items ready for immediate dispatch.</p>
+              <p>We maintain one of the largest inventories of reconditioned marine engines, generators, and spare parts in Bangladesh, sourced directly from the Chattogram Ship-Breaking Yards. Ready stock available for immediate dispatch.</p>
             </div>
           </div>
           <div class="accordion-item">
             <button class="accordion-btn">
               <Icon name="plus" size={12} class="acc-plus" />
-              <span>We make sure for timely delivery</span>
+              <span>Specialized in top brands</span>
               <Icon name="chevron-right" size={12} class="accordion-arrow" />
             </button>
             <div class="accordion-content">
-              <p>Our logistics team ensures your orders are processed and shipped within the shortest possible time. We partner with reliable shipping companies to deliver worldwide.</p>
+              <p>We specialize in Yanmar, Daihatsu, and Caterpillar marine engines and generators. Our team has deep expertise in these brands, ensuring you get properly reconditioned, tested equipment.</p>
             </div>
           </div>
           <div class="accordion-item">
             <button class="accordion-btn">
               <Icon name="plus" size={12} class="acc-plus" />
-              <span>Well managed & Vast experience</span>
+              <span>Skilled workforce & quality testing</span>
               <Icon name="chevron-right" size={12} class="accordion-arrow" />
             </button>
             <div class="accordion-content">
-              <p>With years of experience in the marine spare parts industry, our team has the expertise to help you find exactly what you need. We ensure quality and reliability in every transaction.</p>
+              <p>Every item is carefully inspected, tested, and reconditioned by our experienced technicians before shipping. We guarantee functionality and reliability of all our products.</p>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <button class="accordion-btn">
+              <Icon name="plus" size={12} class="acc-plus" />
+              <span>Worldwide export & timely delivery</span>
+              <Icon name="chevron-right" size={12} class="accordion-arrow" />
+            </button>
+            <div class="accordion-content">
+              <p>We export marine equipment worldwide. Our logistics team ensures prompt processing and shipping through reliable international carriers, delivering to your location on time.</p>
             </div>
           </div>
         </div>
-        <div class="why-badge">
+        <div class="why-badge reveal-right">
           <img src="/images/satisfaction.webp" alt="100% Customer Satisfaction Guaranteed" />
         </div>
       </div>
@@ -140,7 +271,7 @@ import Icon from '../components/Icon.astro';
   /* Hero Section */
   .hero {
     position: relative;
-    height: 450px;
+    height: 550px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -154,35 +285,86 @@ import Icon from '../components/Icon.astro';
     height: 100%;
     object-fit: cover;
     z-index: 0;
+    will-change: transform;
   }
   .hero-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: linear-gradient(135deg, rgba(26,26,46,0.75), rgba(0,0,0,0.5));
   }
   .hero-content {
     position: relative;
     z-index: 1;
     padding: 20px;
+    animation: heroFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes heroFadeIn {
+    from { opacity: 0; transform: translateY(35px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
   .hero-title {
     color: #fff;
-    font-size: 32px;
+    font-size: 38px;
     font-weight: 700;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     font-family: var(--font-inter), 'Inter', sans-serif;
+    max-width: 750px;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
   .hero-subtitle {
-    color: #f1c40f;
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 600;
     margin-bottom: 8px;
   }
   .hero-desc {
     color: #ddd;
-    font-size: 14px;
-    margin-bottom: 25px;
+    font-size: 15px;
+    margin-bottom: 30px;
   }
+  .hero-btns {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Scroll Indicator */
+  .scroll-indicator {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    animation: scrollBounce 2s ease-in-out infinite;
+  }
+  .scroll-mouse {
+    width: 24px;
+    height: 40px;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    padding-top: 6px;
+  }
+  .scroll-wheel {
+    width: 4px;
+    height: 10px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 2px;
+    animation: scrollWheel 2s ease-in-out infinite;
+  }
+  @keyframes scrollBounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+  @keyframes scrollWheel {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(10px); }
+  }
+
+
 
   /* Who We Are */
   .who-we-are {
@@ -190,14 +372,14 @@ import Icon from '../components/Icon.astro';
     background: #fff;
   }
   .who-desc {
-    max-width: 800px;
+    max-width: 850px;
     margin: 0 auto;
-    font-size: 14px;
+    font-size: 15px;
     color: #555;
     line-height: 1.8;
   }
 
-  /* Stock Spares */
+  /* Stock Spares / Products — Premium Overlay Cards */
   .stock-spares {
     background: #f9f9f9;
   }
@@ -218,45 +400,231 @@ import Icon from '../components/Icon.astro';
   .stock-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
+    gap: 20px;
   }
   .stock-card {
-    text-align: center;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    display: block;
+    height: 280px;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                box-shadow 0.5s ease;
+    will-change: transform;
   }
   .stock-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
   }
   .stock-card-img {
-    height: 150px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 15px;
-    overflow: hidden;
+    position: absolute;
+    inset: 0;
   }
   .stock-card-img img {
-    max-height: 140px;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.33, 1, 0.68, 1),
+                filter 0.5s ease;
+  }
+  .stock-card:hover .stock-card-img img {
+    transform: scale(1.15);
+    filter: brightness(0.6);
+  }
+  .stock-card-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 24px 20px;
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 30, 0.9) 0%,
+      rgba(10, 10, 30, 0.4) 50%,
+      transparent 100%
+    );
+    transition: background 0.5s ease;
+  }
+  .stock-card:hover .stock-card-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 30, 0.95) 0%,
+      rgba(10, 10, 30, 0.6) 60%,
+      rgba(10, 10, 30, 0.2) 100%
+    );
+  }
+  .stock-card-tag {
+    display: inline-block;
+    background: rgba(192, 57, 43, 0.85);
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    width: fit-content;
+    backdrop-filter: blur(4px);
+    transition: background 0.3s, transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .stock-card:hover .stock-card-tag {
+    background: #c0392b;
+    transform: translateY(-3px);
   }
   .stock-card h3 {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
-    color: #222;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .stock-card:hover h3 {
+    transform: translateY(-3px);
   }
   .stock-card p {
     font-size: 12px;
-    color: #c0392b;
-    line-height: 1.6;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.5;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                opacity 0.4s ease 0.1s;
+  }
+  .stock-card:hover p {
+    max-height: 60px;
+    opacity: 1;
+  }
+  .stock-card-cta {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    margin-top: 8px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: opacity 0.4s ease 0.15s,
+                transform 0.4s cubic-bezier(0.33, 1, 0.68, 1) 0.15s;
+  }
+  .stock-card:hover .stock-card-cta {
+    opacity: 1;
+    transform: translateX(0);
   }
 
-  /* Product & Services */
+  /* Services Section */
+  .services-section {
+    background: #fff;
+  }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+  }
+  .service-card {
+    text-align: center;
+    padding: 40px 25px;
+    background: #f9f9f9;
+    border-radius: 14px;
+    transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1),
+                box-shadow 0.4s ease,
+                background 0.3s;
+    display: block;
+    color: inherit;
+    border: 1px solid transparent;
+  }
+  .service-card:hover {
+    transform: translateY(-8px);
+    background: #fff;
+    border-color: rgba(192, 57, 43, 0.1);
+  }
+  .service-icon {
+    color: #c0392b;
+    margin-bottom: 20px;
+  }
+  .service-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 12px;
+    transition: color 0.3s;
+  }
+  .service-card:hover h3 {
+    color: #c0392b;
+  }
+  .service-card p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.7;
+  }
+
+  /* Workshop Section */
+  .workshop-section {
+    position: relative;
+    background: #1a1a2e;
+    padding: 80px 0;
+    overflow: hidden;
+  }
+  .ws-content {
+    position: relative;
+    z-index: 1;
+  }
+  .ws-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  .ws-text h2 {
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    font-family: var(--font-playfair), 'Playfair Display', serif;
+  }
+  .ws-text p {
+    font-size: 15px;
+    color: #bbb;
+    line-height: 1.8;
+    margin-bottom: 25px;
+  }
+  .ws-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px;
+  }
+  .ws-features li {
+    color: #ddd;
+    font-size: 14px;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.3s ease, color 0.3s;
+  }
+  .ws-features li:hover {
+    transform: translateX(6px);
+    color: #fff;
+  }
+  .ws-features :global(.ws-check) {
+    color: #2ecc71;
+    flex-shrink: 0;
+  }
+  .ws-image img {
+    width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    transition: transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .ws-image:hover img {
+    transform: scale(1.05);
+  }
+
+  /* Product & Services CTA */
   .product-services {
     position: relative;
     background: url('/images/hero-bg.webp') center/cover no-repeat;
@@ -265,7 +633,7 @@ import Icon from '../components/Icon.astro';
   .ps-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(80, 20, 120, 0.75);
+    background: linear-gradient(135deg, rgba(80, 20, 120, 0.8), rgba(30, 10, 80, 0.85));
   }
   .ps-content {
     position: relative;
@@ -280,7 +648,7 @@ import Icon from '../components/Icon.astro';
   }
   .ps-contact {
     text-align: center;
-    color: #f1c40f;
+    color: rgba(255,255,255,0.85);
     font-size: 14px;
     margin-bottom: 30px;
   }
@@ -290,26 +658,31 @@ import Icon from '../components/Icon.astro';
   }
   .ps-carousel-track {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     justify-content: center;
     flex-wrap: wrap;
   }
   .ps-card {
     width: 200px;
-    height: 160px;
-    background: #fff;
-    border-radius: 8px;
+    height: 150px;
+    border-radius: 10px;
     overflow: hidden;
     flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+  }
+  .ps-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
   }
   .ps-card img {
-    max-height: 140px;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .ps-card:hover img {
+    transform: scale(1.05);
   }
   .ps-nav {
     position: absolute;
@@ -326,11 +699,14 @@ import Icon from '../components/Icon.astro';
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.3s;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 2;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
   }
   .ps-nav:hover {
     background: #fff;
+    transform: translateY(-50%) scale(1.15);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
   .ps-prev { left: 10px; }
   .ps-next { right: 10px; }
@@ -368,21 +744,31 @@ import Icon from '../components/Icon.astro';
     color: #333;
     cursor: pointer;
     font-family: var(--font-inter), 'Inter', sans-serif;
-    transition: color 0.3s;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 6px;
   }
-  .accordion-btn:hover,
+  .accordion-btn:hover {
+    color: #c0392b;
+    background: rgba(192, 57, 43, 0.04);
+    padding-left: 16px;
+  }
   .accordion-btn.active {
     color: #c0392b;
+    background: rgba(192, 57, 43, 0.06);
   }
   .accordion-btn :global(.acc-plus) {
     color: #c0392b;
     flex-shrink: 0;
+    transition: transform 0.35s ease;
+  }
+  .accordion-btn.active :global(.acc-plus) {
+    transform: rotate(45deg);
   }
   .accordion-arrow {
     margin-left: auto;
     font-size: 12px;
     color: #999;
-    transition: transform 0.3s;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .accordion-btn.active .accordion-arrow {
     transform: rotate(90deg);
@@ -390,7 +776,8 @@ import Icon from '../components/Icon.astro';
   .accordion-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.4s ease;
     padding: 0 10px;
   }
   .accordion-content.open {
@@ -413,20 +800,19 @@ import Icon from '../components/Icon.astro';
 
   /* Responsive */
   @media (max-width: 900px) {
-    .stock-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .why-grid {
-      grid-template-columns: 1fr;
-    }
+    .stock-grid { grid-template-columns: repeat(2, 1fr); }
+    .services-grid { grid-template-columns: 1fr; }
+    .why-grid { grid-template-columns: 1fr; }
+    .ws-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 600px) {
-    .stock-grid {
-      grid-template-columns: 1fr;
-    }
+    .stock-grid { grid-template-columns: 1fr; }
     .hero-title { font-size: 24px; }
-    .hero { height: 350px; }
+    .hero { height: 450px; }
     .ps-carousel-track { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 0 10px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .stat-num { font-size: 28px; }
   }
 </style>
 
@@ -435,10 +821,8 @@ import Icon from '../components/Icon.astro';
   document.querySelectorAll('.accordion-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const wasActive = btn.classList.contains('active');
-      // Close all
       document.querySelectorAll('.accordion-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
-      // Open clicked if wasn't active
       if (!wasActive) {
         btn.classList.add('active');
         btn.closest('.accordion-item')?.querySelector('.accordion-content')?.classList.add('open');

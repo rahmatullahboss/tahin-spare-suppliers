@@ -6,28 +6,37 @@ import Icon from './Icon.astro';
     <div class="footer-container">
       <div class="footer-col">
         <h3>About Us</h3>
-        <p>Tahin Spare Suppliers is a company that exports and supplies reconditioned marine navigation and communication equipment and spare parts obtained from a shipbreaking yard in Chittagong, Bangladesh.</p>
+        <p>Tahin Spare Suppliers is a trusted exporter and supplier of reconditioned marine engines, generators, spare parts and all kinds of ship marine products from the Chattogram Ship-Breaking Hub, Bangladesh.</p>
+      </div>
+      <div class="footer-col">
+        <h3>Products</h3>
+        <ul>
+          <li><a href="/products">Marine Engines</a></li>
+          <li><a href="/products">Diesel Generators</a></li>
+          <li><a href="/products">Hydraulic Equipment</a></li>
+          <li><a href="/products">Turbochargers</a></li>
+          <li><a href="/products">Pumps & Compressors</a></li>
+          <li><a href="/products">Engine Spare Parts</a></li>
+        </ul>
       </div>
       <div class="footer-col">
         <h3>Quick Links</h3>
         <ul>
           <li><a href="/">Home</a></li>
           <li><a href="/about">About Us</a></li>
-          <li><a href="/products">Products</a></li>
-          <li><a href="/enquiry">Enquiry</a></li>
+          <li><a href="/services">Our Services</a></li>
+          <li><a href="/enquiry">Request a Quote</a></li>
           <li><a href="/contact">Contact Us</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h3>Contact Info</h3>
         <ul class="contact-list">
-          <li><Icon name="phone" size={14} class="contact-icon" /> +880 1674-784019</li>
+          <li><Icon name="phone" size={14} class="contact-icon" /> +88-01674784019</li>
+          <li><Icon name="phone" size={14} class="contact-icon" /> +88-01710917904</li>
           <li><Icon name="envelope" size={14} class="contact-icon" /> tahinship@gmail.com</li>
-          <li><Icon name="map-marker-alt" size={14} class="contact-icon" /> Chittagong, Bangladesh</li>
+          <li><Icon name="map-marker-alt" size={14} class="contact-icon" /> Kadamrasul (Saleh Carpet), D.T. Road, Bhatiary, Sitakunda, Chattogram, Bangladesh</li>
         </ul>
-      </div>
-      <div class="footer-col">
-        <h3>Follow Us</h3>
         <div class="footer-social">
           <a href="#" aria-label="Facebook"><Icon name="facebook-f" size={14} /></a>
           <a href="#" aria-label="Twitter"><Icon name="twitter" size={14} /></a>
@@ -37,7 +46,7 @@ import Icon from './Icon.astro';
     </div>
   </div>
   <div class="footer-bottom">
-    <p>&copy; 2024 Tahin Spare Suppliers. All Rights Reserved.</p>
+    <p>&copy; 2026 Tahin Spare Suppliers. All Rights Reserved. | Proprietor: Md. Jamal Uddin</p>
   </div>
 </footer>
 
@@ -54,7 +63,7 @@ import Icon from './Icon.astro';
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1.2fr 1fr 0.8fr 1.2fr;
     gap: 30px;
     padding: 0 20px;
   }
@@ -97,19 +106,22 @@ import Icon from './Icon.astro';
     color: #f1c40f;
   }
   .contact-list li {
-    font-size: 14px;
+    font-size: 13px;
     color: #aaa;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
+    line-height: 1.5;
   }
   .contact-list :global(.contact-icon) {
     color: #c0392b;
     flex-shrink: 0;
+    margin-top: 2px;
   }
   .footer-social {
     display: flex;
     gap: 10px;
+    margin-top: 20px;
   }
   .footer-social a {
     width: 36px;
