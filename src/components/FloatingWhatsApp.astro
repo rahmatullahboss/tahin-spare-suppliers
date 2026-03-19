@@ -1,0 +1,54 @@
+---
+import Icon from './Icon.astro';
+---
+<a
+  href="https://wa.me/8801674784019"
+  class="floating-whatsapp"
+  target="_blank"
+  rel="noopener"
+  aria-label="Chat on WhatsApp"
+  title="Chat on WhatsApp"
+>
+  <Icon name="whatsapp" size={28} />
+</a>
+
+<style>
+  .floating-whatsapp {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 9999;
+    width: 60px;
+    height: 60px;
+    background: #25d366;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+    transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1),
+                box-shadow 0.3s ease;
+    animation: whatsappPulse 2s ease-in-out infinite;
+  }
+  .floating-whatsapp:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
+    animation: none;
+  }
+
+  @keyframes whatsappPulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+    50% { box-shadow: 0 4px 30px rgba(37, 211, 102, 0.7), 0 0 0 10px rgba(37, 211, 102, 0.1); }
+  }
+
+  @media (max-width: 480px) {
+    .floating-whatsapp {
+      width: 52px;
+      height: 52px;
+      bottom: 18px;
+      right: 18px;
+    }
+  }
+</style>

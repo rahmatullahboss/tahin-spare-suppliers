@@ -59,7 +59,7 @@ import Icon from '../components/Icon.astro';
           <div class="stock-card-overlay">
             <span class="stock-card-tag">Generators</span>
             <h3>Diesel Generator Sets</h3>
-            <p>Caterpillar, Cummins — 50 KVA to 2000 KVA</p>
+            <p>Caterpillar, Cummins — 20 KVA to 2000 KVA</p>
             <span class="stock-card-cta">Explore →</span>
           </div>
         </a>
@@ -139,16 +139,6 @@ import Icon from '../components/Icon.astro';
       <h2 class="section-title reveal" style="color:#222;">OUR SERVICES</h2>
       <p class="section-subtitle reveal">A well-equipped workshop with a skilled team</p>
       <div class="services-grid reveal-stagger">
-        <a href="/services" class="service-card">
-          <div class="service-icon"><Icon name="ship" size={40} /></div>
-          <h3>Ship Repair & Rebuilding</h3>
-          <p>Complete ship repair services including engine overhaul, hull repairs, and mechanical system rebuilding with experienced technicians.</p>
-        </a>
-        <a href="/services" class="service-card">
-          <div class="service-icon"><Icon name="cogs" size={40} /></div>
-          <h3>Ship Breaking & Recycling</h3>
-          <p>Safe and efficient ship dismantling and recycling services at the Chattogram Ship-Breaking Yards.</p>
-        </a>
         <a href="/services" class="service-card">
           <div class="service-icon"><Icon name="tools" size={40} /></div>
           <h3>Engine Repower / Rebuilding</h3>
@@ -521,8 +511,8 @@ import Icon from '../components/Icon.astro';
     background: #fff;
   }
   .services-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    justify-content: center;
     gap: 30px;
   }
   .service-card {

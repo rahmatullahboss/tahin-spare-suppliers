@@ -3,6 +3,7 @@ import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import FloatingWhatsApp from '../components/FloatingWhatsApp.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -11,14 +12,14 @@ interface Props {
   preloadImage?: string;
 }
 
-const { title = 'Tahin Spare Suppliers - Supply & Export All Kinds Of Marine Spare Parts', activeNav = 'home', preloadImage } = Astro.props;
+const { title = 'Tahin Spare Suppliers - Supply & Export All Kinds Of Marine Engine & Spare Parts', activeNav = 'home', preloadImage } = Astro.props;
 ---
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Tahin Spare Suppliers - Supply & Export All Kinds Of Marine Spare Parts from Bangladesh. Leading marine machinery and spares parts supplier." />
+    <meta name="description" content="Tahin Spare Suppliers - Supply & Export All Kinds Of Marine Engine & Spare Parts from Bangladesh. Leading marine machinery and spares parts supplier." />
     <Font cssVariable="--font-inter" preload />
     <Font cssVariable="--font-playfair" preload />
     <Font cssVariable="--font-dancing" preload />
@@ -31,6 +32,7 @@ const { title = 'Tahin Spare Suppliers - Supply & Export All Kinds Of Marine Spa
     <main>
       <slot />
     </main>
+    <FloatingWhatsApp />
     <Footer />
     <script>
       // Scroll Reveal — subtle fade-in as sections enter viewport

@@ -22,9 +22,13 @@ import Icon from '../components/Icon.astro';
           <p>Bangladesh (Near Scrap Ship Yard)</p>
         </div>
         <div class="contact-card">
+          <Icon name="whatsapp" size={36} class="contact-icon whatsapp-contact-icon" />
+          <h3>WhatsApp</h3>
+          <p><a href="https://wa.me/8801674784019" target="_blank" rel="noopener">+88-01674784019</a></p>
+        </div>
+        <div class="contact-card">
           <Icon name="phone-alt" size={36} class="contact-icon" />
           <h3>Call Us</h3>
-          <p><a href="tel:+8801674784019">+88-01674784019</a></p>
           <p><a href="tel:+8801710917904">+88-01710917904</a></p>
           <p>Available: Sat - Thu</p>
         </div>
@@ -90,7 +94,7 @@ import Icon from '../components/Icon.astro';
 
   .contact-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 25px;
     margin-bottom: 50px;
   }
@@ -127,6 +131,9 @@ import Icon from '../components/Icon.astro';
   }
   .contact-card a:hover {
     text-decoration: underline;
+  }
+  .contact-card :global(.whatsapp-contact-icon) {
+    color: #25d366;
   }
 
   .contact-form-section {

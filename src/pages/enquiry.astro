@@ -19,10 +19,16 @@ import Icon from '../components/Icon.astro';
           <p>Looking for specific marine engines, generators, spare parts or equipment? Fill out the form and our team will get back to you with a price quote within 24 hours.</p>
           <div class="info-items">
             <div class="info-item">
+              <Icon name="whatsapp" size={20} class="info-icon whatsapp-info-icon" />
+              <div>
+                <h4>WhatsApp</h4>
+                <p><a href="https://wa.me/8801674784019" target="_blank" rel="noopener">+88-01674784019</a></p>
+              </div>
+            </div>
+            <div class="info-item">
               <Icon name="phone-alt" size={20} class="info-icon" />
               <div>
                 <h4>Call Us</h4>
-                <p>+88-01674784019</p>
                 <p>+88-01710917904</p>
               </div>
             </div>
@@ -50,7 +56,8 @@ import Icon from '../components/Icon.astro';
           </div>
         </div>
         <div class="enquiry-form-wrap reveal-right">
-          <form class="enquiry-form">
+          <form class="enquiry-form" id="enquiry-form" action="/api/enquiry" method="POST">
+            <input type="text" name="_gotcha" style="display:none" />
             <div class="form-group">
               <label for="name">Your Name *</label>
               <input type="text" id="name" name="name" required placeholder="Enter your name" />
@@ -67,28 +74,66 @@ import Icon from '../components/Icon.astro';
               <label for="product">Product Category</label>
               <select id="product" name="product">
                 <option value="">Select a category</option>
-                <option value="marine-engines">Marine Engines</option>
-                <option value="diesel-generators">Diesel Generators</option>
-                <option value="hydraulic-equipment">Hydraulic Crane Equipment</option>
-                <option value="turbochargers">Turbochargers</option>
-                <option value="pumps-compressors">Pumps & Compressors</option>
-                <option value="heat-exchangers">Heat Exchangers & FW Generators</option>
-                <option value="spare-parts">Engine Spare Parts</option>
-                <option value="ms-plates">MS Plates & Steel</option>
-                <option value="other">Other</option>
+                <option value="Marine Engines">Marine Engines</option>
+                <option value="Diesel Generators">Diesel Generators</option>
+                <option value="Hydraulic Crane Equipment">Hydraulic Crane Equipment</option>
+                <option value="Turbochargers">Turbochargers</option>
+                <option value="Pumps & Compressors">Pumps & Compressors</option>
+                <option value="Heat Exchangers & FW Generators">Heat Exchangers & FW Generators</option>
+                <option value="Engine Spare Parts">Engine Spare Parts</option>
+                <option value="MS Plates & Steel">MS Plates & Steel</option>
+                <option value="Other">Other</option>
               </select>
             </div>
             <div class="form-group full-width">
               <label for="message">Your Message *</label>
               <textarea id="message" name="message" rows="5" required placeholder="Describe the parts or equipment you need, including model numbers if available..."></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Send Enquiry</button>
+            <button type="submit" class="btn btn-primary" id="submit-btn">Send Enquiry</button>
+            <div class="form-status" id="form-status"></div>
           </form>
         </div>
       </div>
     </div>
   </section>
 </MainLayout>
+
+<script>
+  const form = document.getElementById('enquiry-form') as HTMLFormElement;
+  const statusEl = document.getElementById('form-status') as HTMLElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    statusEl.className = 'form-status';
+    statusEl.textContent = '';
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (res.ok) {
+        statusEl.textContent = '✅ Your enquiry has been sent successfully! We will get back to you within 24 hours.';
+        statusEl.className = 'form-status success';
+        form.reset();
+      } else {
+        statusEl.textContent = '❌ Something went wrong. Please try again or email us directly at tahinship@gmail.com';
+        statusEl.className = 'form-status error';
+      }
+    } catch {
+      statusEl.textContent = '❌ Network error. Please try again or email us directly at tahinship@gmail.com';
+      statusEl.className = 'form-status error';
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send Enquiry';
+  });
+</script>
 
 <style>
   .page-hero {
@@ -132,6 +177,17 @@ import Icon from '../components/Icon.astro';
     color: #c0392b;
     margin-top: 3px;
     flex-shrink: 0;
+  }
+  .info-item :global(.whatsapp-info-icon) {
+    color: #25d366;
+  }
+  .info-item a {
+    color: #c0392b;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .info-item a:hover {
+    text-decoration: underline;
   }
   .info-item h4 {
     font-size: 15px;
@@ -177,6 +233,25 @@ import Icon from '../components/Icon.astro';
   .enquiry-form .btn {
     grid-column: 1 / -1;
     justify-self: start;
+  }
+  .form-status {
+    grid-column: 1 / -1;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    display: none;
+  }
+  .form-status.success {
+    display: block;
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  .form-status.error {
+    display: block;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
   }
 
   @media (max-width: 768px) {
