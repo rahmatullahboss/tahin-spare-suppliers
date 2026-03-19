@@ -5,9 +5,22 @@ import Icon from './Icon.astro';
   <div class="header-container">
     <div class="logo">
       <div class="logo-icon">
-        <div class="logo-circle">
-          <span class="logo-t">T</span>
-        </div>
+        <!-- Tahin Spare Suppliers — real logo recreation -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="56" height="56" aria-label="Tahin Spare Suppliers Logo">
+          <!-- White circle base -->
+          <circle cx="30" cy="30" r="28" fill="#fff" stroke="#222" stroke-width="2.5"/>
+          <!-- Red upper semicircle (above T crossbar at y=32) -->
+          <clipPath id="top-clip">
+            <rect x="0" y="2" width="60" height="30"/>
+          </clipPath>
+          <circle cx="30" cy="30" r="27.5" fill="#cc0000" clip-path="url(#top-clip)"/>
+          <!-- White T crossbar (horizontal bar spanning the circle middle) -->
+          <rect x="10" y="26" width="40" height="8" fill="#fff" rx="1"/>
+          <!-- Red T stem (vertical bar below crossbar) -->
+          <rect x="23" y="34" width="14" height="20" fill="#cc0000" rx="1"/>
+          <!-- Clip the stem to the circle boundary -->
+          <circle cx="30" cy="30" r="27.5" fill="none" stroke="#222" stroke-width="2.5"/>
+        </svg>
       </div>
       <div class="logo-text">
         <h1 class="company-name">Tahin Spare Suppliers</h1>
@@ -42,22 +55,9 @@ import Icon from './Icon.astro';
     align-items: center;
     gap: 12px;
   }
-  .logo-circle {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #cc0000, #990000);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 3px solid #fff;
-    box-shadow: 0 0 0 2px #cc0000;
-  }
-  .logo-t {
-    color: #fff;
-    font-size: 24px;
-    font-weight: 700;
-    font-family: var(--font-inter), 'Inter', sans-serif;
+  .logo-icon svg {
+    display: block;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
   }
   .company-name {
     font-family: var(--font-dancing), 'Dancing Script', cursive;
