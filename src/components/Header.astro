@@ -1,5 +1,9 @@
 ---
 import Icon from './Icon.astro';
+interface Props {
+  activeNav?: string;
+}
+const { activeNav = 'home' } = Astro.props;
 ---
 <header class="top-header">
   <div class="header-container">
@@ -27,20 +31,43 @@ import Icon from './Icon.astro';
         <p class="company-tagline">Supply & Export All Kinds Of Marine Engine & Spare Parts</p>
       </div>
     </div>
-    <div class="social-icons">
-      <a href="#" class="social-icon facebook" aria-label="Facebook"><Icon name="facebook-f" size={14} /></a>
-      <a href="#" class="social-icon twitter" aria-label="Twitter"><Icon name="twitter" size={14} /></a>
-      <a href="#" class="social-icon youtube" aria-label="YouTube"><Icon name="youtube" size={14} /></a>
-      <a href="https://www.linkedin.com/in/tahin-spare-suppliers-a65b133a8/" class="social-icon linkedin" aria-label="LinkedIn" target="_blank" rel="noopener"><Icon name="linkedin-in" size={14} /></a>
+
+    <nav class="header-nav">
+      <ul class="nav-links">
+        <li><a href="/" class:list={[{ active: activeNav === 'home' }]}>Home</a></li>
+        <li><a href="/products" class:list={[{ active: activeNav === 'products' }]}>Equipments</a></li>
+        <li><a href="/services" class:list={[{ active: activeNav === 'services' }]}>Our Services</a></li>
+        <li><a href="/enquiry" class:list={[{ active: activeNav === 'enquiry' }]}>Enquiry</a></li>
+        <li><a href="/about" class:list={[{ active: activeNav === 'about' }]}>About Us</a></li>
+        <li><a href="/contact" class:list={[{ active: activeNav === 'contact' }]}>Contact Us</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-right">
+      <div class="social-icons">
+        <a href="#" class="social-icon facebook" aria-label="Facebook"><Icon name="facebook-f" size={14} /></a>
+        <a href="#" class="social-icon twitter" aria-label="Twitter"><Icon name="twitter" size={14} /></a>
+        <a href="#" class="social-icon youtube" aria-label="YouTube"><Icon name="youtube" size={14} /></a>
+        <a href="https://www.linkedin.com/in/tahin-spare-suppliers-a65b133a8/" class="social-icon linkedin" aria-label="LinkedIn" target="_blank" rel="noopener"><Icon name="linkedin-in" size={14} /></a>
+      </div>
+      <button class="mobile-menu-btn" aria-label="Menu">
+        <Icon name="bars" size={24} />
+      </button>
     </div>
   </div>
 </header>
+
+
 
 <style>
   .top-header {
     background: #fff;
     padding: 12px 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 2px solid #cc0000;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   }
   .header-container {
     max-width: 1200px;
@@ -54,6 +81,7 @@ import Icon from './Icon.astro';
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0;
   }
   .logo-icon svg {
     display: block;
@@ -73,6 +101,64 @@ import Icon from './Icon.astro';
     margin: 0;
     font-family: var(--font-inter), 'Inter', sans-serif;
   }
+
+  /* Navigation Styles */
+  .header-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0 10px;
+  }
+  .nav-links {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+  }
+  .nav-links li {
+    display: flex;
+    align-items: center;
+  }
+  .nav-links a {
+    color: #333;
+    text-decoration: none;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: var(--font-inter), 'Inter', sans-serif;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    letter-spacing: 0.8px;
+  }
+  .nav-links a:hover {
+    color: #cc0000;
+  }
+  .nav-links a.active {
+    color: #cc0000;
+    background: transparent;
+    position: relative;
+  }
+  .nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 14px;
+    right: 14px;
+    height: 2px;
+    background: #cc0000;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-shrink: 0;
+  }
+
   .social-icons {
     display: flex;
     gap: 6px;
@@ -87,18 +173,122 @@ import Icon from './Icon.astro';
     color: #fff;
     font-size: 14px;
     text-decoration: none;
-    transition: opacity 0.3s;
+    transition: transform 0.3s;
   }
   .social-icon:hover {
-    opacity: 0.8;
+    transform: translateY(-2px);
   }
   .social-icon.facebook { background: #3b5998; }
   .social-icon.twitter { background: #1da1f2; }
   .social-icon.youtube { background: #ff0000; }
   .social-icon.linkedin { background: #0077b5; }
 
+  .mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #cc0000;
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  @media (max-width: 1024px) {
+    .header-nav {
+      display: block; /* Ensure the container is NOT hidden, as it holds the child nav-links */
+      width: 0;
+      height: 0;
+      position: absolute; /* Take no space in the header row */
+    }
+    
+    .mobile-menu-btn {
+      display: block;
+    }
+
+    /* Target the nav-links directly for mobile */
+    .nav-links {
+      display: none;
+      flex-direction: column;
+      position: fixed; /* Better for mobile menus to be fixed or overlay */
+      top: 80px; /* Adjust to header height */
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-top: 2px solid #cc0000;
+      padding: 0;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+      z-index: 9999;
+      width: 100%;
+    }
+
+    .nav-links.open {
+      display: flex !important;
+    }
+
+    .nav-links li {
+       width: 100%;
+    }
+
+    .nav-links a {
+      width: 100%;
+      padding: 16px 25px;
+      border-radius: 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 15px;
+      color: #222;
+      display: block;
+    }
+
+    .nav-links a.active::after {
+      display: none;
+    }
+    
+    .nav-links a.active {
+      background: rgba(204, 0, 0, 0.05);
+      border-left: 5px solid #cc0000;
+      color: #cc0000;
+    }
+  }
+
   @media (max-width: 600px) {
-    .company-name { font-size: 20px; }
-    .header-container { flex-direction: column; gap: 10px; }
+    .company-name { font-size: 22px; }
+    .company-tagline { display: none; }
+    .header-container { padding: 0 15px; }
+    .top-bar-content { justify-content: center; }
+    .top-social { display: none; }
   }
 </style>
+
+<script>
+  function setupMobileMenu() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (!mobileMenuBtn || !navLinks) return;
+
+    mobileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      navLinks.classList.toggle('open');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenuBtn.contains(e.target as Node) && !navLinks.contains(e.target as Node)) {
+        navLinks.classList.remove('open');
+      }
+    });
+
+    // Close menu when clicking a link
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+      });
+    });
+  }
+
+  // Run on initial load
+  setupMobileMenu();
+
+  // Run on view transitions or astro page loads if using them
+  document.addEventListener('astro:page-load', setupMobileMenu);
+</script>
+

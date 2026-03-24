@@ -4,58 +4,58 @@ import MainLayout from '../layouts/MainLayout.astro';
 const products = [
   {
     name: 'Yanmar 6N18AL Marine Diesel Engine',
-    category: 'Marine Engines',
+    category: 'Marine Propulsion Engine',
     image: '/images/marine-engine.webp',
   },
   {
     name: '500 KVA Caterpillar Diesel Generator Set',
-    category: 'Diesel Generators',
-    image: '/images/diesel-generator.webp',
+    category: 'Diesel & Gas Generator Set',
+    image: '/images/diesel-generator-set.jpg',
   },
   {
     name: 'Hydraulic Luffing Winch System',
-    category: 'Hydraulic Equipment',
-    image: '/images/hydraulic-crane.webp',
+    category: 'Hydraulic Deck Crane Equipment',
+    image: '/images/hydraulic-crane-equipment.jpg',
   },
   {
-    name: 'ABB VTR Marine Turbocharger',
-    category: 'Turbochargers',
-    image: '/images/turbocharger.webp',
+    name: 'Marine Gearbox - Various Models',
+    category: 'Marine Gearbox',
+    image: '/images/marine-gearbox.jpg',
   },
   {
     name: 'Marine Water Pump & Air Compressor',
-    category: 'Pumps & Compressors',
+    category: 'Spare Parts',
     image: '/images/pump-compressor.webp',
   },
   {
     name: 'Fresh Water Generator & Heat Exchanger',
-    category: 'Heat Exchangers',
+    category: 'Spare Parts',
     image: '/images/heat-exchanger.webp',
   },
   {
     name: 'Engine Spare Parts — Pistons, Liners, Bearings',
     category: 'Spare Parts',
-    image: '/images/spare-parts.webp',
+    image: '/images/spare-parts-new.jpg',
   },
   {
     name: 'Daihatsu 6DK-20 Auxiliary Engine',
-    category: 'Marine Engines',
-    image: '/images/engine.webp',
+    category: 'Auxiliary Engine',
+    image: '/images/auxiliary-engine.jpg',
   },
   {
     name: 'Caterpillar 3512 Marine Propulsion Engine',
-    category: 'Marine Engines',
+    category: 'Marine Propulsion Engine',
     image: '/images/marine-engine.webp',
   },
   {
     name: '150 KVA Caterpillar Diesel Generator',
-    category: 'Diesel Generators',
-    image: '/images/generator.webp',
+    category: 'Diesel & Gas Generator Set',
+    image: '/images/diesel-generator-set.jpg',
   },
   {
-    name: 'Deck Crane Hydraulic System',
-    category: 'Hydraulic Equipment',
-    image: '/images/winch.webp',
+    name: 'Anchor and Chain Set',
+    category: 'Anchor and Chain',
+    image: '/images/anchor-chain.jpg',
   },
   {
     name: 'MHI MET Marine Turbocharger',
@@ -64,14 +64,15 @@ const products = [
   },
 ];
 
-const categories = ['All Products', 'Marine Engines', 'Diesel Generators', 'Hydraulic Equipment', 'Turbochargers', 'Pumps & Compressors', 'Heat Exchangers', 'Spare Parts'];
+const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbox', 'Auxiliary Engine', 'Diesel & Gas Generator Set', 'Spare Parts', 'Hydraulic Deck Crane Equipment', 'Anchor and Chain'];
 ---
-<MainLayout title="Products - Tahin Spare Suppliers" activeNav="products">
+<MainLayout title="Equipments - Tahin Spare Suppliers" activeNav="products">
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
-      <h1>Our Products</h1>
-      <p>Home / Products</p>
+      <h1 class="reveal">Our Equipments</h1>
+      <p class="hero-subtitle reveal">Your one-stop solution for reconditioned marine engines & equipment</p>
+      <p class="reveal">Home / Equipments</p>
     </div>
   </section>
 
@@ -81,7 +82,7 @@ const categories = ['All Products', 'Marine Engines', 'Diesel Generators', 'Hydr
 
       <div class="filter-tabs reveal" id="filter-tabs">
         {categories.map((cat) => (
-          <button class:list={['filter-btn', { active: cat === 'All Products' }]} data-category={cat}>
+          <button class:list={['filter-btn', { active: cat === 'All Equipments' }]} data-category={cat}>
             {cat}
           </button>
         ))}
@@ -253,9 +254,9 @@ const categories = ['All Products', 'Marine Engines', 'Diesel Generators', 'Hydr
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const category = btn.dataset.category;
+      const category = (btn as HTMLElement).dataset.category;
       document.querySelectorAll('.product-card').forEach(card => {
-        if (category === 'All Products' || card.dataset.category === category) {
+        if (category === 'All Equipments' || (card as HTMLElement).dataset.category === category) {
           card.classList.remove('hidden');
         } else {
           card.classList.add('hidden');

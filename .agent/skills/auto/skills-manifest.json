@@ -1,0 +1,35 @@
+{
+  "project": {
+    "enabled": true,
+    "lastGenerated": "2026-03-24T14:46:59.959Z",
+    "observationCount": 713,
+    "skillCount": 0,
+    "domain": "project",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Project for tahin-spare-suppliers. 296 gotchas, 63 conventions, 6 fixes."
+  },
+  "convention": {
+    "enabled": true,
+    "lastGenerated": "2026-03-24T14:46:59.959Z",
+    "observationCount": 0,
+    "skillCount": 35,
+    "domain": "convention",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Convention for tahin-spare-suppliers. ."
+  },
+  "gotcha": {
+    "enabled": true,
+    "lastGenerated": "2026-03-24T14:46:59.959Z",
+    "observationCount": 0,
+    "skillCount": 20,
+    "domain": "gotcha",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Gotcha for tahin-spare-suppliers. ."
+  }
+}

@@ -5,21 +5,38 @@ import Icon from '../components/Icon.astro';
 <MainLayout activeNav="home" preloadImage="/images/hero-bg.webp">
   <!-- Hero Section -->
   <section class="hero">
-    <img src="/images/hero-bg.webp" alt="" class="hero-bg" fetchpriority="high" loading="eager" decoding="sync" width="1200" height="450" />
+    <img src="/images/hero-bg.webp" alt="" class="hero-bg" fetchpriority="high" loading="eager" decoding="sync" width="1200" height="750" />
     <div class="hero-overlay"></div>
     <div class="hero-content">
-      <h2 class="hero-title">Global Supplier of Reconditioned Marine Engines & Generators</h2>
-      <p class="hero-subtitle">Specialized in Yanmar, Daihatsu & Caterpillar</p>
-      <p class="hero-desc">Ready Stock at Chattogram Ship-Breaking Hub, Bangladesh</p>
-      <div class="hero-btns">
-        <a href="/products" class="btn btn-primary">View Products</a>
-        <a href="/enquiry" class="btn btn-outline">Request Quote</a>
-      </div>
+      <h2 class="hero-title">WORLD-CLASS<br/>MARINE<br/>SOLUTIONS</h2>
+      <p class="hero-subtitle">Extensive Inventory of High-Quality, Tested &<br/>Reliable Reconditioned Components.<br/>(Exporters & Suppliers).</p>
+      <a href="/enquiry" class="btn btn-quote">Request a Quote</a>
     </div>
-    <!-- Scroll indicator -->
-    <div class="scroll-indicator">
-      <div class="scroll-mouse">
-        <div class="scroll-wheel"></div>
+    <!-- Spare Parts Strip -->
+    <div class="parts-strip">
+      <div class="parts-strip-item">
+        <img src="/images/spare-parts.webp" alt="Pistons" loading="eager" />
+        <span class="parts-label">Pistons</span>
+      </div>
+      <div class="parts-strip-item">
+        <img src="/images/turbocharger.webp" alt="Con-rods" loading="eager" />
+        <span class="parts-label">Con-rods</span>
+      </div>
+      <div class="parts-strip-item">
+        <img src="/images/heat-exchanger.webp" alt="Cylinder Head" loading="eager" />
+        <span class="parts-label">Cylinder Head</span>
+      </div>
+      <div class="parts-strip-item">
+        <img src="/images/pump-compressor.webp" alt="Fuel Injection Pump" loading="eager" />
+        <span class="parts-label">Fuel Injection Pump</span>
+      </div>
+      <div class="parts-strip-item">
+        <img src="/images/engine.webp" alt="Main Bearing Set" loading="eager" />
+        <span class="parts-label">Main Bearing Set</span>
+      </div>
+      <div class="parts-strip-item">
+        <img src="/images/marine-engine.webp" alt="Camshaft" loading="eager" />
+        <span class="parts-label">Camshaft</span>
       </div>
     </div>
   </section>
@@ -30,105 +47,129 @@ import Icon from '../components/Icon.astro';
       <h2 class="section-title reveal">WHO WE ARE</h2>
       <p class="section-subtitle reveal">Leading Marine Machinery & Spare Parts Supplier from Bangladesh</p>
       <p class="who-desc reveal">
-        Tahin Spare Suppliers is a trusted exporter and supplier of all kinds of reconditioned marine engines, engine spare parts, hydraulic crane equipment, diesel generators, purifiers, turbochargers, air compressors, water pumps, fresh water generators, heat exchangers, prime quality MS plates and all kinds of ship marine products. Located near the Chattogram Ship-Breaking Yards in Sitakunda, Bangladesh, we have direct access to a vast inventory of quality marine equipment at competitive prices.
+        Tahin Spare Suppliers has been serving the marine industry since 1990, specializing in the supply of reconditioned marine engines, spare parts, generators, hydraulic components, and a wide range of marine equipment worldwide. Strategically located near the Chattogram Ship-Recycling Yards in Bangladesh, we have direct access to a vast and reliable inventory, enabling us to provide quality products with consistent availability at competitive prices to our global clients.
       </p>
     </div>
   </section>
 
-  <!-- Our Products -->
+  <!-- Our Equipments -->
   <section class="section stock-spares">
     <div class="container">
-      <h2 class="stock-title reveal">Our Products</h2>
+      <h2 class="stock-title reveal">Our Equipments</h2>
       <p class="stock-subtitle reveal">Your one-stop solution for reconditioned marine engines & equipment</p>
       <div class="stock-grid reveal-stagger">
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
-            <img src="/images/marine-engine.webp" alt="Marine Engines" loading="lazy" />
+            <img src="/images/marine-engine.webp" alt="Marine Propulsion Engine" loading="lazy" />
           </div>
           <div class="stock-card-overlay">
             <span class="stock-card-tag">Engines</span>
-            <h3>Marine Engines</h3>
-            <p>Yanmar, Daihatsu, Caterpillar, MAN B&W, Sulzer, MAK, Deutz, MTU</p>
+            <h3>Marine Propulsion Engine</h3>
+            <p>Main propulsion engines from Yanmar, Daihatsu, Caterpillar, MAN B&W</p>
             <span class="stock-card-cta">Explore →</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
-            <img src="/images/diesel-generator.webp" alt="Diesel Generator Sets" loading="lazy" />
+            <img src="/images/marine-gearbox.jpg" alt="Marine Gearbox" loading="lazy" />
           </div>
           <div class="stock-card-overlay">
-            <span class="stock-card-tag">Generators</span>
-            <h3>Diesel Generator Sets</h3>
-            <p>Caterpillar, Cummins — 20 KVA to 2000 KVA</p>
+            <span class="stock-card-tag">Transmission</span>
+            <h3>Marine Gearbox</h3>
+            <p>High-quality reconditioned marine gearboxes for various engine models</p>
             <span class="stock-card-cta">Explore →</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
-            <img src="/images/hydraulic-crane.webp" alt="Hydraulic Crane Equipment" loading="lazy" />
-          </div>
-          <div class="stock-card-overlay">
-            <span class="stock-card-tag">Hydraulic</span>
-            <h3>Hydraulic Crane Equipment</h3>
-            <p>Winches, deck cranes, luffing gears & complete systems</p>
-            <span class="stock-card-cta">Explore →</span>
-          </div>
-        </a>
-        <a href="/products" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/turbocharger.webp" alt="Turbochargers" loading="lazy" />
-          </div>
-          <div class="stock-card-overlay">
-            <span class="stock-card-tag">Turbo</span>
-            <h3>Turbochargers</h3>
-            <p>ABB, MHI, IHI, Napier — all marine engine types</p>
-            <span class="stock-card-cta">Explore →</span>
-          </div>
-        </a>
-        <a href="/products" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/pump-compressor.webp" alt="Pumps & Compressors" loading="lazy" />
+            <img src="/images/auxiliary-engine.jpg" alt="Auxiliary Engine" loading="lazy" />
           </div>
           <div class="stock-card-overlay">
             <span class="stock-card-tag">Auxiliary</span>
-            <h3>Pumps & Compressors</h3>
-            <p>Water pumps, air compressors, purifiers & more</p>
+            <h3>Auxiliary Engine</h3>
+            <p>Reliable auxiliary engines for onboard power and machinery</p>
             <span class="stock-card-cta">Explore →</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
-            <img src="/images/heat-exchanger.webp" alt="Heat Exchangers & FW Generators" loading="lazy" />
+            <img src="/images/diesel-generator-set.jpg" alt="Diesel & Gas Generator Set" loading="lazy" />
           </div>
           <div class="stock-card-overlay">
-            <span class="stock-card-tag">Thermal</span>
-            <h3>Heat Exchangers & FW Generators</h3>
-            <p>Fresh water generators, coolers & condensers</p>
+            <span class="stock-card-tag">Generators</span>
+            <h3>Diesel & Gas Generator Set</h3>
+            <p>Complete generator sets from 20 KVA to 2000 KVA</p>
             <span class="stock-card-cta">Explore →</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
-            <img src="/images/spare-parts.webp" alt="Engine Spare Parts" loading="lazy" />
+            <img src="/images/spare-parts-new.jpg" alt="Spare Parts" loading="lazy" />
           </div>
           <div class="stock-card-overlay">
             <span class="stock-card-tag">Parts</span>
-            <h3>Engine Spare Parts</h3>
-            <p>Pistons, liners, bearings, gaskets, valves & more</p>
+            <h3>Spare Parts</h3>
+            <p>Pistons, liners, bearings, valves, turbochargers & more</p>
             <span class="stock-card-cta">Explore →</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
-            <img src="/images/engine.webp" alt="MS Plates & Steel" loading="lazy" />
+            <img src="/images/hydraulic-crane-equipment.jpg" alt="Hydraulic Deck Crane Equipment" loading="lazy" />
           </div>
           <div class="stock-card-overlay">
-            <span class="stock-card-tag">Steel</span>
-            <h3>MS Plates & Steel</h3>
-            <p>Prime quality MS plates and ship-grade materials</p>
+            <span class="stock-card-tag">Hydraulic</span>
+            <h3>Hydraulic Deck Crane Equipment</h3>
+            <p>Winches, deck cranes, and complete hydraulic systems</p>
             <span class="stock-card-cta">Explore →</span>
           </div>
         </a>
+        <a href="/products" class="stock-card">
+          <div class="stock-card-img">
+            <img src="/images/anchor-chain.jpg" alt="Anchor and Chain" loading="lazy" />
+          </div>
+          <div class="stock-card-overlay">
+            <span class="stock-card-tag">Deck Spares</span>
+            <h3>Anchor and Chain</h3>
+            <p>Quality anchors and chains for various ship sizes</p>
+            <span class="stock-card-cta">Explore →</span>
+          </div>
+        </a>
+      </div>
+
+
+    </div>
+  </section>
+
+  <!-- Major Brands Marquee -->
+  <section class="brands-section">
+    <div class="container">
+      <h2 class="brands-title reveal">MAJOR BRANDS WE CARRY</h2>
+    </div>
+    <div class="brands-marquee">
+      <div class="brands-track">
+        <img src="/images/brands/yanmar-1.svg" alt="Yanmar" class="brand-logo" />
+        <img src="/images/brands/caterpillar-logo2.svg" alt="Caterpillar" class="brand-logo" />
+        <img src="/images/brands/man-logo.svg" alt="MAN" class="brand-logo" />
+        <img src="/images/brands/wartsila.svg" alt="Wartsila" class="brand-logo" />
+        <img src="/images/brands/rolls-royce.svg" alt="Rolls-Royce" class="brand-logo" />
+        <img src="/images/brands/mtu-friedrichshafen-logo.svg" alt="MTU" class="brand-logo" />
+        <img src="/images/brands/cummins.svg" alt="Cummins" class="brand-logo" />
+        <img src="/images/brands/mitsubishi-1.svg" alt="Mitsubishi" class="brand-logo" />
+        <img src="/images/brands/daihatsu-3.svg" alt="Daihatsu" class="brand-logo" />
+        <img src="/images/brands/detroit-diesel-logo.svg" alt="Detroit Diesel" class="brand-logo" />
+        
+        <!-- Duplicate for seamless loop -->
+        <img src="/images/brands/yanmar-1.svg" alt="Yanmar" class="brand-logo" />
+        <img src="/images/brands/caterpillar-logo2.svg" alt="Caterpillar" class="brand-logo" />
+        <img src="/images/brands/man-logo.svg" alt="MAN" class="brand-logo" />
+        <img src="/images/brands/wartsila.svg" alt="Wartsila" class="brand-logo" />
+        <img src="/images/brands/rolls-royce.svg" alt="Rolls-Royce" class="brand-logo" />
+        <img src="/images/brands/mtu-friedrichshafen-logo.svg" alt="MTU" class="brand-logo" />
+        <img src="/images/brands/cummins.svg" alt="Cummins" class="brand-logo" />
+        <img src="/images/brands/mitsubishi-1.svg" alt="Mitsubishi" class="brand-logo" />
+        <img src="/images/brands/daihatsu-3.svg" alt="Daihatsu" class="brand-logo" />
+        <img src="/images/brands/detroit-diesel-logo.svg" alt="Detroit Diesel" class="brand-logo" />
       </div>
     </div>
   </section>
@@ -160,29 +201,33 @@ import Icon from '../components/Icon.astro';
 
   <!-- Workshop & Facility -->
   <section class="workshop-section">
+    <img src="/images/workshop-facility.webp" alt="Marine Engine Workshop Facility" class="ws-bg" loading="lazy" width="1200" height="1200" />
     <div class="ws-overlay"></div>
     <div class="container ws-content">
-      <div class="ws-grid">
-        <div class="ws-text reveal-left">
-          <h2>Our Workshop & Facility</h2>
-          <p>Tahin Spare Suppliers has a well-organized workshop at Sitakunda, near the Chattogram Ship-Breaking Yards. Our team of qualified and experienced workers handles proper dismantling, repairing, overhauling, assembling and testing of marine engines and other marine parts.</p>
-          <ul class="ws-features">
-            <li><Icon name="check" size={14} class="ws-check" /> Ready stock of reconditioned equipment</li>
-            <li><Icon name="check" size={14} class="ws-check" /> Skilled workforce with years of experience</li>
-            <li><Icon name="check" size={14} class="ws-check" /> Quality testing before delivery</li>
-            <li><Icon name="check" size={14} class="ws-check" /> Worldwide export capabilities</li>
-            <li><Icon name="check" size={14} class="ws-check" /> Competitive pricing from ship-breaking source</li>
-          </ul>
-          <a href="/contact" class="btn btn-primary">Get in Touch</a>
+      <div class="ws-text reveal-left">
+        <span class="ws-label">Our Workshop & Facility</span>
+        <h2 class="ws-headline">WE STOCK<br/>AND<br/>EXPORT</h2>
+        <p class="ws-desc">Tahin spare suppliers is a leading stockist and global exporter of new, reconditioned and used marine engine and spare parts.</p>
+        <div class="ws-highlights">
+          <div class="ws-highlight-item">
+            <Icon name="tools" size={20} class="ws-hl-icon" />
+            <span>Expert Reconditioning</span>
+          </div>
+          <div class="ws-highlight-item">
+            <Icon name="check" size={20} class="ws-hl-icon" />
+            <span>Quality Tested</span>
+          </div>
+          <div class="ws-highlight-item">
+            <Icon name="globe" size={20} class="ws-hl-icon" />
+            <span>Global Export</span>
+          </div>
         </div>
-        <div class="ws-image reveal-right img-zoom">
-          <img src="/images/shipbreaking-yard.webp" alt="Chattogram Ship Breaking Yard" loading="lazy" />
-        </div>
+        <a href="/enquiry" class="btn btn-quote">Request a Quote</a>
       </div>
     </div>
   </section>
 
-  <!-- Product & Services CTA -->
+  <!-- Equipments & Services CTA -->
   <section class="product-services">
     <div class="ps-overlay"></div>
     <div class="container ps-content">
@@ -271,11 +316,9 @@ import Icon from '../components/Icon.astro';
   /* Hero Section */
   .hero {
     position: relative;
-    height: 550px;
+    min-height: 700px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    flex-direction: column;
     overflow: hidden;
   }
   .hero-bg {
@@ -290,12 +333,25 @@ import Icon from '../components/Icon.astro';
   .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(26,26,46,0.75), rgba(0,0,0,0.5));
+    background: linear-gradient(
+      100deg,
+      rgba(30, 40, 60, 0.68) 0%,
+      rgba(25, 35, 55, 0.45) 40%,
+      rgba(15, 25, 45, 0.18) 100%
+    );
+    z-index: 1;
   }
   .hero-content {
     position: relative;
-    z-index: 1;
-    padding: 20px;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
     animation: heroFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   @keyframes heroFadeIn {
@@ -304,64 +360,102 @@ import Icon from '../components/Icon.astro';
   }
   .hero-title {
     color: #fff;
-    font-size: 38px;
-    font-weight: 700;
-    margin-bottom: 12px;
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1.12;
+    margin-bottom: 24px;
     font-family: var(--font-inter), 'Inter', sans-serif;
-    max-width: 750px;
-    margin-left: auto;
-    margin-right: auto;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    text-shadow: 0 4px 30px rgba(0,0,0,0.35);
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    max-width: 700px;
   }
   .hero-subtitle {
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-  .hero-desc {
-    color: #ddd;
-    font-size: 15px;
-    margin-bottom: 30px;
-  }
-  .hero-btns {
-    display: flex;
-    gap: 14px;
-    justify-content: center;
-    flex-wrap: wrap;
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.88);
+    line-height: 1.7;
+    margin-bottom: 32px;
+    max-width: 500px;
+    font-style: italic;
   }
 
-  /* Scroll Indicator */
-  .scroll-indicator {
-    position: absolute;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    animation: scrollBounce 2s ease-in-out infinite;
+  /* Request a Quote Button — Copper/Brown */
+  .btn-quote {
+    display: inline-block;
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #a67c52, #8b6240);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 98, 64, 0.4);
+    width: fit-content;
   }
-  .scroll-mouse {
-    width: 24px;
-    height: 40px;
-    border: 2px solid rgba(255,255,255,0.5);
-    border-radius: 12px;
+  .btn-quote:hover {
+    background: linear-gradient(135deg, #b98a5c, #9a7050);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(139, 98, 64, 0.55);
+  }
+  .btn-quote:active {
+    transform: translateY(0);
+  }
+
+  /* Spare Parts Strip */
+  .parts-strip {
+    position: relative;
+    z-index: 2;
     display: flex;
     justify-content: center;
-    padding-top: 6px;
+    gap: 0;
+    background: rgba(245, 245, 245, 0.95);
+    backdrop-filter: blur(10px);
+    margin-top: auto;
   }
-  .scroll-wheel {
-    width: 4px;
-    height: 10px;
-    background: rgba(255,255,255,0.7);
-    border-radius: 2px;
-    animation: scrollWheel 2s ease-in-out infinite;
+  .parts-strip-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    border-right: 1px solid rgba(0,0,0,0.08);
+    transition: background 0.3s ease;
   }
-  @keyframes scrollBounce {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(8px); }
+  .parts-strip-item:last-child {
+    border-right: none;
   }
-  @keyframes scrollWheel {
-    0% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(10px); }
+  .parts-strip-item:hover {
+    background: rgba(230, 230, 230, 0.95);
+  }
+  .parts-strip-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .parts-strip-item:hover img {
+    transform: scale(1.08);
+  }
+  .parts-label {
+    display: block;
+    padding: 8px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    background: rgba(50, 50, 60, 0.85);
+    width: 100%;
+    letter-spacing: 0.3px;
+    text-transform: capitalize;
+    backdrop-filter: blur(4px);
   }
 
 
@@ -380,6 +474,68 @@ import Icon from '../components/Icon.astro';
   }
 
   /* Stock Spares / Products — Premium Overlay Cards */
+  /* Brands Marquee */
+  .brands-section {
+    padding: 60px 0 50px;
+    background: #fff;
+    overflow: hidden;
+    border-bottom: 1px solid #eee;
+    border-top: 1px solid #eee;
+  }
+  .brands-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+  }
+  .brands-marquee {
+    overflow: hidden;
+    position: relative;
+    padding: 10px 0;
+  }
+  .brands-marquee::before,
+  .brands-marquee::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 150px;
+    z-index: 2;
+  }
+  .brands-marquee::before {
+    left: 0;
+    background: linear-gradient(to right, #fff, transparent);
+  }
+  .brands-marquee::after {
+    right: 0;
+    background: linear-gradient(to left, #fff, transparent);
+  }
+  .brands-track {
+    display: flex;
+    gap: 80px;
+    animation: marquee-scroll 35s linear infinite;
+    width: max-content;
+    align-items: center;
+  }
+  .brand-logo {
+    height: 45px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    opacity: 0.9;
+    transition: all 0.4s ease;
+  }
+  .brand-logo:hover {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  @keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
   .stock-spares {
     background: #f9f9f9;
   }
@@ -562,66 +718,89 @@ import Icon from '../components/Icon.astro';
     line-height: 1.7;
   }
 
-  /* Workshop Section */
+  /* Workshop Section — Full-width Hero Style */
   .workshop-section {
     position: relative;
-    background: #1a1a2e;
-    padding: 80px 0;
+    min-height: 550px;
+    display: flex;
+    align-items: center;
     overflow: hidden;
+  }
+  .ws-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+  .ws-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      rgba(30, 40, 60, 0.82) 0%,
+      rgba(25, 35, 55, 0.65) 45%,
+      rgba(15, 25, 45, 0.30) 100%
+    );
+    z-index: 1;
   }
   .ws-content {
     position: relative;
-    z-index: 1;
+    z-index: 2;
+    padding: 80px 60px;
   }
-  .ws-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 50px;
-    align-items: center;
+  .ws-text {
+    max-width: 600px;
   }
-  .ws-text h2 {
-    font-size: 30px;
-    font-weight: 700;
+  .ws-label {
+    display: inline-block;
+    color: #a67c52;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #a67c52;
+    padding-bottom: 6px;
+  }
+  .ws-headline {
+    font-size: 52px;
+    font-weight: 800;
     color: #fff;
-    margin-bottom: 20px;
-    font-family: var(--font-playfair), 'Playfair Display', serif;
+    line-height: 1.08;
+    margin-bottom: 22px;
+    font-family: var(--font-inter), 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.35);
   }
-  .ws-text p {
+  .ws-desc {
     font-size: 15px;
-    color: #bbb;
-    line-height: 1.8;
-    margin-bottom: 25px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.75;
+    margin-bottom: 28px;
+    font-style: italic;
+    max-width: 500px;
   }
-  .ws-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 30px;
+  .ws-highlights {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
   }
-  .ws-features li {
-    color: #ddd;
-    font-size: 14px;
-    padding: 8px 0;
+  .ws-highlight-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    transition: transform 0.3s ease, color 0.3s;
+    gap: 8px;
+    color: rgba(255,255,255,0.9);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
   }
-  .ws-features li:hover {
-    transform: translateX(6px);
-    color: #fff;
-  }
-  .ws-features :global(.ws-check) {
-    color: #2ecc71;
+  .ws-highlight-item :global(.ws-hl-icon) {
+    color: #a67c52;
     flex-shrink: 0;
-  }
-  .ws-image img {
-    width: 100%;
-    border-radius: 14px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-    transition: transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
-  }
-  .ws-image:hover img {
-    transform: scale(1.05);
   }
 
   /* Product & Services CTA */
@@ -803,13 +982,29 @@ import Icon from '../components/Icon.astro';
     .stock-grid { grid-template-columns: repeat(2, 1fr); }
     .services-grid { grid-template-columns: 1fr; }
     .why-grid { grid-template-columns: 1fr; }
-    .ws-grid { grid-template-columns: 1fr; }
+    .ws-headline { font-size: 38px; }
+    .ws-content { padding: 60px 30px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-title { font-size: 38px; }
+    .hero-content { padding: 60px 30px; }
+    .parts-strip-item img { height: 90px; }
+    .parts-label { font-size: 11px; padding: 6px 4px; }
   }
   @media (max-width: 600px) {
     .stock-grid { grid-template-columns: 1fr; }
-    .hero-title { font-size: 24px; }
-    .hero { height: 450px; }
+    .hero { min-height: 550px; }
+    .hero-title { font-size: 28px; }
+    .hero-content { padding: 40px 20px; }
+    .hero-subtitle { font-size: 14px; }
+    .workshop-section { min-height: 450px; }
+    .ws-headline { font-size: 28px; }
+    .ws-content { padding: 40px 20px; }
+    .ws-desc { font-size: 14px; }
+    .ws-highlights { gap: 16px; }
+    .parts-strip { overflow-x: auto; justify-content: flex-start; }
+    .parts-strip-item { min-width: 130px; flex: 0 0 auto; }
+    .parts-strip-item img { height: 80px; }
+    .parts-label { font-size: 10px; }
     .ps-carousel-track { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 0 10px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
     .stat-num { font-size: 28px; }
