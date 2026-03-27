@@ -1,5 +1,5 @@
 # tahin-spare-suppliers — Project Memory
-# Auto-synced | 731 observations
+# Auto-synced | 2337 observations
 
 **Stack:** JavaScript
 
@@ -12,6 +12,25 @@
 
 > Always read `.cursor/active-context.md` for exact instructions on the specific file you are currently editing. It updates dynamically.
 
+# 🔴 CRITICAL — DO NOT IGNORE
+
+- **Don't mix CommonJS (require) and ESM (import) in same project** — Don't mix CommonJS (require) and ESM (import) in same project
+- **Don't use "any" type in TypeScript — define proper types/interfaces** — Don't use "any" type in TypeScript — define proper types/interfaces
+- **Handle Promise rejections — always .catch() or try/catch with await** — Handle Promise rejections — always .catch() or try/catch with await
+- **Use === not == — strict equality prevents type coercion bugs** — Use === not == — strict equality prevents type coercion bugs
+- **Agent: follow existing project patterns — don't introduce a different style** — Agent: follow existing project patterns — don't introduce a different style
+
+# 📐 Conventions
+
+- Enable strict mode in tsconfig.json
+- Prefer Array methods (map, filter, reduce) over manual loops
+- Use template literals for string interpolation, not concatenation
+- Use optional chaining (?.) and nullish coalescing (??) for safe access
+- Use const by default, let when reassignment needed, never var
+- Version your API from day 1 (/api/v1/)
+- Use consistent response format across all endpoints
+- Implement soft delete for important data — don't hard delete without confirmation
+
 # ⚡ Available Tools (ON-DEMAND only)
 - `save(title, content, category)` — Save a note + auto-detect conflicts
 - `batch_save(items[])` — Save multiple notes in 1 call
@@ -22,4 +41,4 @@
 > ℹ️ DO NOT call get_context() or get_gotchas() at startup — context above IS your context.
 
 ---
-*Auto-synced | 2026-03-24*
+*Auto-synced | 2026-03-27*

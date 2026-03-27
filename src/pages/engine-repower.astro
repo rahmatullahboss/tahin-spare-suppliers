@@ -1,0 +1,114 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+<MainLayout title="Engine Repower / Rebuilding - Tahin Spare Suppliers" activeNav="services">
+  <section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1 class="reveal">Engine Repower / Rebuilding</h1>
+      <p class="reveal">Home / Our Services / Engine Repower / Rebuilding</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container service-detail-container">
+      <div class="content-side reveal-left">
+        <h2>Breathe New Life into Your Vessel</h2>
+        <p>Engine repowering involves replacing an aging, inefficient propulsion system with a reconditioned, higher-performing unit. Our engine rebuilding services restore existing engines to their original performance specifications.</p>
+        
+        <div class="features-list">
+          <ul>
+            <li>Complete engine block rebuilding and machining</li>
+            <li>Replacement of worn out pistons, rings, and liners</li>
+            <li>Fuel systems and turbocharger calibration</li>
+            <li>Cost-effective alternative to purchasing new vessels</li>
+          </ul>
+        </div>
+        
+        <p>A successful repower can dramatically reduce fuel consumption, lower maintenance costs, and increase vessel reliability for years to come.</p>
+        
+        <a href="/enquiry" class="btn-primary" style="margin-top: 20px;">Contact for Rebuilding Services</a>
+      </div>
+      <div class="image-side reveal-right img-zoom">
+        <img src="/images/marine-propulsion-engine.jpg" alt="Engine Repower / Rebuilding" loading="lazy" />
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero {
+    position: relative;
+    height: 350px;
+    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+  .page-hero-content p { font-size: 14px; color: #ddd; }
+
+  .service-detail-container {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  .content-side h2 {
+    font-size: 28px;
+    color: #222;
+    margin-bottom: 20px;
+  }
+  .content-side p {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 15px;
+  }
+  .features-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 25px 0;
+  }
+  .features-list li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    color: #444;
+  }
+  .features-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #c0392b;
+    font-weight: bold;
+  }
+  .image-side img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  .btn-primary {
+    display: inline-block;
+    background: #c0392b;
+    color: #fff;
+    padding: 12px 25px;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: background 0.3s;
+  }
+  .btn-primary:hover {
+    background: #a93226;
+  }
+
+  @media (max-width: 768px) {
+    .service-detail-container { grid-template-columns: 1fr; }
+    .image-side { order: -1; }
+  }
+</style>

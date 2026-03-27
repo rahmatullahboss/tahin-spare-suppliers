@@ -1,7 +1,7 @@
 
 
 # Project Memory — tahin-spare-suppliers
-> 714 notes | Score threshold: >40
+> 2331 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,47 +20,144 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in agent.md** — - > 712 notes | Updated: 3/24/2026
-+ > 713 notes | Updated: 3/24/2026
-
-- **gotcha in agent.md** — - > 711 notes | Updated: 3/24/2026
-+ > 712 notes | Updated: 3/24/2026
-
-- **gotcha in agent.md** — - > 710 notes | Updated: 3/24/2026
-+ > 711 notes | Updated: 3/24/2026
-
-- **gotcha in agent.md** — - > 709 notes | Updated: 3/24/2026
-+ > 710 notes | Updated: 3/24/2026
-
-- **gotcha in agent.md** — - > 708 notes | Updated: 3/24/2026
-+ > 709 notes | Updated: 3/24/2026
-
-- **gotcha in agent.md** — - > 707 notes | Updated: 3/24/2026
-+ > 708 notes | Updated: 3/24/2026
-
+- **gotcha in agent.md** — - > 2329 notes | Updated: 3/27/2026
++ > 2330 notes | Updated: 3/27/202
+- **gotcha in agent.md** — - > 2328 notes | Updated: 3/27/2026
++ > 2329 notes | Updated: 3/27/202
+- **gotcha in agent.md** — - > 2327 notes | Updated: 3/27/2026
++ > 2328 notes | Updated: 3/27/202
+- **gotcha in agent.md** — - > 2326 notes | Updated: 3/27/2026
++ > 2327 notes | Updated: 3/27/202
+- **gotcha in agent.md** — - > 2325 notes | Updated: 3/27/2026
++ > 2326 notes | Updated: 3/27/202
+- **gotcha in agent.md** — - > 2324 notes | Updated: 3/27/2026
++ > 2325 notes | Updated: 3/27/202
 
 ## Project Standards
 
+- what-changed in agent.md — confirmed 3x
+- Updated schema Updated — confirmed 3x
+- what-changed in agent.md — confirmed 3x
+- Updated schema Updated — confirmed 3x
 - Fixed null crash in Services — prevents null/undefined runtime crashes — confirmed 3x
 - Fixed null crash in Brands — prevents null/undefined runtime crashes — confirmed 3x
 - what-changed in agent.md — confirmed 18x
 - Updated schema Project — ensures atomic multi-step database operations — confirmed 3x
-- what-changed in agent.md — confirmed 18x
-- what-changed in agent.md — confirmed 18x
-- Updated schema Updated — confirmed 3x
-- what-changed in agent.md — confirmed 14x
 
 ## Recent Decisions
 
+- decision in Footer.astro
+- decision in Footer.astro
+- decision in services.astro
 - decision in scratchpad_h7mezl7n.md
-- Optimized Proprietor — ensures atomic multi-step database operations
-- decision in about.astro
 
 ## Learned Patterns
 
 - Always: what-changed in agent.md — confirmed 18x (seen 2x)
 - Always: what-changed in agent.md — confirmed 18x (seen 3x)
 - Always: what-changed in agent.md — confirmed 18x (seen 4x)
+- Agent generates new migration for every change (squash related changes)
+- Agent installs packages without checking if already installed
+
+### 📚 Core Framework Rules: [czlonkowski/n8n-code-javascript]
+# JavaScript Code Node
+
+Expert guidance for writing JavaScript code in n8n Code nodes.
+
+---
+
+## Quick Start
+
+
+
+### Essential Rules
+
+1. **Choose "Run Once for All Items" mode** (recommended for most use cases)
+2. **Access data**: `$input.all()`, `$input.first()`, or `$input.item`
+3. **CRITICAL**: Must return `[{json: {...}}]` format
+4. **CRITICAL**: Webhook data is under `$json.body` (not `$json` directly)
+5. **Built-ins available**: $helpers.httpRequest(), DateTime (Luxon), $jmespath()
+
+---
+
+## Mode Selection Guide
+
+The Code node offers two execution modes. Choose based on your use case:
+
+### Run Once for All Items (Recommended - Default)
+
+**Use this mode for:** 95% of use cases
+
+- **How it works**: Code executes **once** regardless of input count
+- **Data access**: `$input.all()` or `items` array
+- **Best for**: Aggregation, filtering, batch processing, transformations, API calls with all data
+- **Performance**: Faster for multiple items (single execution)
+
+
+
+**When to use:**
+- ✅ Comparing items across the dataset
+- ✅ Calculating totals, averages, or statistics
+- ✅ Sorting or ranking items
+- ✅ Deduplication
+- ✅ Building aggregated reports
+- ✅ Combining data from multiple items
+
+### Run Once for Each Item
+
+**Use this mode for:** Specialized cases only
+
+- **How it works**: Code executes **separately** for each input item
+- **Data access**: `$input.item` or `$item`
+- **Best for**: Item-specific logic, independent operations, per-item validation
+- **Performance**: Slower for large datasets (multiple executions)
+
+
+
+**When to use:**
+- ✅ Each item needs independent API call
+- ✅ Per-item validation with different error handling
+- ✅ Item-specific transformations based on item properties
+- ✅ When items must be processed separately for business logic
+
+**Decision Shortcut:**
+- **Need to look at multiple items?** → Use "All Items" mode
+- **Each item completely independent?** → Use "Each Item" mode
+- **Not sure?** → Use "All Items" mode (you can always loop inside)
+
+---
+
+## Data Access Patterns
+
+### Pattern 1: $input.all() - Most Common
+
+**Use when**: Processing arrays, batch operations, aggregations
+
+
+
+### Pattern 2: $input.first() - Very Common
+
+**Use when**: Working with single objects, API responses, first-in-first-out
+
+
+
+### Pattern 3: $input.item - Each Item Mode Only
+
+**Use when**: In "Run Once for Each Item" mode
+
+
+
+### Pattern 4: $node - Reference Other Nodes
+
+**Use when**: Need data from specific nodes in workflow
+
+
+
+**See**: [DATA_ACCESS.md](DATA_ACCESS.md) ...
+(truncated)
+
+- [JavaScript/TypeScript] Use === not == (strict equality prevents type coercion bugs)
+- [JavaScript/TypeScript] Use const by default, let when reassignment needed, never var
 
 ## Available Tools (ON-DEMAND only)
 - `query(q)` — Deep search when stuck

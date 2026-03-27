@@ -2,42 +2,46 @@
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
 ---
-<MainLayout activeNav="home" preloadImage="/images/hero-bg.webp">
+<MainLayout activeNav="home" preloadImage="/images/hero-bg-new.webp">
   <!-- Hero Section -->
   <section class="hero">
-    <img src="/images/hero-bg.webp" alt="" class="hero-bg" fetchpriority="high" loading="eager" decoding="sync" width="1200" height="750" />
+    <img src="/images/hero-bg-new.webp" alt="" class="hero-bg" fetchpriority="high" loading="eager" decoding="sync" width="1376" height="768" />
     <div class="hero-overlay"></div>
     <div class="hero-content">
       <h2 class="hero-title">WORLD-CLASS<br/>MARINE<br/>SOLUTIONS</h2>
-      <p class="hero-subtitle">Extensive Inventory of High-Quality, Tested &<br/>Reliable Reconditioned Components.<br/>(Exporters & Suppliers).</p>
+      <p class="hero-subtitle">Your one-stop solution for reconditioned marine engines & equipment</p>
       <a href="/enquiry" class="btn btn-quote">Request a Quote</a>
     </div>
     <!-- Spare Parts Strip -->
     <div class="parts-strip">
-      <div class="parts-strip-item">
-        <img src="/images/spare-parts.webp" alt="Pistons" loading="eager" />
-        <span class="parts-label">Pistons</span>
-      </div>
-      <div class="parts-strip-item">
-        <img src="/images/turbocharger.webp" alt="Con-rods" loading="eager" />
-        <span class="parts-label">Con-rods</span>
-      </div>
-      <div class="parts-strip-item">
-        <img src="/images/heat-exchanger.webp" alt="Cylinder Head" loading="eager" />
-        <span class="parts-label">Cylinder Head</span>
-      </div>
-      <div class="parts-strip-item">
-        <img src="/images/pump-compressor.webp" alt="Fuel Injection Pump" loading="eager" />
-        <span class="parts-label">Fuel Injection Pump</span>
-      </div>
-      <div class="parts-strip-item">
-        <img src="/images/engine.webp" alt="Main Bearing Set" loading="eager" />
-        <span class="parts-label">Main Bearing Set</span>
-      </div>
-      <div class="parts-strip-item">
-        <img src="/images/marine-engine.webp" alt="Camshaft" loading="eager" />
-        <span class="parts-label">Camshaft</span>
-      </div>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/marine-propulsion-engine.jpg" alt="Marine Engine" loading="eager" />
+        <span class="parts-label">Marine Engine</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/marine-gearbox.jpg" alt="Marine Gearbox" loading="eager" />
+        <span class="parts-label">Marine Gearbox</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/auxiliary-engine.jpg" alt="Auxiliary Engine" loading="eager" />
+        <span class="parts-label">Aux Engine</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/diesel-generator-set.jpg" alt="Diesel Generators" loading="eager" />
+        <span class="parts-label">Generators</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/hydraulic-crane-equipment.jpg" alt="Deck Crane" loading="eager" />
+        <span class="parts-label">Deck Crane</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/anchor-chain.jpg" alt="Anchor & Chain" loading="eager" />
+        <span class="parts-label">Anchor & Chain</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/spare-parts-new.jpg" alt="Spare Parts" loading="eager" />
+        <span class="parts-label">Spare Parts</span>
+      </a>
     </div>
   </section>
 
@@ -60,79 +64,65 @@ import Icon from '../components/Icon.astro';
       <div class="stock-grid reveal-stagger">
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
-            <img src="/images/marine-engine.webp" alt="Marine Propulsion Engine" loading="lazy" />
+            <img src="/images/marine-propulsion-engine.jpg" alt="Marine Propulsion Engine" loading="lazy" />
           </div>
-          <div class="stock-card-overlay">
-            <span class="stock-card-tag">Engines</span>
+          <div class="stock-card-content">
             <h3>Marine Propulsion Engine</h3>
-            <p>Main propulsion engines from Yanmar, Daihatsu, Caterpillar, MAN B&W</p>
-            <span class="stock-card-cta">Explore →</span>
+            <span class="stock-card-cta">VIEW DETAILS</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
             <img src="/images/marine-gearbox.jpg" alt="Marine Gearbox" loading="lazy" />
           </div>
-          <div class="stock-card-overlay">
-            <span class="stock-card-tag">Transmission</span>
+          <div class="stock-card-content">
             <h3>Marine Gearbox</h3>
-            <p>High-quality reconditioned marine gearboxes for various engine models</p>
-            <span class="stock-card-cta">Explore →</span>
+            <span class="stock-card-cta">VIEW DETAILS</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
             <img src="/images/auxiliary-engine.jpg" alt="Auxiliary Engine" loading="lazy" />
           </div>
-          <div class="stock-card-overlay">
-            <span class="stock-card-tag">Auxiliary</span>
+          <div class="stock-card-content">
             <h3>Auxiliary Engine</h3>
-            <p>Reliable auxiliary engines for onboard power and machinery</p>
-            <span class="stock-card-cta">Explore →</span>
+            <span class="stock-card-cta">VIEW DETAILS</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
             <img src="/images/diesel-generator-set.jpg" alt="Diesel & Gas Generator Set" loading="lazy" />
           </div>
-          <div class="stock-card-overlay">
-            <span class="stock-card-tag">Generators</span>
+          <div class="stock-card-content">
             <h3>Diesel & Gas Generator Set</h3>
-            <p>Complete generator sets from 20 KVA to 2000 KVA</p>
-            <span class="stock-card-cta">Explore →</span>
+            <span class="stock-card-cta">VIEW DETAILS</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
             <img src="/images/spare-parts-new.jpg" alt="Spare Parts" loading="lazy" />
           </div>
-          <div class="stock-card-overlay">
-            <span class="stock-card-tag">Parts</span>
+          <div class="stock-card-content">
             <h3>Spare Parts</h3>
-            <p>Pistons, liners, bearings, valves, turbochargers & more</p>
-            <span class="stock-card-cta">Explore →</span>
+            <span class="stock-card-cta">VIEW DETAILS</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
             <img src="/images/hydraulic-crane-equipment.jpg" alt="Hydraulic Deck Crane Equipment" loading="lazy" />
           </div>
-          <div class="stock-card-overlay">
-            <span class="stock-card-tag">Hydraulic</span>
+          <div class="stock-card-content">
             <h3>Hydraulic Deck Crane Equipment</h3>
-            <p>Winches, deck cranes, and complete hydraulic systems</p>
-            <span class="stock-card-cta">Explore →</span>
+            <span class="stock-card-cta">VIEW DETAILS</span>
           </div>
         </a>
         <a href="/products" class="stock-card">
           <div class="stock-card-img">
             <img src="/images/anchor-chain.jpg" alt="Anchor and Chain" loading="lazy" />
           </div>
-          <div class="stock-card-overlay">
-            <span class="stock-card-tag">Deck Spares</span>
+          <div class="stock-card-content">
             <h3>Anchor and Chain</h3>
-            <p>Quality anchors and chains for various ship sizes</p>
-            <span class="stock-card-cta">Explore →</span>
+            <span class="stock-card-cta">VIEW DETAILS</span>
           </div>
         </a>
       </div>
@@ -232,7 +222,7 @@ import Icon from '../components/Icon.astro';
     <div class="ps-overlay"></div>
     <div class="container ps-content">
       <h2 class="ps-title reveal-scale">Looking for Marine Equipment?</h2>
-      <p class="ps-contact reveal">Call us: +88-01674784019 / +88-01710917904 or Email: tahinship@gmail.com</p>
+      <p class="ps-contact reveal">Call us: +880 1787-429268 / +88-01710917904 or Email: tahinship@gmail.com</p>
       <div class="ps-carousel reveal">
         <div class="ps-carousel-track">
           <div class="ps-card">
@@ -258,54 +248,29 @@ import Icon from '../components/Icon.astro';
   </section>
 
   <!-- Why Choose Us -->
-  <section class="section why-choose">
+  <section class="section why-choose-us">
     <div class="container">
-      <div class="why-grid">
-        <div class="why-accordion reveal-left">
-          <h2 class="why-title">WHY CHOOSE US?</h2>
-          <div class="accordion-item">
-            <button class="accordion-btn active">
-              <Icon name="plus" size={12} class="acc-plus" />
-              <span>Ready inventory & large stock</span>
-              <Icon name="chevron-right" size={12} class="accordion-arrow" />
-            </button>
-            <div class="accordion-content open">
-              <p>We maintain one of the largest inventories of reconditioned marine engines, generators, and spare parts in Bangladesh, sourced directly from the Chattogram Ship-Breaking Yards. Ready stock available for immediate dispatch.</p>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <button class="accordion-btn">
-              <Icon name="plus" size={12} class="acc-plus" />
-              <span>Specialized in top brands</span>
-              <Icon name="chevron-right" size={12} class="accordion-arrow" />
-            </button>
-            <div class="accordion-content">
-              <p>We specialize in Yanmar, Daihatsu, and Caterpillar marine engines and generators. Our team has deep expertise in these brands, ensuring you get properly reconditioned, tested equipment.</p>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <button class="accordion-btn">
-              <Icon name="plus" size={12} class="acc-plus" />
-              <span>Skilled workforce & quality testing</span>
-              <Icon name="chevron-right" size={12} class="accordion-arrow" />
-            </button>
-            <div class="accordion-content">
-              <p>Every item is carefully inspected, tested, and reconditioned by our experienced technicians before shipping. We guarantee functionality and reliability of all our products.</p>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <button class="accordion-btn">
-              <Icon name="plus" size={12} class="acc-plus" />
-              <span>Worldwide export & timely delivery</span>
-              <Icon name="chevron-right" size={12} class="accordion-arrow" />
-            </button>
-            <div class="accordion-content">
-              <p>We export marine equipment worldwide. Our logistics team ensures prompt processing and shipping through reliable international carriers, delivering to your location on time.</p>
-            </div>
-          </div>
+      <h2 class="section-title reveal" style="text-transform: capitalize;">Why Choose Us</h2>
+      <div class="features-grid">
+        <div class="feature-card reveal-scale">
+          <div class="feature-icon"><Icon name="globe" size={40} /></div>
+          <h3>GLOBAL REACH</h3>
+          <p>Sourcing Worldwide,<br/>Fast Delivery.</p>
         </div>
-        <div class="why-badge reveal-right">
-          <img src="/images/satisfaction.webp" alt="100% Customer Satisfaction Guaranteed" />
+        <div class="feature-card reveal-scale">
+          <div class="feature-icon"><Icon name="award" size={40} /></div>
+          <h3>UNMATCHED QUALITY</h3>
+          <p>Tested Components,<br/>Guaranteed Performance.</p>
+        </div>
+        <div class="feature-card reveal-scale">
+          <div class="feature-icon"><Icon name="headset" size={40} /></div>
+          <h3>EXPERT SUPPORT</h3>
+          <p>Dedicated Technical<br/>Support Team.</p>
+        </div>
+        <div class="feature-card reveal-scale">
+          <div class="feature-icon"><Icon name="ship" size={40} /></div>
+          <h3>URGENT LOGISTICS</h3>
+          <p>Prioritized Shipping for<br/>Vetting & Spares.</p>
         </div>
       </div>
     </div>
@@ -335,9 +300,9 @@ import Icon from '../components/Icon.astro';
     inset: 0;
     background: linear-gradient(
       100deg,
-      rgba(30, 40, 60, 0.68) 0%,
-      rgba(25, 35, 55, 0.45) 40%,
-      rgba(15, 25, 45, 0.18) 100%
+      rgba(30, 40, 60, 0.4) 0%,
+      rgba(25, 35, 55, 0.25) 40%,
+      rgba(15, 25, 45, 0.1) 100%
     );
     z-index: 1;
   }
@@ -428,6 +393,7 @@ import Icon from '../components/Icon.astro';
     position: relative;
     border-right: 1px solid rgba(0,0,0,0.08);
     transition: background 0.3s ease;
+    text-decoration: none;
   }
   .parts-strip-item:last-child {
     border-right: none;
@@ -454,8 +420,13 @@ import Icon from '../components/Icon.astro';
     background: rgba(50, 50, 60, 0.85);
     width: 100%;
     letter-spacing: 0.3px;
-    text-transform: capitalize;
+    text-transform: uppercase;
     backdrop-filter: blur(4px);
+    transition: background 0.3s, color 0.3s;
+  }
+  .parts-strip-item:hover .parts-label {
+    background: #c0392b;
+    color: #fff;
   }
 
 
@@ -560,116 +531,65 @@ import Icon from '../components/Icon.astro';
   }
   .stock-card {
     position: relative;
-    display: block;
-    height: 280px;
-    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #eaeaea;
+    background: #fff;
+    border-radius: 0;
     overflow: hidden;
     cursor: pointer;
-    color: #fff;
     text-decoration: none;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1),
-                box-shadow 0.5s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.4s ease;
     will-change: transform;
   }
   .stock-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
   }
   .stock-card-img {
-    position: absolute;
-    inset: 0;
+    width: 100%;
+    height: 220px;
+    position: relative;
+    overflow: hidden;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 92%);
   }
   .stock-card-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.7s cubic-bezier(0.33, 1, 0.68, 1),
-                filter 0.5s ease;
+    transition: transform 0.7s cubic-bezier(0.33, 1, 0.68, 1);
   }
   .stock-card:hover .stock-card-img img {
-    transform: scale(1.15);
-    filter: brightness(0.6);
+    transform: scale(1.08);
   }
-  .stock-card-overlay {
-    position: absolute;
-    inset: 0;
+  .stock-card-content {
+    padding: 24px 24px 30px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 24px 20px;
-    background: linear-gradient(
-      to top,
-      rgba(10, 10, 30, 0.9) 0%,
-      rgba(10, 10, 30, 0.4) 50%,
-      transparent 100%
-    );
-    transition: background 0.5s ease;
-  }
-  .stock-card:hover .stock-card-overlay {
-    background: linear-gradient(
-      to top,
-      rgba(10, 10, 30, 0.95) 0%,
-      rgba(10, 10, 30, 0.6) 60%,
-      rgba(10, 10, 30, 0.2) 100%
-    );
-  }
-  .stock-card-tag {
-    display: inline-block;
-    background: rgba(192, 57, 43, 0.85);
-    color: #fff;
-    padding: 3px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-    width: fit-content;
-    backdrop-filter: blur(4px);
-    transition: background 0.3s, transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
-  }
-  .stock-card:hover .stock-card-tag {
-    background: #c0392b;
-    transform: translateY(-3px);
+    flex-grow: 1;
+    justify-content: center;
+    background: #fff;
   }
   .stock-card h3 {
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 700;
-    margin-bottom: 6px;
+    margin-bottom: 20px;
     line-height: 1.3;
-    transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
-  }
-  .stock-card:hover h3 {
-    transform: translateY(-3px);
-  }
-  .stock-card p {
-    font-size: 12px;
-    color: rgba(255,255,255,0.75);
-    line-height: 1.5;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: max-height 0.5s cubic-bezier(0.33, 1, 0.68, 1),
-                opacity 0.4s ease 0.1s;
-  }
-  .stock-card:hover p {
-    max-height: 60px;
-    opacity: 1;
+    color: #111;
+    font-family: var(--font-inter), 'Inter', sans-serif;
   }
   .stock-card-cta {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(255,255,255,0.85);
-    margin-top: 8px;
-    opacity: 0;
-    transform: translateX(-10px);
-    transition: opacity 0.4s ease 0.15s,
-                transform 0.4s cubic-bezier(0.33, 1, 0.68, 1) 0.15s;
+    color: #e67e22;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+    display: block;
   }
   .stock-card:hover .stock-card-cta {
-    opacity: 1;
-    transform: translateX(0);
+    color: #c0392b;
   }
 
   /* Services Section */
@@ -806,7 +726,7 @@ import Icon from '../components/Icon.astro';
   /* Product & Services CTA */
   .product-services {
     position: relative;
-    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    background: url('/images/services-hero.jpg') center/cover no-repeat;
     padding: 60px 0;
   }
   .ps-overlay {
@@ -891,97 +811,111 @@ import Icon from '../components/Icon.astro';
   .ps-next { right: 10px; }
 
   /* Why Choose Us */
-  .why-choose {
-    background: #fff;
-  }
-  .why-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    align-items: center;
-  }
-  .why-title {
-    font-size: 28px;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 25px;
-  }
-  .accordion-item {
+  .why-choose-us {
+    padding: 90px 0;
+    background: #fbfbfb;
+    text-align: center;
+    border-top: 1px solid #eee;
     border-bottom: 1px solid #eee;
-    margin-bottom: 5px;
   }
-  .accordion-btn {
-    width: 100%;
-    background: none;
-    border: none;
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    margin-top: 50px;
+  }
+  .feature-card {
+    background: #fff;
+    padding: 50px 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 15px 10px;
-    font-size: 15px;
-    font-weight: 500;
-    color: #333;
-    cursor: pointer;
-    font-family: var(--font-inter), 'Inter', sans-serif;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 6px;
-  }
-  .accordion-btn:hover {
-    color: #c0392b;
-    background: rgba(192, 57, 43, 0.04);
-    padding-left: 16px;
-  }
-  .accordion-btn.active {
-    color: #c0392b;
-    background: rgba(192, 57, 43, 0.06);
-  }
-  .accordion-btn :global(.acc-plus) {
-    color: #c0392b;
-    flex-shrink: 0;
-    transition: transform 0.35s ease;
-  }
-  .accordion-btn.active :global(.acc-plus) {
-    transform: rotate(45deg);
-  }
-  .accordion-arrow {
-    margin-left: auto;
-    font-size: 12px;
-    color: #999;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .accordion-btn.active .accordion-arrow {
-    transform: rotate(90deg);
-  }
-  .accordion-content {
-    max-height: 0;
+    border: 1px solid rgba(0,0,0,0.04);
+    position: relative;
     overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                padding 0.4s ease;
-    padding: 0 10px;
+    z-index: 1;
   }
-  .accordion-content.open {
-    max-height: 200px;
-    padding: 0 10px 15px;
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #c0392b, #e74c3c);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    z-index: 2;
   }
-  .accordion-content p {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.7;
+  .feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-color: transparent;
   }
-  .why-badge {
+  .feature-card:hover::before {
+    transform: scaleX(1);
+  }
+  .feature-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(192, 57, 43, 0.05); /* very light red/orange */
+    border-radius: 50%;
+    margin-bottom: 25px;
+    color: #c0392b;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    transition: all 0.4s ease;
   }
-  .why-badge img {
-    max-width: 250px;
+  .feature-icon::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px dashed rgba(192, 57, 43, 0.2);
+    animation: spin 15s linear infinite;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  @keyframes spin {
+    100% { transform: rotate(360deg); }
+  }
+  .feature-card:hover .feature-icon {
+    background: #c0392b;
+    color: #fff;
+    transform: scale(1.05);
+  }
+  .feature-card:hover .feature-icon::after {
+    opacity: 1;
+  }
+  .feature-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+    font-family: var(--font-inter), 'Inter', sans-serif;
+  }
+  .feature-card p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
   }
 
   /* Responsive */
+  @media (max-width: 1100px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+  }
   @media (max-width: 900px) {
     .stock-grid { grid-template-columns: repeat(2, 1fr); }
-    .services-grid { grid-template-columns: 1fr; }
-    .why-grid { grid-template-columns: 1fr; }
+    .services-grid { flex-direction: column; align-items: center; }
+    .service-card { width: 100%; max-width: 500px; }
     .ws-headline { font-size: 38px; }
     .ws-content { padding: 60px 30px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -991,6 +925,7 @@ import Icon from '../components/Icon.astro';
     .parts-label { font-size: 11px; padding: 6px 4px; }
   }
   @media (max-width: 600px) {
+    .features-grid { grid-template-columns: 1fr; }
     .stock-grid { grid-template-columns: 1fr; }
     .hero { min-height: 550px; }
     .hero-title { font-size: 28px; }
@@ -1011,17 +946,3 @@ import Icon from '../components/Icon.astro';
   }
 </style>
 
-<script>
-  // Accordion functionality
-  document.querySelectorAll('.accordion-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const wasActive = btn.classList.contains('active');
-      document.querySelectorAll('.accordion-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
-      if (!wasActive) {
-        btn.classList.add('active');
-        btn.closest('.accordion-item')?.querySelector('.accordion-content')?.classList.add('open');
-      }
-    });
-  });
-</script>

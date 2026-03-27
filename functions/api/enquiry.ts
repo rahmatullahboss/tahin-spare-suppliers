@@ -20,7 +20,7 @@ export async function onRequestPost(context: EventContext): Promise<Response> {
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
     const phone = (formData.get('phone') as string) || 'Not provided';
-    const product = (formData.get('product') as string) || 'Not specified';
+    const equipment = (formData.get('equipment') as string) || 'Not specified';
     const message = formData.get('message') as string;
 
     // Honeypot check
@@ -49,8 +49,8 @@ export async function onRequestPost(context: EventContext): Promise<Response> {
       },
       body: JSON.stringify({
         from: 'Tahin Spare Suppliers <onboarding@resend.dev>',
-        to: ['tahinship@gmail.com'],
-        subject: `New Enquiry from ${name} — ${product}`,
+        to: ['rahmatullahzisan@gmail.com'],
+        subject: `New Enquiry from ${name} — ${equipment}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: #c0392b; padding: 20px; text-align: center;">
@@ -71,8 +71,8 @@ export async function onRequestPost(context: EventContext): Promise<Response> {
                   <td style="padding: 10px; color: #555; border-bottom: 1px solid #eee;">${phone}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 10px; font-weight: bold; color: #333; border-bottom: 1px solid #eee;">Product:</td>
-                  <td style="padding: 10px; color: #555; border-bottom: 1px solid #eee;">${product}</td>
+                  <td style="padding: 10px; font-weight: bold; color: #333; border-bottom: 1px solid #eee;">Equipment:</td>
+                  <td style="padding: 10px; color: #555; border-bottom: 1px solid #eee;">${equipment}</td>
                 </tr>
                 <tr>
                   <td style="padding: 10px; font-weight: bold; color: #333; vertical-align: top;">Message:</td>

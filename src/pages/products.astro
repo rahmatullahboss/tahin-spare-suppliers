@@ -5,7 +5,7 @@ const products = [
   {
     name: 'Yanmar 6N18AL Marine Diesel Engine',
     category: 'Marine Propulsion Engine',
-    image: '/images/marine-engine.webp',
+    image: '/images/marine-propulsion-engine.jpg',
   },
   {
     name: '500 KVA Caterpillar Diesel Generator Set',
@@ -23,16 +23,6 @@ const products = [
     image: '/images/marine-gearbox.jpg',
   },
   {
-    name: 'Marine Water Pump & Air Compressor',
-    category: 'Spare Parts',
-    image: '/images/pump-compressor.webp',
-  },
-  {
-    name: 'Fresh Water Generator & Heat Exchanger',
-    category: 'Spare Parts',
-    image: '/images/heat-exchanger.webp',
-  },
-  {
     name: 'Engine Spare Parts — Pistons, Liners, Bearings',
     category: 'Spare Parts',
     image: '/images/spare-parts-new.jpg',
@@ -43,24 +33,9 @@ const products = [
     image: '/images/auxiliary-engine.jpg',
   },
   {
-    name: 'Caterpillar 3512 Marine Propulsion Engine',
-    category: 'Marine Propulsion Engine',
-    image: '/images/marine-engine.webp',
-  },
-  {
-    name: '150 KVA Caterpillar Diesel Generator',
-    category: 'Diesel & Gas Generator Set',
-    image: '/images/diesel-generator-set.jpg',
-  },
-  {
     name: 'Anchor and Chain Set',
     category: 'Anchor and Chain',
     image: '/images/anchor-chain.jpg',
-  },
-  {
-    name: 'MHI MET Marine Turbocharger',
-    category: 'Turbochargers',
-    image: '/images/turbocharger.webp',
   },
 ];
 
@@ -94,9 +69,9 @@ const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbo
             <div class="product-img">
               <img src={product.image} alt={product.name} loading="lazy" />
             </div>
-            <div class="product-overlay">
-              <span class="product-cat">{product.category}</span>
+            <div class="product-content">
               <h3>{product.name}</h3>
+              <span class="view-details">VIEW DETAILS</span>
             </div>
           </div>
         ))}
@@ -112,8 +87,8 @@ const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbo
 <style>
   .page-hero {
     position: relative;
-    height: 250px;
-    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    height: 350px;
+    background: url('/images/services-hero.jpg') center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -165,65 +140,63 @@ const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbo
   }
   .product-card {
     position: relative;
-    height: 300px;
-    border-radius: 12px;
+    border-radius: 0;
+    background: #fff;
+    border: 1px solid #eaeaea;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
     transition: transform 0.35s ease, box-shadow 0.35s ease;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
   }
   .product-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
   }
   .product-card.hidden { display: none; }
   .product-img {
-    position: absolute;
-    inset: 0;
+    width: 100%;
+    height: 240px;
+    position: relative;
+    overflow: hidden;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 92%);
   }
   .product-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.6s ease;
   }
   .product-card:hover .product-img img {
     transform: scale(1.06);
   }
-  .product-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 20px;
-    background: linear-gradient(
-      to top,
-      rgba(26, 26, 46, 0.92) 0%,
-      rgba(26, 26, 46, 0.5) 60%,
-      transparent 100%
-    );
-    color: #fff;
+  .product-content {
+    padding: 24px 24px 30px;
+    background: #fff;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    min-height: 50%;
+    justify-content: center;
   }
-  .product-overlay h3 {
-    font-size: 16px;
-    font-weight: 600;
+  .product-content h3 {
+    font-size: 20px;
+    color: #111;
+    font-weight: 700;
     line-height: 1.4;
-    margin-top: 4px;
+    margin-bottom: 20px;
+    font-family: var(--font-inter), 'Inter', sans-serif;
   }
-  .product-cat {
-    font-size: 11px;
-    color: #c0392b;
+  .view-details {
+    font-size: 13px;
+    color: #e67e22;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    background: rgba(255,255,255,0.12);
-    padding: 2px 10px;
-    border-radius: 3px;
-    width: fit-content;
+    letter-spacing: 0.5px;
+    transition: color 0.3s;
+  }
+  .product-card:hover .view-details {
+    color: #c0392b;
   }
 
   .products-cta {

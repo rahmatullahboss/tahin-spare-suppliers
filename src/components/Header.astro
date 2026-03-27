@@ -9,22 +9,7 @@ const { activeNav = 'home' } = Astro.props;
   <div class="header-container">
     <div class="logo">
       <div class="logo-icon">
-        <!-- Tahin Spare Suppliers — real logo recreation -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="56" height="56" aria-label="Tahin Spare Suppliers Logo">
-          <!-- White circle base -->
-          <circle cx="30" cy="30" r="28" fill="#fff" stroke="#222" stroke-width="2.5"/>
-          <!-- Red upper semicircle (above T crossbar at y=32) -->
-          <clipPath id="top-clip">
-            <rect x="0" y="2" width="60" height="30"/>
-          </clipPath>
-          <circle cx="30" cy="30" r="27.5" fill="#cc0000" clip-path="url(#top-clip)"/>
-          <!-- White T crossbar (horizontal bar spanning the circle middle) -->
-          <rect x="10" y="26" width="40" height="8" fill="#fff" rx="1"/>
-          <!-- Red T stem (vertical bar below crossbar) -->
-          <rect x="23" y="34" width="14" height="20" fill="#cc0000" rx="1"/>
-          <!-- Clip the stem to the circle boundary -->
-          <circle cx="30" cy="30" r="27.5" fill="none" stroke="#222" stroke-width="2.5"/>
-        </svg>
+        <img src="/images/logo.svg" alt="Tahin Spare Suppliers Logo" class="logo-image" width="56" height="56" />
       </div>
       <div class="logo-text">
         <h1 class="company-name">Tahin Spare Suppliers</h1>
@@ -35,10 +20,37 @@ const { activeNav = 'home' } = Astro.props;
     <nav class="header-nav">
       <ul class="nav-links">
         <li><a href="/" class:list={[{ active: activeNav === 'home' }]}>Home</a></li>
-        <li><a href="/products" class:list={[{ active: activeNav === 'products' }]}>Equipments</a></li>
-        <li><a href="/services" class:list={[{ active: activeNav === 'services' }]}>Our Services</a></li>
+        <li class="dropdown">
+          <a href="/about" class:list={[{ active: activeNav === 'about' }]}>About Us <Icon name="chevron-down" size={10} /></a>
+          <ul class="dropdown-menu">
+            <li><a href="/about">Overview</a></li>
+            <li><a href="/our-strength">Our Strength</a></li>
+            <li><a href="/quality-policy">Quality Policy</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="/products" class:list={[{ active: activeNav === 'products' }]}>Equipments <Icon name="chevron-down" size={10} /></a>
+          <ul class="dropdown-menu">
+            <li><a href="/products">All Equipments</a></li>
+            <li><a href="/marine-propulsion-engines">Marine Propulsion Engine</a></li>
+            <li><a href="/products">Marine Gearbox</a></li>
+            <li><a href="/marine-auxillary-engines">Auxiliary Engine</a></li>
+            <li><a href="/diesel-generator-sets">Diesel & Gas Generator Set</a></li>
+            <li><a href="/marine-spare-parts">Spare Parts</a></li>
+            <li><a href="/products">Hydraulic Deck Crane Equipment</a></li>
+            <li><a href="/products">Anchor and Chain</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="/services" class:list={[{ active: activeNav === 'services' }]}>Our Services <Icon name="chevron-down" size={10} /></a>
+          <ul class="dropdown-menu">
+            <li><a href="/services">Service Overview</a></li>
+            <li><a href="/ship-repair">Ship Repair</a></li>
+            <li><a href="/ship-breaking">Ship Breaking & Recycling</a></li>
+            <li><a href="/engine-repower">Engine Repower / Rebuilding</a></li>
+          </ul>
+        </li>
         <li><a href="/enquiry" class:list={[{ active: activeNav === 'enquiry' }]}>Enquiry</a></li>
-        <li><a href="/about" class:list={[{ active: activeNav === 'about' }]}>About Us</a></li>
         <li><a href="/contact" class:list={[{ active: activeNav === 'contact' }]}>Contact Us</a></li>
       </ul>
     </nav>
@@ -120,6 +132,7 @@ const { activeNav = 'home' } = Astro.props;
   .nav-links li {
     display: flex;
     align-items: center;
+    position: relative;
   }
   .nav-links a {
     color: #333;
@@ -150,6 +163,63 @@ const { activeNav = 'home' } = Astro.props;
     right: 14px;
     height: 2px;
     background: #cc0000;
+  }
+
+  /* Dropdown Styles */
+  .dropdown:hover .dropdown-menu {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .dropdown > a {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    min-width: 240px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-top: 3px solid #cc0000;
+    padding: 10px 0;
+    list-style: none;
+    margin: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 1001;
+    display: none;
+    flex-direction: column;
+  }
+  .dropdown-menu li {
+    width: 100%;
+    display: block;
+  }
+  .dropdown-menu a {
+    padding: 10px 20px;
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
+    color: #444;
+    border-bottom: 1px solid #f9f9f9;
+  }
+  .dropdown-menu a::after {
+    display: none !important;
+  }
+  .dropdown-menu li:last-child a {
+    border-bottom: none;
+  }
+  .dropdown-menu a:hover {
+    background: #f9f9f9;
+    color: #cc0000;
+    padding-left: 25px; /* slight indent effect */
   }
 
   .header-right {
@@ -247,6 +317,32 @@ const { activeNav = 'home' } = Astro.props;
       border-left: 5px solid #cc0000;
       color: #cc0000;
     }
+
+    /* Mobile Dropdown resets */
+    .dropdown > a {
+      justify-content: space-between;
+    }
+    .dropdown-menu {
+      position: static;
+      box-shadow: none;
+      border-top: none;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      display: none;
+      background: #fdfdfd;
+      padding-left: 0;
+    }
+    .dropdown.open .dropdown-menu {
+      display: flex;
+    }
+    .dropdown-menu a {
+      padding-left: 40px;
+      font-size: 14px;
+    }
+    .dropdown-menu a:hover {
+      padding-left: 40px;
+    }
   }
 
   @media (max-width: 600px) {
@@ -277,8 +373,24 @@ const { activeNav = 'home' } = Astro.props;
       }
     });
 
-    // Close menu when clicking a link
-    navLinks.querySelectorAll('a').forEach(link => {
+    // Handle mobile dropdown toggles
+    const dropdowns = document.querySelectorAll('.dropdown');
+    dropdowns.forEach(dropdown => {
+      const link = dropdown.querySelector('a');
+      const toggleBtn = document.createElement('span');
+      // For mobile, we attach a click event to toggle the submenu
+      if (window.innerWidth <= 1024) {
+        link?.addEventListener('click', (e) => {
+          if (link.getAttribute('href') !== '#') {
+            // Let the main link click through, but also toggle if they click the chevron part
+          }
+          dropdown.classList.toggle('open');
+        });
+      }
+    });
+
+    // Close menu when clicking a standard link (non-dropdown)
+    navLinks.querySelectorAll('li:not(.dropdown) > a, .dropdown-menu a').forEach(link => {
       link.addEventListener('click', () => {
         navLinks.classList.remove('open');
       });

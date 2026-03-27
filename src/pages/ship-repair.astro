@@ -1,0 +1,114 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+<MainLayout title="Ship Repair - Tahin Spare Suppliers" activeNav="services">
+  <section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1 class="reveal">Ship Repair Services</h1>
+      <p class="reveal">Home / Our Services / Ship Repair</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container service-detail-container">
+      <div class="content-side reveal-left">
+        <h2>Expert Afloat Repairs & Maintenance</h2>
+        <p>Minimizing downtime is critical in the maritime industry. Tahin Spare Suppliers offers comprehensive ship repair and maintenance services, specializing in engine overhauls, mechanical repairs, and hydraulic systems troubleshooting.</p>
+        
+        <div class="features-list">
+          <ul>
+            <li>Main and auxiliary engine major overhauls</li>
+            <li>Turbocharger and fuel injection system servicing</li>
+            <li>Hydraulic crane and winch repairs</li>
+            <li>Rapid response teams available for emergency dockings</li>
+          </ul>
+        </div>
+        
+        <p>Our workshop is fully equipped with advanced diagnostic and repair tools, operated by veteran marine engineers who understand the urgency of vessel operations.</p>
+        
+        <a href="/enquiry" class="btn-primary" style="margin-top: 20px;">Contact for Repair Services</a>
+      </div>
+      <div class="image-side reveal-right img-zoom">
+        <img src="/images/services-hero.jpg" alt="Ship Repair Service" loading="lazy" />
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero {
+    position: relative;
+    height: 350px;
+    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+  .page-hero-content p { font-size: 14px; color: #ddd; }
+
+  .service-detail-container {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  .content-side h2 {
+    font-size: 28px;
+    color: #222;
+    margin-bottom: 20px;
+  }
+  .content-side p {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 15px;
+  }
+  .features-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 25px 0;
+  }
+  .features-list li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    color: #444;
+  }
+  .features-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #c0392b;
+    font-weight: bold;
+  }
+  .image-side img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  .btn-primary {
+    display: inline-block;
+    background: #c0392b;
+    color: #fff;
+    padding: 12px 25px;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: background 0.3s;
+  }
+  .btn-primary:hover {
+    background: #a93226;
+  }
+
+  @media (max-width: 768px) {
+    .service-detail-container { grid-template-columns: 1fr; }
+    .image-side { order: -1; }
+  }
+</style>
