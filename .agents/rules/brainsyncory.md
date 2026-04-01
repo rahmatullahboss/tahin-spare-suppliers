@@ -1,7 +1,7 @@
 
 
 # Project Memory — tahin-spare-suppliers
-> 2331 notes | Score threshold: >40
+> 5907 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,21 +20,22 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in agent.md** — - > 2329 notes | Updated: 3/27/2026
-+ > 2330 notes | Updated: 3/27/202
-- **gotcha in agent.md** — - > 2328 notes | Updated: 3/27/2026
-+ > 2329 notes | Updated: 3/27/202
-- **gotcha in agent.md** — - > 2327 notes | Updated: 3/27/2026
-+ > 2328 notes | Updated: 3/27/202
-- **gotcha in agent.md** — - > 2326 notes | Updated: 3/27/2026
-+ > 2327 notes | Updated: 3/27/202
-- **gotcha in agent.md** — - > 2325 notes | Updated: 3/27/2026
-+ > 2326 notes | Updated: 3/27/202
-- **gotcha in agent.md** — - > 2324 notes | Updated: 3/27/2026
-+ > 2325 notes | Updated: 3/27/202
+- **⚠️ GOTCHA: Updated multiple database schema — evolves the database schema to support new...** — + # Project Memory — tahin-spare-suppliers
++ > 5904 notes | Score thre
+- **⚠️ GOTCHA: Updated multiple database schema — evolves the database schema to support new...** — - > 5902 notes | Updated: 3/30/2026
++ > 5903 notes | Updated: 3/30/202
+- **gotcha in agent.md** — - > 5901 notes | Updated: 3/30/2026
++ > 5902 notes | Updated: 3/30/202
+- **gotcha in agent.md** — - > 5900 notes | Updated: 3/30/2026
++ > 5901 notes | Updated: 3/30/202
+- **gotcha in agent.md** — - > 5899 notes | Updated: 3/30/2026
++ > 5900 notes | Updated: 3/30/202
+- **gotcha in agent.md** — - > 5898 notes | Updated: 3/30/2026
++ > 5899 notes | Updated: 3/30/202
 
 ## Project Standards
 
+- Updated schema Updated — confirmed 3x
 - what-changed in agent.md — confirmed 3x
 - Updated schema Updated — confirmed 3x
 - what-changed in agent.md — confirmed 3x
@@ -42,14 +43,6 @@
 - Fixed null crash in Services — prevents null/undefined runtime crashes — confirmed 3x
 - Fixed null crash in Brands — prevents null/undefined runtime crashes — confirmed 3x
 - what-changed in agent.md — confirmed 18x
-- Updated schema Project — ensures atomic multi-step database operations — confirmed 3x
-
-## Recent Decisions
-
-- decision in Footer.astro
-- decision in Footer.astro
-- decision in services.astro
-- decision in scratchpad_h7mezl7n.md
 
 ## Learned Patterns
 
