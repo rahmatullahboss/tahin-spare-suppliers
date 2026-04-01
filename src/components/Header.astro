@@ -29,12 +29,6 @@ const { activeNav = 'home' } = Astro.props;
     </nav>
 
     <div class="header-right">
-      <div class="social-icons">
-        <a href="#" class="social-icon facebook" aria-label="Facebook"><Icon name="facebook-f" size={14} /></a>
-        <a href="#" class="social-icon twitter" aria-label="Twitter"><Icon name="twitter" size={14} /></a>
-        <a href="#" class="social-icon youtube" aria-label="YouTube"><Icon name="youtube" size={14} /></a>
-        <a href="https://www.linkedin.com/in/tahin-spare-suppliers-a65b133a8/" class="social-icon linkedin" aria-label="LinkedIn" target="_blank" rel="noopener"><Icon name="linkedin-in" size={14} /></a>
-      </div>
       <button class="mobile-menu-btn" aria-label="Menu">
         <Icon name="bars" size={24} />
       </button>
@@ -198,33 +192,8 @@ const { activeNav = 'home' } = Astro.props;
   .header-right {
     display: flex;
     align-items: center;
-    gap: 15px;
     flex-shrink: 0;
   }
-
-  .social-icons {
-    display: flex;
-    gap: 6px;
-  }
-  .social-icon {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 14px;
-    text-decoration: none;
-    transition: transform 0.3s;
-  }
-  .social-icon:hover {
-    transform: translateY(-2px);
-  }
-  .social-icon.facebook { background: #3b5998; }
-  .social-icon.twitter { background: #1da1f2; }
-  .social-icon.youtube { background: #ff0000; }
-  .social-icon.linkedin { background: #0077b5; }
 
   .mobile-menu-btn {
     display: none;
@@ -376,4 +345,3 @@ const { activeNav = 'home' } = Astro.props;
   // Run on view transitions or astro page loads if using them
   document.addEventListener('astro:page-load', setupMobileMenu);
 </script>
-
