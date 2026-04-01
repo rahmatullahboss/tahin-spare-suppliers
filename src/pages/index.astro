@@ -1,17 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
-
-const shipmentImages = [
-  '/images/shipments/shipment-01.webp',
-  '/images/shipments/shipment-02.webp',
-  '/images/shipments/shipment-03.webp',
-  '/images/shipments/shipment-04.webp',
-  '/images/shipments/shipment-05.webp',
-  '/images/shipments/shipment-06.webp',
-  '/images/shipments/shipment-07.webp',
-  '/images/shipments/shipment-08.webp'
-];
 ---
 <MainLayout activeNav="home" preloadImage="/images/hero-bg-new.webp">
   <!-- Hero Section -->
@@ -22,6 +11,37 @@ const shipmentImages = [
       <h2 class="hero-title">WORLD-CLASS<br/>MARINE<br/>SOLUTIONS</h2>
       <p class="hero-subtitle">Your one-stop solution for reconditioned marine engines & equipment</p>
       <a href="/enquiry" class="btn btn-quote">Request a Quote</a>
+    </div>
+    <!-- Spare Parts Strip -->
+    <div class="parts-strip">
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/marine-propulsion-engine.jpg" alt="Marine Engine" loading="eager" />
+        <span class="parts-label">Marine Engine</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/marine-gearbox.jpg" alt="Marine Gearbox" loading="eager" />
+        <span class="parts-label">Marine Gearbox</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/auxiliary-engine.jpg" alt="Auxiliary Engine" loading="eager" />
+        <span class="parts-label">Aux Engine</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/diesel-generator-set.jpg" alt="Diesel Generators" loading="eager" />
+        <span class="parts-label">Generators</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/hydraulic-crane-equipment.jpg" alt="Deck Crane" loading="eager" />
+        <span class="parts-label">Deck Crane</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/anchor-chain.jpg" alt="Anchor & Chain" loading="eager" />
+        <span class="parts-label">Anchor & Chain</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/spare-parts-new.jpg" alt="Spare Parts" loading="eager" />
+        <span class="parts-label">Spare Parts</span>
+      </a>
     </div>
   </section>
 
@@ -169,63 +189,30 @@ const shipmentImages = [
     </div>
   </section>
 
-  <!-- Global Export & Logistics -->
-  <section class="export-logistics">
-    <div class="container">
-      <div class="export-shell">
-        <div class="export-header reveal">
-          <span class="export-kicker">Worldwide Marine Supply Chain</span>
-          <h2 class="export-title">GLOBAL EXPORT &amp; LOGISTICS</h2>
-          <p class="export-subtitle">
-            Proudly serving the global marine industry with secure crating, verified stock handling and complete export documentation for fast overseas delivery.
-          </p>
+  <!-- Workshop & Facility -->
+  <section class="workshop-section">
+    <img src="/images/workshop-facility.webp" alt="Marine Engine Workshop Facility" class="ws-bg" loading="lazy" width="1200" height="1200" />
+    <div class="ws-overlay"></div>
+    <div class="container ws-content">
+      <div class="ws-text reveal-left">
+        <span class="ws-label">Our Workshop & Facility</span>
+        <h2 class="ws-headline">WE STOCK<br/>AND<br/>EXPORT</h2>
+        <p class="ws-desc">Tahin spare suppliers is a leading stockist and global exporter of new, reconditioned and used marine engine and spare parts.</p>
+        <div class="ws-highlights">
+          <div class="ws-highlight-item">
+            <Icon name="tools" size={20} class="ws-hl-icon" />
+            <span>Expert Reconditioning</span>
+          </div>
+          <div class="ws-highlight-item">
+            <Icon name="check" size={20} class="ws-hl-icon" />
+            <span>Quality Tested</span>
+          </div>
+          <div class="ws-highlight-item">
+            <Icon name="globe" size={20} class="ws-hl-icon" />
+            <span>Global Export</span>
+          </div>
         </div>
-        <div class="export-grid reveal-stagger">
-          <article class="export-card">
-            <img src="/images/export-crating.webp" alt="Professional crating of marine engine" loading="lazy" width="900" height="900" />
-            <div class="export-card-content">
-              <h3>Professional Crating &amp;<br/>Secure Packaging.</h3>
-            </div>
-          </article>
-          <article class="export-card">
-            <img src="/images/export-stock.webp" alt="Verified marine stock available" loading="lazy" width="900" height="900" />
-            <div class="export-card-content">
-              <h3>Verified Stock &amp;<br/>Immediate Availability.</h3>
-            </div>
-          </article>
-          <article class="export-card">
-            <img src="/images/export-spare-parts.webp" alt="Wood-crated secure spare parts supply" loading="lazy" width="900" height="900" />
-            <div class="export-card-content">
-              <h3>Secure Wood-Crated<br/>Spare Parts Supply.</h3>
-            </div>
-          </article>
-          <article class="export-card">
-            <img src="/images/export-docs.webp" alt="Complete export documentation" loading="lazy" width="900" height="900" />
-            <div class="export-card-content">
-              <h3>Complete Export<br/>Documentation &amp; Fast<br/>Clearance.</h3>
-            </div>
-          </article>
-        </div>
-        <div class="export-cta reveal">
-          <a href="/enquiry" class="btn btn-quote">Request a Quote</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Our Recent Shipment -->
-  <section class="recent-shipments">
-    <div class="container">
-      <h2 class="recent-shipments-title reveal">SOME OF OUR SHIPMENTS</h2>
-    </div>
-    <div class="recent-shipments-marquee">
-      <div class="recent-shipments-track">
-        {shipmentImages.map((image, index) => (
-          <img src={image} alt={`Recent marine shipment ${index + 1}`} class="shipment-marquee-image" loading="lazy" width="960" height="1280" />
-        ))}
-        {shipmentImages.map((image, index) => (
-          <img src={image} alt="" class="shipment-marquee-image" loading="lazy" width="960" height="1280" aria-hidden="true" />
-        ))}
+        <a href="/enquiry" class="btn btn-quote">Request a Quote</a>
       </div>
     </div>
   </section>
@@ -382,6 +369,64 @@ const shipmentImages = [
   }
   .btn-quote:active {
     transform: translateY(0);
+  }
+
+  /* Spare Parts Strip */
+  .parts-strip {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    background: rgba(245, 245, 245, 0.95);
+    backdrop-filter: blur(10px);
+    margin-top: auto;
+  }
+  .parts-strip-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    border-right: 1px solid rgba(0,0,0,0.08);
+    transition: background 0.3s ease;
+    text-decoration: none;
+  }
+  .parts-strip-item:last-child {
+    border-right: none;
+  }
+  .parts-strip-item:hover {
+    background: rgba(230, 230, 230, 0.95);
+  }
+  .parts-strip-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .parts-strip-item:hover img {
+    transform: scale(1.08);
+  }
+  .parts-label {
+    display: block;
+    padding: 8px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    background: rgba(50, 50, 60, 0.85);
+    width: 100%;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
+    transition: background 0.3s, color 0.3s;
+  }
+  .parts-strip-item:hover .parts-label {
+    background: #c0392b;
+    color: #fff;
   }
 
 
@@ -593,155 +638,89 @@ const shipmentImages = [
     line-height: 1.7;
   }
 
-  /* Global Export & Logistics */
-  .export-logistics {
-    padding: 90px 0;
-    background:
-      linear-gradient(180deg, rgba(255, 248, 229, 0.94), rgba(247, 237, 208, 0.92)),
-      linear-gradient(135deg, #f7eed6 0%, #efe1b4 100%);
-    border-top: 1px solid rgba(166, 124, 82, 0.12);
-    border-bottom: 1px solid rgba(166, 124, 82, 0.12);
-  }
-  .export-shell {
-    max-width: 1040px;
-    margin: 0 auto;
-  }
-  .export-header {
-    max-width: 760px;
-    margin: 0 auto 42px;
-    text-align: center;
-  }
-  .export-kicker {
-    display: inline-block;
-    margin-bottom: 12px;
-    color: #8b6240;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .export-title {
-    margin-bottom: 14px;
-    color: #1d1b17;
-    font-size: 40px;
-    line-height: 1.1;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    font-family: var(--font-playfair), 'Playfair Display', serif;
-  }
-  .export-subtitle {
-    margin: 0;
-    color: #4f4a41;
-    font-size: 16px;
-    line-height: 1.75;
-  }
-  .export-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-  }
-  .export-card {
-    overflow: hidden;
-    border-radius: 22px;
-    background: rgba(255,255,255,0.9);
-    border: 1px solid rgba(166, 124, 82, 0.12);
-    box-shadow: 0 14px 34px rgba(88, 66, 40, 0.14);
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
-  }
-  .export-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 40px rgba(88, 66, 40, 0.18);
-  }
-  .export-card img {
-    width: 100%;
-    height: 280px;
-    object-fit: cover;
-    display: block;
-  }
-  .export-card-content {
-    padding: 20px 22px 24px;
-    text-align: center;
-  }
-  .export-card-content h3 {
-    margin-bottom: 10px;
-    color: #1f1d19;
-    font-size: 21px;
-    line-height: 1.25;
-    font-weight: 700;
-  }
-  .export-card-content p {
-    margin: 0;
-    color: #5e584f;
-    font-size: 14px;
-    line-height: 1.7;
-  }
-  .export-cta {
-    display: flex;
-    justify-content: center;
-    margin-top: 34px;
-  }
-
-  /* Recent Shipment */
-  .recent-shipments {
-    padding: 60px 0 50px;
-    background: #fff;
-    overflow: hidden;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-  }
-  .recent-shipments-title {
-    display: block;
-    width: 100%;
-    text-align: center;
-    font-size: 22px;
-    font-weight: 700;
-    color: #222;
-    margin: 0 auto 32px;
-    letter-spacing: 2px;
-  }
-  .recent-shipments-marquee {
-    overflow: hidden;
+  /* Workshop Section — Full-width Hero Style */
+  .workshop-section {
     position: relative;
-    padding: 10px 0;
-  }
-  .recent-shipments-marquee::before,
-  .recent-shipments-marquee::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 150px;
-    z-index: 2;
-    pointer-events: none;
-  }
-  .recent-shipments-marquee::before {
-    left: 0;
-    background: linear-gradient(to right, #fff, transparent);
-  }
-  .recent-shipments-marquee::after {
-    right: 0;
-    background: linear-gradient(to left, #fff, transparent);
-  }
-  .recent-shipments-track {
+    min-height: 550px;
     display: flex;
-    gap: 18px;
-    width: max-content;
-    animation: marquee-scroll 35s linear infinite;
     align-items: center;
+    overflow: hidden;
   }
-  .shipment-marquee-image {
-    width: 350px;
-    height: 265px;
-    border-radius: 14px;
+  .ws-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    display: block;
-    flex-shrink: 0;
-    opacity: 0.96;
-    transition: transform 0.4s ease, opacity 0.4s ease;
+    z-index: 0;
   }
-  .shipment-marquee-image:hover {
-    transform: scale(1.03);
-    opacity: 1;
+  .ws-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      rgba(30, 40, 60, 0.82) 0%,
+      rgba(25, 35, 55, 0.65) 45%,
+      rgba(15, 25, 45, 0.30) 100%
+    );
+    z-index: 1;
+  }
+  .ws-content {
+    position: relative;
+    z-index: 2;
+    padding: 80px 60px;
+  }
+  .ws-text {
+    max-width: 600px;
+  }
+  .ws-label {
+    display: inline-block;
+    color: #a67c52;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #a67c52;
+    padding-bottom: 6px;
+  }
+  .ws-headline {
+    font-size: 52px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.08;
+    margin-bottom: 22px;
+    font-family: var(--font-inter), 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.35);
+  }
+  .ws-desc {
+    font-size: 15px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.75;
+    margin-bottom: 28px;
+    font-style: italic;
+    max-width: 500px;
+  }
+  .ws-highlights {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .ws-highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.9);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .ws-highlight-item :global(.ws-hl-icon) {
+    color: #a67c52;
+    flex-shrink: 0;
   }
 
   /* Product & Services CTA */
@@ -937,11 +916,13 @@ const shipmentImages = [
     .stock-grid { grid-template-columns: repeat(2, 1fr); }
     .services-grid { flex-direction: column; align-items: center; }
     .service-card { width: 100%; max-width: 500px; }
-    .export-title { font-size: 34px; }
-    .export-card img { height: 240px; }
+    .ws-headline { font-size: 38px; }
+    .ws-content { padding: 60px 30px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .hero-title { font-size: 38px; }
     .hero-content { padding: 60px 30px; }
+    .parts-strip-item img { height: 90px; }
+    .parts-label { font-size: 11px; padding: 6px 4px; }
   }
   @media (max-width: 600px) {
     .features-grid { grid-template-columns: 1fr; }
@@ -950,23 +931,18 @@ const shipmentImages = [
     .hero-title { font-size: 28px; }
     .hero-content { padding: 40px 20px; }
     .hero-subtitle { font-size: 14px; }
-    .export-logistics { padding: 70px 0; }
-    .export-header { margin-bottom: 30px; }
-    .export-title { font-size: 26px; }
-    .export-subtitle { font-size: 14px; }
-    .export-grid { grid-template-columns: 1fr; gap: 18px; }
-    .export-card { border-radius: 18px; }
-    .export-card img { height: 220px; }
-    .export-card-content { padding: 18px 18px 22px; }
-    .export-card-content h3 { font-size: 18px; }
-    .recent-shipments { padding: 50px 0 40px; }
-    .recent-shipments-title { font-size: 18px; margin: 0 auto 24px; }
-    .recent-shipments-marquee::before,
-    .recent-shipments-marquee::after { width: 48px; }
-    .recent-shipments-track { gap: 14px; animation-duration: 28s; }
-    .shipment-marquee-image { width: 280px; height: 210px; border-radius: 12px; }
+    .workshop-section { min-height: 450px; }
+    .ws-headline { font-size: 28px; }
+    .ws-content { padding: 40px 20px; }
+    .ws-desc { font-size: 14px; }
+    .ws-highlights { gap: 16px; }
+    .parts-strip { overflow-x: auto; justify-content: flex-start; }
+    .parts-strip-item { min-width: 130px; flex: 0 0 auto; }
+    .parts-strip-item img { height: 80px; }
+    .parts-label { font-size: 10px; }
     .ps-carousel-track { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 0 10px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
     .stat-num { font-size: 28px; }
   }
 </style>
+
