@@ -1,5 +1,5 @@
 # tahin-spare-suppliers — Project Memory
-# Auto-synced | 5915 observations
+# Auto-synced | 6071 observations
 
 **Stack:** JavaScript
 
@@ -54,4 +54,7 @@ Example:
 > ℹ️ DO NOT call get_context() or get_gotchas() at startup — context above IS your context.
 
 ---
-*Auto-synced | 2026-03-30*
+*Auto-synced | 2026-04-01*
+
+# BrainSync Intelligence (Auto-Synced)
+[BrainSync Rules](.brainsync/agent-rules.md)

@@ -23,6 +23,37 @@ const shipmentImages = [
       <p class="hero-subtitle">Your one-stop solution for reconditioned marine engines & equipment</p>
       <a href="/enquiry" class="btn btn-quote">Request a Quote</a>
     </div>
+    <!-- Spare Parts Strip -->
+    <div class="parts-strip">
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/marine-propulsion-engine.jpg" alt="Marine Engine" loading="eager" />
+        <span class="parts-label">Marine Engine</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/marine-gearbox.jpg" alt="Marine Gearbox" loading="eager" />
+        <span class="parts-label">Marine Gearbox</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/auxiliary-engine.jpg" alt="Auxiliary Engine" loading="eager" />
+        <span class="parts-label">Aux Engine</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/diesel-generator-set.jpg" alt="Diesel Generators" loading="eager" />
+        <span class="parts-label">Generators</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/hydraulic-crane-equipment.jpg" alt="Deck Crane" loading="eager" />
+        <span class="parts-label">Deck Crane</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/anchor-chain.jpg" alt="Anchor & Chain" loading="eager" />
+        <span class="parts-label">Anchor & Chain</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/spare-parts-new.jpg" alt="Spare Parts" loading="eager" />
+        <span class="parts-label">Spare Parts</span>
+      </a>
+    </div>
   </section>
 
   <!-- Who We Are -->
@@ -382,6 +413,64 @@ const shipmentImages = [
   }
   .btn-quote:active {
     transform: translateY(0);
+  }
+
+  /* Spare Parts Strip */
+  .parts-strip {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    background: rgba(245, 245, 245, 0.95);
+    backdrop-filter: blur(10px);
+    margin-top: auto;
+  }
+  .parts-strip-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    border-right: 1px solid rgba(0,0,0,0.08);
+    transition: background 0.3s ease;
+    text-decoration: none;
+  }
+  .parts-strip-item:last-child {
+    border-right: none;
+  }
+  .parts-strip-item:hover {
+    background: rgba(230, 230, 230, 0.95);
+  }
+  .parts-strip-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .parts-strip-item:hover img {
+    transform: scale(1.08);
+  }
+  .parts-label {
+    display: block;
+    padding: 8px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    background: rgba(50, 50, 60, 0.85);
+    width: 100%;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
+    transition: background 0.3s, color 0.3s;
+  }
+  .parts-strip-item:hover .parts-label {
+    background: #c0392b;
+    color: #fff;
   }
 
 
@@ -942,6 +1031,8 @@ const shipmentImages = [
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .hero-title { font-size: 38px; }
     .hero-content { padding: 60px 30px; }
+    .parts-strip-item img { height: 90px; }
+    .parts-label { font-size: 11px; padding: 6px 4px; }
   }
   @media (max-width: 600px) {
     .features-grid { grid-template-columns: 1fr; }
@@ -965,6 +1056,10 @@ const shipmentImages = [
     .recent-shipments-marquee::after { width: 48px; }
     .recent-shipments-track { gap: 14px; animation-duration: 28s; }
     .shipment-marquee-image { width: 280px; height: 210px; border-radius: 12px; }
+    .parts-strip { overflow-x: auto; justify-content: flex-start; }
+    .parts-strip-item { min-width: 130px; flex: 0 0 auto; }
+    .parts-strip-item img { height: 80px; }
+    .parts-label { font-size: 10px; }
     .ps-carousel-track { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 0 10px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
     .stat-num { font-size: 28px; }

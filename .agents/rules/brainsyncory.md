@@ -1,7 +1,7 @@
 
 
 # Project Memory — tahin-spare-suppliers
-> 5907 notes | Score threshold: >40
+> 6063 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,29 +20,33 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **⚠️ GOTCHA: Updated multiple database schema — evolves the database schema to support new...** — + # Project Memory — tahin-spare-suppliers
-+ > 5904 notes | Score thre
-- **⚠️ GOTCHA: Updated multiple database schema — evolves the database schema to support new...** — - > 5902 notes | Updated: 3/30/2026
-+ > 5903 notes | Updated: 3/30/202
-- **gotcha in agent.md** — - > 5901 notes | Updated: 3/30/2026
-+ > 5902 notes | Updated: 3/30/202
-- **gotcha in agent.md** — - > 5900 notes | Updated: 3/30/2026
-+ > 5901 notes | Updated: 3/30/202
-- **gotcha in agent.md** — - > 5899 notes | Updated: 3/30/2026
-+ > 5900 notes | Updated: 3/30/202
-- **gotcha in agent.md** — - > 5898 notes | Updated: 3/30/2026
-+ > 5899 notes | Updated: 3/30/202
+- **gotcha in agent.md** — - > 6060 notes | Updated: 4/1/2026
++ > 6061 notes | Updated: 4/1/2026
+
+- **gotcha in agent.md** — - > 6059 notes | Updated: 4/1/2026
++ > 6060 notes | Updated: 4/1/2026
+
+- **gotcha in agent.md** — - > 6058 notes | Updated: 4/1/2026
++ > 6059 notes | Updated: 4/1/2026
+
+- **gotcha in agent.md** — - > 6057 notes | Updated: 4/1/2026
++ > 6058 notes | Updated: 4/1/2026
+
+- **gotcha in agent.md** — - > 6055 notes | Updated: 4/1/2026
++ > 6057 notes | Updated: 4/1/2026
+
+- **gotcha in agent.md** — - > 6053 notes | Updated: 4/1/2026
++ > 6055 notes | Updated: 4/1/2026
+
 
 ## Project Standards
 
-- Updated schema Updated — confirmed 3x
 - what-changed in agent.md — confirmed 3x
 - Updated schema Updated — confirmed 3x
 - what-changed in agent.md — confirmed 3x
 - Updated schema Updated — confirmed 3x
-- Fixed null crash in Services — prevents null/undefined runtime crashes — confirmed 3x
-- Fixed null crash in Brands — prevents null/undefined runtime crashes — confirmed 3x
-- what-changed in agent.md — confirmed 18x
+- what-changed in agent.md — confirmed 3x
+- Updated schema Updated — confirmed 3x
 
 ## Learned Patterns
 
