@@ -20,36 +20,9 @@ const { activeNav = 'home' } = Astro.props;
     <nav class="header-nav">
       <ul class="nav-links">
         <li><a href="/" class:list={[{ active: activeNav === 'home' }]}>Home</a></li>
-        <li class="dropdown">
-          <a href="/about" class:list={[{ active: activeNav === 'about' }]}>About Us <Icon name="chevron-down" size={10} /></a>
-          <ul class="dropdown-menu">
-            <li><a href="/about">Overview</a></li>
-            <li><a href="/our-strength">Our Strength</a></li>
-            <li><a href="/quality-policy">Quality Policy</a></li>
-          </ul>
-        </li>
-        <li class="dropdown">
-          <a href="/products" class:list={[{ active: activeNav === 'products' }]}>Equipments <Icon name="chevron-down" size={10} /></a>
-          <ul class="dropdown-menu">
-            <li><a href="/products">All Equipments</a></li>
-            <li><a href="/marine-propulsion-engines">Marine Propulsion Engine</a></li>
-            <li><a href="/products">Marine Gearbox</a></li>
-            <li><a href="/marine-auxillary-engines">Auxiliary Engine</a></li>
-            <li><a href="/diesel-generator-sets">Diesel & Gas Generator Set</a></li>
-            <li><a href="/marine-spare-parts">Spare Parts</a></li>
-            <li><a href="/products">Hydraulic Deck Crane Equipment</a></li>
-            <li><a href="/products">Anchor and Chain</a></li>
-          </ul>
-        </li>
-        <li class="dropdown">
-          <a href="/services" class:list={[{ active: activeNav === 'services' }]}>Our Services <Icon name="chevron-down" size={10} /></a>
-          <ul class="dropdown-menu">
-            <li><a href="/services">Service Overview</a></li>
-            <li><a href="/ship-repair">Ship Repair</a></li>
-            <li><a href="/ship-breaking">Ship Breaking & Recycling</a></li>
-            <li><a href="/engine-repower">Engine Repower / Rebuilding</a></li>
-          </ul>
-        </li>
+        <li><a href="/about" class:list={[{ active: activeNav === 'about' }]}>About Us</a></li>
+        <li><a href="/products" class:list={[{ active: activeNav === 'products' }]}>Equipments</a></li>
+        <li><a href="/services" class:list={[{ active: activeNav === 'services' }]}>Our Services</a></li>
         <li><a href="/enquiry" class:list={[{ active: activeNav === 'enquiry' }]}>Enquiry</a></li>
         <li><a href="/contact" class:list={[{ active: activeNav === 'contact' }]}>Contact Us</a></li>
       </ul>

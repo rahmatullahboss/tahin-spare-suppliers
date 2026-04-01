@@ -1,36 +1,35 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 ---
-<MainLayout title="Ship Repair - Tahin Spare Suppliers" activeNav="services">
-  <section class="page-hero">
+<MainLayout title="Anchor and Chain - Tahin Spare Suppliers" activeNav="products">
+  <section class="page-hero" style="background: url('/images/anchor-chain.jpg') center/cover no-repeat;">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
-      <h1 class="reveal">Ship Repair Services</h1>
-      <p class="reveal">Home / Our Services / Ship Repair</p>
+      <h1 class="reveal">Anchor and Chain</h1>
+      <p class="reveal">Home / Equipments / Anchor and Chain</p>
     </div>
   </section>
 
   <section class="section">
-    <div class="container service-detail-container">
+    <div class="container product-detail-container">
       <div class="content-side reveal-left">
-        <h2>Expert Afloat Repairs & Maintenance</h2>
-        <p>Minimizing downtime is critical in the maritime industry. Tahin Spare Suppliers offers comprehensive ship repair and maintenance services, specializing in engine overhauls, mechanical repairs, and hydraulic systems troubleshooting.</p>
+        <h2>Certified Anchoring & Mooring Solutions</h2>
+        <p>We offer a comprehensive stock of marine anchors, stud link anchor chains, and mooring equipment. All our mooring solutions are carefully inspected to meet international maritime safety standards, ensuring secure anchoring for all vessel types.</p>
+        <p><strong>Available Grades:</strong> Grade U2, U3 anchor chains, accompanied by various anchor types (Hall, Speck, AC-14, etc.)</p>
         
         <div class="features-list">
           <ul>
-            <li>Main and auxiliary engine major overhauls</li>
-            <li>Turbocharger and fuel injection system servicing</li>
-            <li>Hydraulic crane and winch repairs</li>
-            <li>Rapid response teams available for emergency dockings</li>
+            <li>High tensile strength and unmatched durability</li>
+            <li>Available in various grades and sizes</li>
+            <li>Complete with shackles, swivels, and Kenter fittings</li>
+            <li>Visual and structural integrity verified before dispatch</li>
           </ul>
         </div>
         
-        <p>Our workshop is fully equipped with advanced diagnostic and repair tools, operated by veteran marine engineers who understand the urgency of vessel operations.</p>
-        
-        <a href="/enquiry" class="btn-primary" style="margin-top: 20px;">Contact for Repair Services</a>
+        <a href="/enquiry" class="btn-primary" style="margin-top: 20px;">Request Inventory List</a>
       </div>
       <div class="image-side reveal-right img-zoom">
-        <img src="/images/services-hero.jpg" alt="Ship Repair Service" loading="lazy" />
+        <img src="/images/anchor-chain.jpg" alt="Anchor and Chain Set" loading="lazy" />
       </div>
     </div>
   </section>
@@ -40,7 +39,6 @@ import MainLayout from '../layouts/MainLayout.astro';
   .page-hero {
     position: relative;
     height: 350px;
-    background: url('/images/hero-bg.webp') center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -51,7 +49,7 @@ import MainLayout from '../layouts/MainLayout.astro';
   .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
   .page-hero-content p { font-size: 14px; color: #ddd; }
 
-  .service-detail-container {
+  .product-detail-container {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 50px;
@@ -108,7 +106,7 @@ import MainLayout from '../layouts/MainLayout.astro';
   }
 
   @media (max-width: 768px) {
-    .service-detail-container { grid-template-columns: 1fr; }
+    .product-detail-container { grid-template-columns: 1fr; }
     .image-side { order: -1; }
   }
 </style>

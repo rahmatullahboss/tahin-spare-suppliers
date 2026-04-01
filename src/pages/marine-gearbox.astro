@@ -1,36 +1,35 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 ---
-<MainLayout title="Engine Repower / Rebuilding - Tahin Spare Suppliers" activeNav="services">
-  <section class="page-hero">
+<MainLayout title="Marine Gearbox - Tahin Spare Suppliers" activeNav="products">
+  <section class="page-hero" style="background: url('/images/marine-gearbox.jpg') center/cover no-repeat;">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
-      <h1 class="reveal">Engine Repower / Rebuilding</h1>
-      <p class="reveal">Home / Our Services / Engine Repower / Rebuilding</p>
+      <h1 class="reveal">Marine Gearbox</h1>
+      <p class="reveal">Home / Equipments / Marine Gearbox</p>
     </div>
   </section>
 
   <section class="section">
-    <div class="container service-detail-container">
+    <div class="container product-detail-container">
       <div class="content-side reveal-left">
-        <h2>Breathe New Life into Your Vessel</h2>
-        <p>Engine repowering involves replacing an aging, inefficient propulsion system with a reconditioned, higher-performing unit. Our engine rebuilding services restore existing engines to their original performance specifications.</p>
+        <h2>Heavy-Duty Marine Transmission Systems</h2>
+        <p>We supply robust, reconditioned marine gearboxes and transmission systems. Designed for durability and smooth power transfer, our units are stripped, inspected, and tested to ensure peak performance under challenging maritime conditions.</p>
+        <p><strong>Available Brands:</strong> Reintjes, ZF, Twin Disc, Masson, Dong-I, Advance, and more.</p>
         
         <div class="features-list">
           <ul>
-            <li>Complete engine block rebuilding and machining</li>
-            <li>Replacement of worn out pistons, rings, and liners</li>
-            <li>Fuel systems and turbocharger calibration</li>
-            <li>Cost-effective alternative to purchasing new vessels</li>
+            <li>Complete overhaul and rigorous testing</li>
+            <li>High torque capacity and reliability</li>
+            <li>Readily available replacement components</li>
+            <li>Fast worldwide shipping network</li>
           </ul>
         </div>
         
-        <p>A successful repower can dramatically reduce fuel consumption, lower maintenance costs, and increase vessel reliability for years to come.</p>
-        
-        <a href="/enquiry" class="btn-primary" style="margin-top: 20px;">Contact for Rebuilding Services</a>
+        <a href="/enquiry" class="btn-primary" style="margin-top: 20px;">Request Inventory List</a>
       </div>
       <div class="image-side reveal-right img-zoom">
-        <img src="/images/marine-propulsion-engine.jpg" alt="Engine Repower / Rebuilding" loading="lazy" />
+        <img src="/images/marine-gearbox.jpg" alt="Marine Gearbox" loading="lazy" />
       </div>
     </div>
   </section>
@@ -40,7 +39,6 @@ import MainLayout from '../layouts/MainLayout.astro';
   .page-hero {
     position: relative;
     height: 350px;
-    background: url('/images/hero-bg.webp') center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -51,7 +49,7 @@ import MainLayout from '../layouts/MainLayout.astro';
   .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
   .page-hero-content p { font-size: 14px; color: #ddd; }
 
-  .service-detail-container {
+  .product-detail-container {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 50px;
@@ -108,7 +106,7 @@ import MainLayout from '../layouts/MainLayout.astro';
   }
 
   @media (max-width: 768px) {
-    .service-detail-container { grid-template-columns: 1fr; }
+    .product-detail-container { grid-template-columns: 1fr; }
     .image-side { order: -1; }
   }
 </style>

@@ -6,36 +6,43 @@ const products = [
     name: 'Yanmar 6N18AL Marine Diesel Engine',
     category: 'Marine Propulsion Engine',
     image: '/images/marine-propulsion-engine.jpg',
+    link: '/marine-propulsion-engines'
   },
   {
     name: '500 KVA Caterpillar Diesel Generator Set',
     category: 'Diesel & Gas Generator Set',
     image: '/images/diesel-generator-set.jpg',
+    link: '/diesel-generator-sets'
   },
   {
     name: 'Hydraulic Luffing Winch System',
     category: 'Hydraulic Deck Crane Equipment',
     image: '/images/hydraulic-crane-equipment.jpg',
+    link: '/hydraulic-crane-equipment'
   },
   {
     name: 'Marine Gearbox - Various Models',
     category: 'Marine Gearbox',
     image: '/images/marine-gearbox.jpg',
+    link: '/marine-gearbox'
   },
   {
     name: 'Engine Spare Parts — Pistons, Liners, Bearings',
     category: 'Spare Parts',
     image: '/images/spare-parts-new.jpg',
+    link: '/marine-spare-parts'
   },
   {
     name: 'Daihatsu 6DK-20 Auxiliary Engine',
     category: 'Auxiliary Engine',
     image: '/images/auxiliary-engine.jpg',
+    link: '/marine-auxillary-engines'
   },
   {
     name: 'Anchor and Chain Set',
     category: 'Anchor and Chain',
     image: '/images/anchor-chain.jpg',
+    link: '/anchor-and-chain'
   },
 ];
 
@@ -65,7 +72,7 @@ const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbo
 
       <div class="products-grid reveal-stagger" id="products-grid">
         {products.map((product) => (
-          <div class="product-card" data-category={product.category}>
+          <a href={product.link} class="product-card" data-category={product.category} style="text-decoration: none;">
             <div class="product-img">
               <img src={product.image} alt={product.name} loading="lazy" />
             </div>
@@ -73,7 +80,7 @@ const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbo
               <h3>{product.name}</h3>
               <span class="view-details">VIEW DETAILS</span>
             </div>
-          </div>
+          </a>
         ))}
       </div>
 
