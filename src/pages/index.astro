@@ -47,21 +47,37 @@ const shipmentImages = [
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- Categories Grid -->
-  <section class="home-categories">
-    <div class="container">
-      <div class="cat-grid reveal-stagger">
-         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/marine-propulsion-engine.jpg" alt="Marine Engine"></div><span>Marine Engine</span></a>
-         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/spare-parts-new.jpg" alt="Engine Spare Parts"></div><span>Engine Spare Parts</span></a>
-         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/hydraulic-crane-equipment.jpg" alt="Hydraulic Crane"></div><span>Hydraulic Crane</span></a>
-         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/diesel-generator-set.jpg" alt="Diesel Generator"></div><span>Diesel Generator</span></a>
-         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/pump-compressor.webp" alt="Purifier and Filter"></div><span>Purifier and Filter</span></a>
-         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/engine.webp" alt="Water Pump"></div><span>Water Pump</span></a>
-         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/shipping-dock.jpg" alt="MS Plates"></div><span>MS Plates</span></a>
-         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/heat-exchanger.webp" alt="Heat Exchanger"></div><span>Heat Exchanger</span></a>
-      </div>
+    
+    <!-- Spare Parts Strip -->
+    <div class="parts-strip">
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/marine-propulsion-engine.jpg" alt="Marine Engine" loading="eager" />
+        <span class="parts-label">Marine Engine</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/marine-gearbox.jpg" alt="Marine Gearbox" loading="eager" />
+        <span class="parts-label">Marine Gearbox</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/auxiliary-engine.jpg" alt="Auxiliary Engine" loading="eager" />
+        <span class="parts-label">Aux Engine</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/diesel-generator-set.jpg" alt="Diesel Generators" loading="eager" />
+        <span class="parts-label">Generators</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/hydraulic-crane-equipment.jpg" alt="Deck Crane" loading="eager" />
+        <span class="parts-label">Deck Crane</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/anchor-chain.jpg" alt="Anchor & Chain" loading="eager" />
+        <span class="parts-label">Anchor & Chain</span>
+      </a>
+      <a href="/products" class="parts-strip-item">
+        <img src="/images/spare-parts-new.jpg" alt="Spare Parts" loading="eager" />
+        <span class="parts-label">Spare Parts</span>
+      </a>
     </div>
   </section>
 
@@ -399,6 +415,7 @@ const shipmentImages = [
     height: 100%;
     align-items: center;
     justify-content: space-between;
+    padding-bottom: 120px;
   }
   .hero-left {
     flex: 0 0 50%;
@@ -507,75 +524,82 @@ const shipmentImages = [
     background: #b11623;
   }
   
-  /* Categories Grid */
-  .home-categories {
-    padding: 60px 0;
-    background: #fdfdfd;
+  /* Spare Parts Strip */
+  .parts-strip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    background: rgba(245, 245, 245, 0.95);
+    backdrop-filter: blur(10px);
   }
-  .cat-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-  }
-  .cat-card {
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  .parts-strip-item {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    text-decoration: none;
-    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-    border: 1px solid #f0f0f0;
-  }
-  .cat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(177, 22, 35, 0.15);
-    border-color: #b11623;
-  }
-  .cat-img {
-    height: 160px;
-    overflow: hidden;
-    display: flex;
     align-items: center;
-    justify-content: center;
-    background: #fff;
-    padding: 10px;
+    gap: 0;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    border-right: 1px solid rgba(0,0,0,0.08);
+    transition: background 0.3s ease;
+    text-decoration: none;
   }
-  .cat-img img {
-    height: 100%;
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
+  .parts-strip-item:last-child {
+    border-right: none;
   }
-  .cat-card span {
+  .parts-strip-item:hover {
+    background: rgba(230, 230, 230, 0.95);
+  }
+  .parts-strip-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  .parts-strip-item:hover img {
+    transform: scale(1.08);
+  }
+  .parts-label {
     display: block;
-    padding: 12px;
-    text-align: center;
+    padding: 8px 6px;
+    font-size: 12px;
     font-weight: 600;
-    color: #444;
-    background: #fafafa;
-    font-size: 14px;
-    border-top: 1px solid #f0f0f0;
+    color: #fff;
+    text-align: center;
+    background: rgba(50, 50, 60, 0.85);
+    width: 100%;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
     transition: background 0.3s, color 0.3s;
   }
-  .cat-card:hover span {
+  .parts-strip-item:hover .parts-label {
     background: #b11623;
     color: #fff;
   }
 
   @media (max-width: 991px) {
     .hero-bg-accent { width: 100%; clip-path: none; opacity: 0.95; }
-    .hero-container { flex-direction: column; text-align: center; justify-content: center; padding-top: 40px;}
+    .hero-container { flex-direction: column; text-align: center; justify-content: center; padding-top: 40px; padding-bottom: 120px; }
     .hero-left, .hero-right { flex: 0 0 auto; width: 100%; padding: 0; }
     .hero-left { margin-bottom: 20px; z-index: 5;}
     .hero-desc { margin: 20px auto; }
-    .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
-    .hero.redesigned-hero { height: auto; min-height: 700px; padding-bottom: 40px; }
+    .hero.redesigned-hero { height: auto; min-height: 700px; padding-bottom: 0px; }
+    .parts-strip-item img { height: 90px; }
+  }
+  @media (max-width: 768px) {
+    .parts-strip { overflow-x: auto; justify-content: flex-start; }
+    .parts-strip-item { min-width: 130px; flex: 0 0 auto; }
+    .parts-strip-item img { height: 80px; }
   }
   @media (max-width: 576px) {
     .hero-title { font-size: 28px; }
-    .cat-grid { grid-template-columns: repeat(1, 1fr); }
   }
 
 

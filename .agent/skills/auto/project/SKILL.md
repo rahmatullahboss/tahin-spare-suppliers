@@ -1,6 +1,6 @@
 ---
 name: project
-description: "Project for tahin-spare-suppliers. 5927 gotchas, 103 conventions, 7 fixes."
+description: "Project for tahin-spare-suppliers. 5967 gotchas, 103 conventions, 7 fixes."
 domain: project
 triggers:
   - glob: "**/*"
@@ -10,7 +10,7 @@ enabled: true
 
 # Project
 
-Auto-compiled from **6426 real patterns** in **tahin-spare-suppliers**. This skill is auto-routed to agents when working on project files.
+Auto-compiled from **6468 real patterns** in **tahin-spare-suppliers**. This skill is auto-routed to agents when working on project files.
 
 ## ⚠️ Anti-Patterns & Gotchas
 
@@ -18,6 +18,46 @@ Auto-compiled from **6426 real patterns** in **tahin-spare-suppliers**. This ski
 
 | ❌ Don't | Details |
 |----------|----------|
+| gotcha in agent.md | - > 6468 notes - Updated: 4/2/2026 + > 6469 notes - Updated: 4/2/2026 - - 5965 warnings → see `.agen |
+| gotcha in agent.md | - > 6467 notes - Updated: 4/2/2026 + > 6468 notes - Updated: 4/2/2026 - - 5964 warnings → see `.agen |
+| gotcha in agent.md | - > 6466 notes - Updated: 4/2/2026 + > 6467 notes - Updated: 4/2/2026 - - 5963 warnings → see `.agen |
+| gotcha in agent.md | - > 6465 notes - Updated: 4/2/2026 + > 6466 notes - Updated: 4/2/2026 - - 5962 warnings → see `.agen |
+| gotcha in agent.md | - > 6464 notes - Updated: 4/2/2026 + > 6465 notes - Updated: 4/2/2026 - - 5961 warnings → see `.agen |
+| gotcha in agent.md | - > 6463 notes - Updated: 4/2/2026 + > 6464 notes - Updated: 4/2/2026 - - 5960 warnings → see `.agen |
+| gotcha in agent.md | - > 6462 notes - Updated: 4/2/2026 + > 6463 notes - Updated: 4/2/2026 - - 5959 warnings → see `.agen |
+| gotcha in agent.md | - > 6461 notes - Updated: 4/2/2026 + > 6462 notes - Updated: 4/2/2026 - - 5958 warnings → see `.agen |
+| gotcha in agent.md | - > 6460 notes - Updated: 4/2/2026 + > 6461 notes - Updated: 4/2/2026 - - 5957 warnings → see `.agen |
+| gotcha in agent.md | - > 6459 notes - Updated: 4/2/2026 + > 6460 notes - Updated: 4/2/2026 - - 5956 warnings → see `.agen |
+| gotcha in agent.md | - > 6458 notes - Updated: 4/2/2026 + > 6459 notes - Updated: 4/2/2026 - - 5955 warnings → see `.agen |
+| gotcha in agent.md | - > 6457 notes - Updated: 4/2/2026 + > 6458 notes - Updated: 4/2/2026 - - 5954 warnings → see `.agen |
+| gotcha in agent.md | - > 6456 notes - Updated: 4/2/2026 + > 6457 notes - Updated: 4/2/2026 - - 5953 warnings → see `.agen |
+| gotcha in agent.md | - > 6455 notes - Updated: 4/2/2026 + > 6456 notes - Updated: 4/2/2026 - - 5952 warnings → see `.agen |
+| gotcha in agent.md | - > 6454 notes - Updated: 4/2/2026 + > 6455 notes - Updated: 4/2/2026 - - 5951 warnings → see `.agen |
+| gotcha in agent.md | - > 6453 notes - Updated: 4/2/2026 + > 6454 notes - Updated: 4/2/2026 - - 5950 warnings → see `.agen |
+| gotcha in agent.md | - > 6452 notes - Updated: 4/2/2026 + > 6453 notes - Updated: 4/2/2026 - - 5949 warnings → see `.agen |
+| gotcha in agent.md | - > 6451 notes - Updated: 4/2/2026 + > 6452 notes - Updated: 4/2/2026 - - 5948 warnings → see `.agen |
+| ⚠️ GOTCHA: Updated multiple database schema | - > 6449 notes - Updated: 4/2/2026 + > 6451 notes - Updated: 4/2/2026 - - 5946 warnings → see `.agen |
+| ⚠️ GOTCHA: Updated multiple database schema — evol | + # Project Memory — tahin-spare-suppliers + > 6450 notes - Score threshold: >40 +  + ## Safety — Ne |
+| gotcha in agent.md | - > 6448 notes - Updated: 4/2/2026 + > 6449 notes - Updated: 4/2/2026 - - 5945 warnings → see `.agen |
+| gotcha in agent.md | - > 6447 notes - Updated: 4/2/2026 + > 6448 notes - Updated: 4/2/2026 - - 5944 warnings → see `.agen |
+| gotcha in agent.md | - > 6446 notes - Updated: 4/2/2026 + > 6447 notes - Updated: 4/2/2026 - - 5943 warnings → see `.agen |
+| gotcha in agent.md | - > 6445 notes - Updated: 4/2/2026 + > 6446 notes - Updated: 4/2/2026 - - 5942 warnings → see `.agen |
+| gotcha in agent.md | - > 6444 notes - Updated: 4/2/2026 + > 6445 notes - Updated: 4/2/2026 - - 5941 warnings → see `.agen |
+| gotcha in agent.md | - > 6443 notes - Updated: 4/2/2026 + > 6444 notes - Updated: 4/2/2026 - - 5940 warnings → see `.agen |
+| gotcha in agent.md | - > 6442 notes - Updated: 4/2/2026 + > 6443 notes - Updated: 4/2/2026 - - 5939 warnings → see `.agen |
+| gotcha in agent.md | - > 6441 notes - Updated: 4/2/2026 + > 6442 notes - Updated: 4/2/2026 - - 5938 warnings → see `.agen |
+| gotcha in agent.md | - > 6440 notes - Updated: 4/2/2026 + > 6441 notes - Updated: 4/2/2026 - - 5937 warnings → see `.agen |
+| gotcha in agent.md | - > 6438 notes - Updated: 4/2/2026 + > 6440 notes - Updated: 4/2/2026 - - 5936 warnings → see `.agen |
+| gotcha in agent.md | - > 6436 notes - Updated: 4/2/2026 + > 6438 notes - Updated: 4/2/2026 - - 5935 warnings → see `.agen |
+| gotcha in agent.md | - > 6435 notes - Updated: 4/2/2026 + > 6436 notes - Updated: 4/2/2026 - - 5934 warnings → see `.agen |
+| gotcha in agent.md | - > 6434 notes - Updated: 4/2/2026 + > 6435 notes - Updated: 4/2/2026 - - 5933 warnings → see `.agen |
+| gotcha in agent.md | - > 6433 notes - Updated: 4/2/2026 + > 6434 notes - Updated: 4/2/2026 - - 5932 warnings → see `.agen |
+| gotcha in agent.md | - > 6432 notes - Updated: 4/2/2026 + > 6433 notes - Updated: 4/2/2026 - - 5931 warnings → see `.agen |
+| gotcha in agent.md | - > 6431 notes - Updated: 4/2/2026 + > 6432 notes - Updated: 4/2/2026 - - 5930 warnings → see `.agen |
+| gotcha in agent.md | - > 6430 notes - Updated: 4/2/2026 + > 6431 notes - Updated: 4/2/2026 - - 5929 warnings → see `.agen |
+| gotcha in agent.md | - > 6429 notes - Updated: 4/2/2026 + > 6430 notes - Updated: 4/2/2026 - - 5928 warnings → see `.agen |
+| ⚠️ GOTCHA: Updated multiple database schema | - > 6427 notes - Updated: 4/2/2026 + > 6429 notes - Updated: 4/2/2026 - - 5926 warnings → see `.agen |
+| ⚠️ GOTCHA: Updated multiple database schema — evol | + # Project Memory — tahin-spare-suppliers + > 6428 notes - Score threshold: >40 +  + ## Safety — Ne |
 | gotcha in agent.md | - > 6426 notes - Updated: 4/2/2026 + > 6427 notes - Updated: 4/2/2026 - - 5925 warnings → see `.agen |
 | gotcha in agent.md | - > 6425 notes - Updated: 4/2/2026 + > 6426 notes - Updated: 4/2/2026 - - 5924 warnings → see `.agen |
 | gotcha in agent.md | - > 6424 notes - Updated: 4/2/2026 + > 6425 notes - Updated: 4/2/2026 - - 5923 warnings → see `.agen |
@@ -28,46 +68,6 @@ Auto-compiled from **6426 real patterns** in **tahin-spare-suppliers**. This ski
 | gotcha in agent.md | - > 6419 notes - Updated: 4/2/2026 + > 6420 notes - Updated: 4/2/2026 - - 5918 warnings → see `.agen |
 | gotcha in agent.md | - > 6418 notes - Updated: 4/2/2026 + > 6419 notes - Updated: 4/2/2026 - - 5917 warnings → see `.agen |
 | gotcha in agent.md | - > 6417 notes - Updated: 4/2/2026 + > 6418 notes - Updated: 4/2/2026 - - 5916 warnings → see `.agen |
-| gotcha in agent.md | - > 6416 notes - Updated: 4/2/2026 + > 6417 notes - Updated: 4/2/2026 - - 5915 warnings → see `.agen |
-| gotcha in agent.md | - > 6415 notes - Updated: 4/2/2026 + > 6416 notes - Updated: 4/2/2026 - - 5914 warnings → see `.agen |
-| gotcha in agent.md | - > 6414 notes - Updated: 4/2/2026 + > 6415 notes - Updated: 4/2/2026 - - 5913 warnings → see `.agen |
-| gotcha in agent.md | - > 6413 notes - Updated: 4/2/2026 + > 6414 notes - Updated: 4/2/2026 - - 5912 warnings → see `.agen |
-| gotcha in agent.md | - > 6412 notes - Updated: 4/2/2026 + > 6413 notes - Updated: 4/2/2026 - - 5911 warnings → see `.agen |
-| gotcha in agent.md | - > 6411 notes - Updated: 4/2/2026 + > 6412 notes - Updated: 4/2/2026 - - 5910 warnings → see `.agen |
-| gotcha in agent.md | - > 6409 notes - Updated: 4/2/2026 + > 6411 notes - Updated: 4/2/2026 - - 5909 warnings → see `.agen |
-| gotcha in agent.md | - > 6407 notes - Updated: 4/2/2026 + > 6409 notes - Updated: 4/2/2026 - - 5908 warnings → see `.agen |
-| ⚠️ GOTCHA: Updated multiple database schema | - > 6405 notes - Updated: 4/2/2026 + > 6407 notes - Updated: 4/2/2026 - - 5906 warnings → see `.agen |
-| ⚠️ GOTCHA: Updated multiple database schema — evol | + # Project Memory — tahin-spare-suppliers + > 6406 notes - Score threshold: >40 +  + ## Safety — Ne |
-| gotcha in agent.md | - > 6404 notes - Updated: 4/2/2026 + > 6405 notes - Updated: 4/2/2026 - - 5905 warnings → see `.agen |
-| gotcha in agent.md | - > 6403 notes - Updated: 4/2/2026 + > 6404 notes - Updated: 4/2/2026 - - 5904 warnings → see `.agen |
-| gotcha in agent.md | - > 6402 notes - Updated: 4/2/2026 + > 6403 notes - Updated: 4/2/2026 - - 5903 warnings → see `.agen |
-| gotcha in agent.md | - > 6400 notes - Updated: 4/2/2026 + > 6402 notes - Updated: 4/2/2026 - - 5902 warnings → see `.agen |
-| gotcha in agent.md | - > 6399 notes - Updated: 4/2/2026 + > 6400 notes - Updated: 4/2/2026 - - 5901 warnings → see `.agen |
-| gotcha in agent.md | - > 6398 notes - Updated: 4/2/2026 + > 6399 notes - Updated: 4/2/2026 - - 5900 warnings → see `.agen |
-| gotcha in agent.md | - > 6397 notes - Updated: 4/2/2026 + > 6398 notes - Updated: 4/2/2026 - - 5899 warnings → see `.agen |
-| gotcha in agent.md | - > 6396 notes - Updated: 4/2/2026 + > 6397 notes - Updated: 4/2/2026 - - 5898 warnings → see `.agen |
-| ⚠️ GOTCHA: Updated multiple database schema | - > 6387 notes - Updated: 4/1/2026 + > 6396 notes - Updated: 4/2/2026 - - 5897 warnings → see `.agen |
-| gotcha in agent.md | File updated (external): agent.md  Content summary (206 lines): # Project Notes — tahin-spare-suppli |
-| gotcha in agent.md | - > 6385 notes - Updated: 4/1/2026 + > 6386 notes - Updated: 4/1/2026 - - 5895 warnings → see `.agen |
-| gotcha in agent.md | - > 6384 notes - Updated: 4/1/2026 + > 6385 notes - Updated: 4/1/2026 - - 5894 warnings → see `.agen |
-| ⚠️ GOTCHA: Updated multiple database schema | - > 6382 notes - Updated: 4/1/2026 + > 6384 notes - Updated: 4/1/2026 - - 5892 warnings → see `.agen |
-| ⚠️ GOTCHA: Updated multiple database schema — evol | + # Project Memory — tahin-spare-suppliers + > 6383 notes - Score threshold: >40 +  + ## Safety — Ne |
-| gotcha in agent.md | - > 6381 notes - Updated: 4/1/2026 + > 6382 notes - Updated: 4/1/2026 - - 5891 warnings → see `.agen |
-| gotcha in agent.md | - > 6380 notes - Updated: 4/1/2026 + > 6381 notes - Updated: 4/1/2026 - - 5890 warnings → see `.agen |
-| gotcha in agent.md | - > 6379 notes - Updated: 4/1/2026 + > 6380 notes - Updated: 4/1/2026 - - 5889 warnings → see `.agen |
-| gotcha in agent.md | - > 6378 notes - Updated: 4/1/2026 + > 6379 notes - Updated: 4/1/2026 - - 5888 warnings → see `.agen |
-| gotcha in agent.md | - > 6377 notes - Updated: 4/1/2026 + > 6378 notes - Updated: 4/1/2026 - - 5887 warnings → see `.agen |
-| gotcha in agent.md | - > 6376 notes - Updated: 4/1/2026 + > 6377 notes - Updated: 4/1/2026 - - 5886 warnings → see `.agen |
-| gotcha in agent.md | - > 6375 notes - Updated: 4/1/2026 + > 6376 notes - Updated: 4/1/2026 - - 5885 warnings → see `.agen |
-| gotcha in agent.md | - > 6374 notes - Updated: 4/1/2026 + > 6375 notes - Updated: 4/1/2026 - - 5884 warnings → see `.agen |
-| gotcha in agent.md | - > 6373 notes - Updated: 4/1/2026 + > 6374 notes - Updated: 4/1/2026 - - 5883 warnings → see `.agen |
-| gotcha in agent.md | - > 6372 notes - Updated: 4/1/2026 + > 6373 notes - Updated: 4/1/2026 - - 5882 warnings → see `.agen |
-| gotcha in agent.md | - > 6371 notes - Updated: 4/1/2026 + > 6372 notes - Updated: 4/1/2026 - - 5881 warnings → see `.agen |
-| gotcha in agent.md | - > 6370 notes - Updated: 4/1/2026 + > 6371 notes - Updated: 4/1/2026 - - 5880 warnings → see `.agen |
-| gotcha in agent.md | - > 6369 notes - Updated: 4/1/2026 + > 6370 notes - Updated: 4/1/2026 - - 5879 warnings → see `.agen |
-| gotcha in agent.md | - > 6368 notes - Updated: 4/1/2026 + > 6369 notes - Updated: 4/1/2026 - - 5878 warnings → see `.agen |
-| gotcha in agent.md | - > 6367 notes - Updated: 4/1/2026 + > 6368 notes - Updated: 4/1/2026 - - 5877 warnings → see `.agen |
-| gotcha in agent.md | - > 6366 notes - Updated: 4/1/2026 + > 6367 notes - Updated: 4/1/2026 - - 5876 warnings → see `.agen |
 
 ## 🔧 Problem Playbooks
 
@@ -224,6 +224,7 @@ Content
 - > 5905 notes | Score thres
 - 📐 **Updated schema Updated — confirmed 3x** — - > 4466 notes | Updated: 3/28/2026
 + > 4467 notes | Updated: 3/28/2026
-- - 3988 warnings 
+- - 3988 warnings → see `.ag
+- 📐 **what-ch
 
 ... [Truncated — see individual observations for full content]
