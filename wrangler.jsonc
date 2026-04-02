@@ -13,11 +13,5 @@
       "binding": "SESSION",
       "id": "e8d999cbc9f74919ab062abb24b976c9"
     }
-  ],
-  "vars": {
-    "DATABASE_URL": "",
-    "ADMIN_PASSWORD": "",
-    "SESSION_SECRET": "",
-    "MEDIA_PUBLIC_URL": ""
-  }
+  ]
 }
