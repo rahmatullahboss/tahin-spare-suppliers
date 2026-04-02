@@ -2,7 +2,6 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tahin-spare-suppliers",
   "compatibility_date": "2026-03-29",
-  "pages_build_output_dir": "dist",
   "r2_buckets": [
     {
       "binding": "MEDIA_BUCKET",
