@@ -14,56 +14,104 @@ const shipmentImages = [
 ];
 ---
 <MainLayout activeNav="home" preloadImage="/images/hero-bg-new.webp">
-  <!-- Hero Section -->
-  <section class="hero">
-    <img src="/images/hero-bg-new.webp" alt="" class="hero-bg" fetchpriority="high" loading="eager" decoding="sync" width="1376" height="768" />
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <h2 class="hero-title">WORLD-CLASS<br/>MARINE<br/>SOLUTIONS</h2>
-      <p class="hero-subtitle">Your one-stop solution for reconditioned marine engines & equipment</p>
-      <a href="/enquiry" class="btn btn-quote">Request a Quote</a>
-    </div>
-    <!-- Spare Parts Strip -->
-    <div class="parts-strip">
-      <a href="/products" class="parts-strip-item">
-        <img src="/images/marine-propulsion-engine.jpg" alt="Marine Engine" loading="eager" />
-        <span class="parts-label">Marine Engine</span>
-      </a>
-      <a href="/products" class="parts-strip-item">
-        <img src="/images/marine-gearbox.jpg" alt="Marine Gearbox" loading="eager" />
-        <span class="parts-label">Marine Gearbox</span>
-      </a>
-      <a href="/products" class="parts-strip-item">
-        <img src="/images/auxiliary-engine.jpg" alt="Auxiliary Engine" loading="eager" />
-        <span class="parts-label">Aux Engine</span>
-      </a>
-      <a href="/products" class="parts-strip-item">
-        <img src="/images/diesel-generator-set.jpg" alt="Diesel Generators" loading="eager" />
-        <span class="parts-label">Generators</span>
-      </a>
-      <a href="/products" class="parts-strip-item">
-        <img src="/images/hydraulic-crane-equipment.jpg" alt="Deck Crane" loading="eager" />
-        <span class="parts-label">Deck Crane</span>
-      </a>
-      <a href="/products" class="parts-strip-item">
-        <img src="/images/anchor-chain.jpg" alt="Anchor & Chain" loading="eager" />
-        <span class="parts-label">Anchor & Chain</span>
-      </a>
-      <a href="/products" class="parts-strip-item">
-        <img src="/images/spare-parts-new.jpg" alt="Spare Parts" loading="eager" />
-        <span class="parts-label">Spare Parts</span>
-      </a>
+  <!-- Redesigned Hero Section -->
+  <section class="hero redesigned-hero">
+    <div class="hero-bg-accent"></div>
+    <div class="hero-container container">
+      <div class="hero-left">
+        <h2 class="hero-title">
+          <span class="text-primary-red">YOUR TRUSTED SOURCE</span><br/>
+          <span class="text-dark">FOR MARINE ENGINE &<br/>SPARE SOLUTIONS</span>
+        </h2>
+        <p class="hero-desc">Tahin spare suppliers is a leading stockist and global exporter of new reconditioned and used marine engine and spare parts.</p>
+        <a href="/enquiry" class="btn btn-quote-solid">REQUEST A QUOTE</a>
+      </div>
+      <div class="hero-right">
+        <div class="hero-slider" id="heroSlider">
+          <div class="slider-track" id="sliderTrack">
+            <div class="slide slide-active">
+              <img src="/images/slider/hero-slide-1.webp" alt="Marine Engine" fetchpriority="high" loading="eager" class="blend-multiply" />
+            </div>
+            <div class="slide">
+              <img src="/images/slider/hero-slide-2.webp" alt="Turbocharger" class="blend-multiply" loading="lazy" />
+            </div>
+            <div class="slide">
+              <img src="/images/slider/hero-slide-3.webp" alt="Diesel Generator" class="blend-multiply" loading="lazy" />
+            </div>
+          </div>
+          <div class="slider-dots" id="sliderDots">
+            <button class="dot dot-active" aria-label="Slide 1"></button>
+            <button class="dot" aria-label="Slide 2"></button>
+            <button class="dot" aria-label="Slide 3"></button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
+
+  <!-- Categories Grid -->
+  <section class="home-categories">
+    <div class="container">
+      <div class="cat-grid reveal-stagger">
+         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/marine-propulsion-engine.jpg" alt="Marine Engine"></div><span>Marine Engine</span></a>
+         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/spare-parts-new.jpg" alt="Engine Spare Parts"></div><span>Engine Spare Parts</span></a>
+         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/hydraulic-crane-equipment.jpg" alt="Hydraulic Crane"></div><span>Hydraulic Crane</span></a>
+         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/diesel-generator-set.jpg" alt="Diesel Generator"></div><span>Diesel Generator</span></a>
+         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/pump-compressor.webp" alt="Purifier and Filter"></div><span>Purifier and Filter</span></a>
+         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/engine.webp" alt="Water Pump"></div><span>Water Pump</span></a>
+         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/shipping-dock.jpg" alt="MS Plates"></div><span>MS Plates</span></a>
+         <a href="/products" class="cat-card"><div class="cat-img"><img src="/images/heat-exchanger.webp" alt="Heat Exchanger"></div><span>Heat Exchanger</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slider Initialization Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const track = document.getElementById('sliderTrack');
+      const dots = document.querySelectorAll('.dot');
+      let currentIndex = 0;
+      let interval;
+
+      if(track && dots.length > 0) {
+        const updateSlider = (index) => {
+          track.style.transform = `translateX(-${index * 100}%)`;
+          dots.forEach(d => d.classList.remove('dot-active'));
+          dots[index].classList.add('dot-active');
+          currentIndex = index;
+        };
+
+        dots.forEach((dot, index) => {
+          dot.addEventListener('click', () => {
+            updateSlider(index);
+            resetInterval();
+          });
+        });
+
+        const resetInterval = () => {
+          clearInterval(interval);
+          interval = setInterval(() => {
+            let nextIndex = (currentIndex + 1) % dots.length;
+            updateSlider(nextIndex);
+          }, 3500);
+        };
+        
+        resetInterval();
+      }
+    });
+  </script>
 
   <!-- Who We Are -->
   <section class="section who-we-are">
     <div class="container">
       <h2 class="section-title reveal">WHO WE ARE</h2>
       <p class="section-subtitle reveal">Leading Marine Machinery & Spare Parts Supplier from Bangladesh</p>
-      <p class="who-desc reveal">
-        Tahin Spare Suppliers has been serving the marine industry since 1990, specializing in the supply of reconditioned marine engines, spare parts, generators, hydraulic components, and a wide range of marine equipment worldwide. Strategically located near the Chattogram Ship-Recycling Yards in Bangladesh, we have direct access to a vast and reliable inventory, enabling us to provide quality products with consistent availability at competitive prices to our global clients.
-      </p>
+      <div class="who-desc reveal">
+        <p style="margin-bottom: 15px;">Tahin Spare Suppliers is a trusted name in the marine and industrial machinery sector, specializing in the supply of high-quality reconditioned, used, and new engines, generators, and spare parts. With years of experience in the industry, we have built a strong reputation for reliability, competitive pricing, and customer satisfaction.</p>
+        <p style="margin-bottom: 15px;">Since our establishment, we have been actively sourcing equipment from ship recycling yards and global markets, ensuring a consistent supply of genuine and performance-tested machinery. Every product we offer goes through careful inspection to maintain quality and operational efficiency.</p>
+        <p style="margin-bottom: 15px;">Our warehouse is equipped with a wide range of marine engines, diesel generators, and spare parts from leading international brands. Whether for marine use or industrial applications, we are committed to delivering dependable solutions tailored to our clients’ needs.</p>
+        <p>At Tahin Spare Suppliers, we believe in building long-term relationships with our customers by offering transparent service, flexible pricing, and professional support. Our goal is to be a reliable partner in powering your business operations.</p>
+      </div>
     </div>
   </section>
 
@@ -297,24 +345,24 @@ const shipmentImages = [
       <h2 class="section-title reveal" style="text-transform: capitalize;">Why Choose Us</h2>
       <div class="features-grid">
         <div class="feature-card reveal-scale">
-          <div class="feature-icon"><Icon name="globe" size={40} /></div>
-          <h3>GLOBAL REACH</h3>
-          <p>Sourcing Worldwide,<br/>Fast Delivery.</p>
+          <div class="feature-icon"><Icon name="award" size={40} /></div>
+          <h3>25+ Years of Trust</h3>
+          <p>Serving the global marine industry with 25 years of excellence.</p>
         </div>
         <div class="feature-card reveal-scale">
-          <div class="feature-icon"><Icon name="award" size={40} /></div>
-          <h3>UNMATCHED QUALITY</h3>
-          <p>Tested Components,<br/>Guaranteed Performance.</p>
+          <div class="feature-icon"><Icon name="layer-group" size={40} /></div>
+          <h3>Massive Ready Stock</h3>
+          <p>Largest inventory of genuine spares ready for instant delivery.</p>
+        </div>
+        <div class="feature-card reveal-scale">
+          <div class="feature-icon"><Icon name="globe" size={40} /></div>
+          <h3>Rapid Global Shipping</h3>
+          <p>Fast and reliable logistics to minimize your vessel downtime.</p>
         </div>
         <div class="feature-card reveal-scale">
           <div class="feature-icon"><Icon name="headset" size={40} /></div>
-          <h3>EXPERT SUPPORT</h3>
-          <p>Dedicated Technical<br/>Support Team.</p>
-        </div>
-        <div class="feature-card reveal-scale">
-          <div class="feature-icon"><Icon name="ship" size={40} /></div>
-          <h3>URGENT LOGISTICS</h3>
-          <p>Prioritized Shipping for<br/>Vetting & Spares.</p>
+          <h3>24/7 Expert Support</h3>
+          <p>Round-the-clock technical assistance for all your requirements.</p>
         </div>
       </div>
     </div>
@@ -322,157 +370,210 @@ const shipmentImages = [
 </MainLayout>
 
 <style>
-  /* Hero Section */
-  .hero {
+  /* Redesigned Hero Section */
+  .hero.redesigned-hero {
     position: relative;
-    min-height: 700px;
+    background-color: #fcfcfc;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
+    height: 600px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
     overflow: hidden;
   }
-  .hero-bg {
+  .hero-bg-accent {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 60%;
+    height: 100%;
+    background: #b11623;
+    clip-path: polygon(0 0, 100% 0, 75% 100%, 0 100%);
+    z-index: 0;
+  }
+  .hero-container {
+    position: relative;
+    z-index: 2;
+    display: flex;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    z-index: 0;
-    will-change: transform;
+    align-items: center;
+    justify-content: space-between;
   }
-  .hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      100deg,
-      rgba(30, 40, 60, 0.4) 0%,
-      rgba(25, 35, 55, 0.25) 40%,
-      rgba(15, 25, 45, 0.1) 100%
-    );
-    z-index: 1;
+  .hero-left {
+    flex: 0 0 50%;
+    padding-right: 40px;
   }
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    flex: 1;
+  .hero-right {
+    flex: 0 0 50%;
+    height: 100%;
     display: flex;
-    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    padding: 80px 60px;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-    animation: heroFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  @keyframes heroFadeIn {
-    from { opacity: 0; transform: translateY(35px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    position: relative;
   }
   .hero-title {
-    color: #fff;
-    font-size: 52px;
+    font-size: 42px;
     font-weight: 800;
-    line-height: 1.12;
-    margin-bottom: 24px;
-    font-family: var(--font-inter), 'Inter', sans-serif;
-    text-shadow: 0 4px 30px rgba(0,0,0,0.35);
-    text-transform: uppercase;
-    letter-spacing: -0.5px;
-    max-width: 700px;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    font-family: var(--font-inter), sans-serif;
   }
-  .hero-subtitle {
-    font-size: 16px;
-    font-weight: 400;
-    color: rgba(255,255,255,0.88);
-    line-height: 1.7;
-    margin-bottom: 32px;
-    max-width: 500px;
-    font-style: italic;
-  }
-
-  /* Request a Quote Button — Copper/Brown */
-  .btn-quote {
-    display: inline-block;
-    padding: 14px 36px;
-    background: linear-gradient(135deg, #a67c52, #8b6240);
+  .text-primary-red {
     color: #fff;
-    font-size: 15px;
-    font-weight: 600;
-    border-radius: 6px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  }
+  .text-dark {
+    color: #222;
+    background: rgba(255,255,255,0.95);
+    padding: 2px 10px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    box-shadow: -10px 0 0 rgba(255,255,255,0.95), 10px 0 0 rgba(255,255,255,0.95);
+  }
+  .hero-desc {
+    font-size: 16px;
+    color: #fff;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    max-width: 90%;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    margin-top: 20px;
+  }
+  .btn-quote-solid {
+    display: inline-block;
+    padding: 14px 32px;
+    background-color: #b11623;
+    color: #fff;
+    font-weight: 700;
     text-decoration: none;
-    border: none;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(139, 98, 64, 0.4);
-    width: fit-content;
+    border-radius: 6px;
+    transition: background 0.3s, transform 0.2s;
+    border: 2px solid white;
   }
-  .btn-quote:hover {
-    background: linear-gradient(135deg, #b98a5c, #9a7050);
+  .btn-quote-solid:hover {
+    background-color: #8c0f1a;
     transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(139, 98, 64, 0.55);
   }
-  .btn-quote:active {
-    transform: translateY(0);
-  }
-
-  /* Spare Parts Strip */
-  .parts-strip {
+  
+  /* Slider */
+  .hero-slider {
+    width: 100%;
+    max-width: 600px;
+    overflow: hidden;
     position: relative;
-    z-index: 2;
+    padding-bottom: 30px;
+  }
+  .slider-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .slide {
+    min-width: 100%;
     display: flex;
     justify-content: center;
-    gap: 0;
-    background: rgba(245, 245, 245, 0.95);
-    backdrop-filter: blur(10px);
-    margin-top: auto;
+    align-items: center;
   }
-  .parts-strip-item {
-    flex: 1;
+  .blend-multiply {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+  }
+  .slider-dots {
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #b11623;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.3s;
+    padding: 0;
+  }
+  .dot-active {
+    background: #b11623;
+  }
+  
+  /* Categories Grid */
+  .home-categories {
+    padding: 60px 0;
+    background: #fdfdfd;
+  }
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+  }
+  .cat-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0;
-    overflow: hidden;
-    cursor: pointer;
-    position: relative;
-    border-right: 1px solid rgba(0,0,0,0.08);
-    transition: background 0.3s ease;
     text-decoration: none;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    border: 1px solid #f0f0f0;
   }
-  .parts-strip-item:last-child {
-    border-right: none;
+  .cat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(177, 22, 35, 0.15);
+    border-color: #b11623;
   }
-  .parts-strip-item:hover {
-    background: rgba(230, 230, 230, 0.95);
+  .cat-img {
+    height: 160px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    padding: 10px;
   }
-  .parts-strip-item img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  .cat-img img {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
   }
-  .parts-strip-item:hover img {
-    transform: scale(1.08);
-  }
-  .parts-label {
+  .cat-card span {
     display: block;
-    padding: 8px 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #fff;
+    padding: 12px;
     text-align: center;
-    background: rgba(50, 50, 60, 0.85);
-    width: 100%;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    backdrop-filter: blur(4px);
+    font-weight: 600;
+    color: #444;
+    background: #fafafa;
+    font-size: 14px;
+    border-top: 1px solid #f0f0f0;
     transition: background 0.3s, color 0.3s;
   }
-  .parts-strip-item:hover .parts-label {
-    background: #c0392b;
+  .cat-card:hover span {
+    background: #b11623;
     color: #fff;
   }
 
+  @media (max-width: 991px) {
+    .hero-bg-accent { width: 100%; clip-path: none; opacity: 0.95; }
+    .hero-container { flex-direction: column; text-align: center; justify-content: center; padding-top: 40px;}
+    .hero-left, .hero-right { flex: 0 0 auto; width: 100%; padding: 0; }
+    .hero-left { margin-bottom: 20px; z-index: 5;}
+    .hero-desc { margin: 20px auto; }
+    .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .hero.redesigned-hero { height: auto; min-height: 700px; padding-bottom: 40px; }
+  }
+  @media (max-width: 576px) {
+    .hero-title { font-size: 28px; }
+    .cat-grid { grid-template-columns: repeat(1, 1fr); }
+  }
 
 
   /* Who We Are */

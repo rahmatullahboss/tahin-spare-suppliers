@@ -1,0 +1,348 @@
+---
+import ImageUploader from "./ImageUploader.astro";
+
+interface Props {
+  type: "products" | "parts" | "blog";
+  title: string;
+  itemLabel: string;
+  titleLabel: string;
+  excerptLabel: string;
+}
+
+const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
+---
+<section class="editor-shell" data-content-editor data-type={type}>
+  <div class="editor-header">
+    <div>
+      <h1>{title}</h1>
+      <p>Create, edit and delete live {itemLabel.toLowerCase()} entries.</p>
+    </div>
+    <button type="button" class="logout-btn" data-logout-btn>Logout</button>
+  </div>
+
+  <div class="editor-grid">
+    <form class="editor-form" data-form>
+      <input type="hidden" name="id" data-id />
+      <div class="field">
+        <label>{titleLabel}</label>
+        <input type="text" name="title" required data-title />
+      </div>
+      <div class="field">
+        <label>Slug</label>
+        <input type="text" name="slug" data-slug />
+      </div>
+      <div class="field">
+        <label>{excerptLabel}</label>
+        <textarea name="excerpt" rows="3" data-excerpt></textarea>
+      </div>
+      <div class="field">
+        <label>Details</label>
+        <textarea name="content" rows="10" data-content></textarea>
+      </div>
+      <ImageUploader label="Featured Image" />
+      <div class="preview" data-preview></div>
+      <div class="actions">
+        <button type="submit" class="save-btn">Save</button>
+        <button type="button" class="secondary-btn" data-reset-btn>Reset</button>
+      </div>
+      <p class="form-status" data-form-status></p>
+    </form>
+
+    <div class="editor-list">
+      <h2>Live {itemLabel}</h2>
+      <div class="items" data-items></div>
+    </div>
+  </div>
+</section>
+
+<script define:vars={{ type, itemLabel }}>
+  const editor = document.querySelector(`[data-content-editor][data-type="${type}"]`);
+
+  if (editor) {
+    const endpoint = `/api/${type}`;
+    const form = editor.querySelector("[data-form]");
+    const itemsEl = editor.querySelector("[data-items]");
+    const statusEl = editor.querySelector("[data-form-status]");
+    const previewEl = editor.querySelector("[data-preview]");
+    const logoutBtn = editor.querySelector("[data-logout-btn]");
+    const resetBtn = editor.querySelector("[data-reset-btn]");
+    const uploadTrigger = editor.querySelector("[data-upload-trigger]");
+    const uploadStatus = editor.querySelector("[data-upload-status]");
+    const imageInput = editor.querySelector("[data-image-input]");
+    const imageUrlInput = editor.querySelector("[data-image-url]");
+
+    const drawPreview = (url) => {
+      previewEl.innerHTML = url
+        ? `<img src="${url}" alt="" style="width:100%;max-width:260px;border-radius:12px;display:block;" />`
+        : "";
+    };
+
+    const resetForm = () => {
+      form.reset();
+      form.querySelector("[data-id]").value = "";
+      imageUrlInput.value = "";
+      statusEl.textContent = "";
+      uploadStatus.textContent = "";
+      drawPreview("");
+    };
+
+    const fillForm = (item) => {
+      form.querySelector("[data-id]").value = item.id;
+      form.querySelector("[data-title]").value = item.title;
+      form.querySelector("[data-slug]").value = item.slug;
+      form.querySelector("[data-excerpt]").value = item.excerpt;
+      form.querySelector("[data-content]").value = item.content;
+      imageUrlInput.value = item.imageUrl || "";
+      drawPreview(item.imageUrl || "");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const renderItems = (items) => {
+      itemsEl.innerHTML = items.map((item) => `
+        <article class="item-card">
+          ${item.imageUrl ? `<img src="${item.imageUrl}" alt="" />` : ""}
+          <div class="item-card-body">
+            <h3>${item.title}</h3>
+            <p>${item.excerpt || ""}</p>
+            <small>${item.slug}</small>
+            <div class="item-actions">
+              <button type="button" data-edit-id="${item.id}">Edit</button>
+              <button type="button" data-delete-id="${item.id}">Delete</button>
+            </div>
+          </div>
+        </article>
+      `).join("");
+
+      itemsEl.querySelectorAll("[data-edit-id]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const item = items.find((entry) => entry.id === button.getAttribute("data-edit-id"));
+          if (item) fillForm(item);
+        });
+      });
+
+      itemsEl.querySelectorAll("[data-delete-id]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const id = button.getAttribute("data-delete-id");
+          if (!id || !confirm(`Delete this ${itemLabel.toLowerCase()}?`)) return;
+
+          const response = await fetch(`${endpoint}/${id}`, { method: "DELETE" });
+          if (response.ok) {
+            await loadItems();
+            resetForm();
+          }
+        });
+      });
+    };
+
+    const loadItems = async () => {
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      renderItems(data.items || []);
+    };
+
+    const compressImageToWebp = async (file) => {
+      const bitmap = await createImageBitmap(file);
+      const canvas = document.createElement("canvas");
+      const maxWidth = 1600;
+      const scale = Math.min(1, maxWidth / bitmap.width);
+      canvas.width = Math.round(bitmap.width * scale);
+      canvas.height = Math.round(bitmap.height * scale);
+
+      const context = canvas.getContext("2d");
+      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/webp", 0.82)
+      );
+
+      return new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.webp`, {
+        type: "image/webp"
+      });
+    };
+
+    uploadTrigger?.addEventListener("click", async () => {
+      const file = imageInput?.files?.[0];
+      if (!file) {
+        uploadStatus.textContent = "Select an image first.";
+        return;
+      }
+
+      uploadStatus.textContent = "Compressing image...";
+
+      try {
+        const compressed = await compressImageToWebp(file);
+        const formData = new FormData();
+        formData.append("file", compressed);
+        uploadStatus.textContent = "Uploading to storage...";
+
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed.");
+        }
+
+        const data = await response.json();
+        imageUrlInput.value = data.url;
+        drawPreview(data.url);
+        uploadStatus.textContent = "Upload complete.";
+      } catch (error) {
+        uploadStatus.textContent = error instanceof Error ? error.message : "Upload failed.";
+      }
+    });
+
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      statusEl.textContent = "Saving...";
+
+      const payload = {
+        title: form.querySelector("[data-title]").value,
+        slug: form.querySelector("[data-slug]").value,
+        excerpt: form.querySelector("[data-excerpt]").value,
+        content: form.querySelector("[data-content]").value,
+        imageUrl: imageUrlInput.value
+      };
+
+      const id = form.querySelector("[data-id]").value;
+      const response = await fetch(id ? `${endpoint}/${id}` : endpoint, {
+        method: id ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        statusEl.textContent = "Save failed.";
+        return;
+      }
+
+      statusEl.textContent = "Saved and live.";
+      await loadItems();
+      resetForm();
+    });
+
+    logoutBtn?.addEventListener("click", async () => {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/admin/login";
+    });
+
+    resetBtn?.addEventListener("click", resetForm);
+    loadItems();
+  }
+</script>
+
+<style>
+  .editor-shell h1 {
+    margin-bottom: 8px;
+  }
+  .editor-shell p {
+    margin-top: 0;
+    color: #666;
+  }
+  .editor-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 28px;
+  }
+  .logout-btn,
+  .save-btn,
+  .secondary-btn,
+  :global(.item-actions button) {
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: 700;
+  }
+  .logout-btn,
+  .secondary-btn,
+  :global(.item-actions button) {
+    background: #ececec;
+  }
+  .save-btn {
+    background: #c78f40;
+    color: #111;
+  }
+  .editor-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .editor-form,
+  .editor-list {
+    background: #fff;
+    padding: 24px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  }
+  .field {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font: inherit;
+  }
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .form-status {
+    margin: 14px 0 0;
+    color: #666;
+  }
+  :global(.items) {
+    display: grid;
+    gap: 14px;
+  }
+  :global(.item-card) {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 12px;
+    background: #fafafa;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  :global(.item-card img) {
+    width: 100%;
+    height: 100%;
+    min-height: 90px;
+    object-fit: cover;
+  }
+  :global(.item-card-body) {
+    padding: 12px 12px 12px 0;
+  }
+  :global(.item-card-body h3) {
+    margin: 0 0 6px;
+    font-size: 18px;
+  }
+  :global(.item-card-body p) {
+    margin: 0 0 8px;
+    font-size: 14px;
+  }
+  :global(.item-card-body small) {
+    color: #888;
+  }
+  :global(.item-actions) {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  @media (max-width: 980px) {
+    .editor-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

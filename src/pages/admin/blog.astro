@@ -1,0 +1,22 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import ContentEditor from "../../components/admin/ContentEditor.astro";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { isAuthenticated } from "../../lib/server/session";
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+
+if (!authenticated) {
+  return Astro.redirect("/admin/login");
+}
+---
+<AdminLayout title="Manage Blog" active="blog">
+  <ContentEditor
+    type="blog"
+    title="Manage Blog Posts"
+    itemLabel="Blog Posts"
+    titleLabel="Post Title"
+    excerptLabel="Excerpt"
+  />
+</AdminLayout>

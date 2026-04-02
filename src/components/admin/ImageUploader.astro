@@ -1,0 +1,36 @@
+---
+interface Props {
+  label?: string;
+}
+
+const { label = "Image" } = Astro.props;
+---
+<div class="image-uploader">
+  <label>{label}</label>
+  <input type="file" accept="image/*" data-image-input />
+  <button type="button" class="upload-btn" data-upload-trigger>Compress & Upload</button>
+  <p class="upload-status" data-upload-status></p>
+  <input type="hidden" name="imageUrl" data-image-url />
+</div>
+
+<style>
+  .image-uploader {
+    display: grid;
+    gap: 10px;
+  }
+  .upload-btn {
+    width: fit-content;
+    border: none;
+    background: #c78f40;
+    color: #111;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .upload-status {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+  }
+</style>

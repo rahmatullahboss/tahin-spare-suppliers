@@ -1,0 +1,62 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { isAuthenticated } from "../../lib/server/session";
+import { listContent } from "../../lib/server/repository";
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+
+if (!authenticated) {
+  return Astro.redirect("/admin/login");
+}
+
+const [products, parts, blogPosts] = await Promise.all([
+  listContent(env, "products"),
+  listContent(env, "parts"),
+  listContent(env, "blog")
+]);
+---
+<AdminLayout title="Admin Dashboard" active="dashboard">
+  <section class="dashboard-grid">
+    <article class="metric-card">
+      <h2>{products.length}</h2>
+      <p>Products</p>
+    </article>
+    <article class="metric-card">
+      <h2>{parts.length}</h2>
+      <p>Parts</p>
+    </article>
+    <article class="metric-card">
+      <h2>{blogPosts.length}</h2>
+      <p>Blog Posts</p>
+    </article>
+  </section>
+</AdminLayout>
+
+<style>
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .metric-card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  }
+  .metric-card h2 {
+    margin: 0 0 10px;
+    font-size: 44px;
+  }
+  .metric-card p {
+    margin: 0;
+    color: #666;
+  }
+  @media (max-width: 900px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

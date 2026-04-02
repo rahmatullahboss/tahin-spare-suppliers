@@ -8,6 +8,8 @@
     "preview": "astro preview"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.1.7",
+    "@neondatabase/serverless": "^1.0.2",
     "astro": "^6.0.5"
   }
 }

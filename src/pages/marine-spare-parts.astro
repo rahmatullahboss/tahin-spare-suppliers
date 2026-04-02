@@ -1,5 +1,10 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import { getRuntimeEnv } from '../lib/server/env';
+import { listContent } from '../lib/server/repository';
+
+const env = getRuntimeEnv(Astro.locals);
+const liveParts = await listContent(env, 'parts');
 ---
 <MainLayout title="Marine Spare Parts - Tahin Spare Suppliers" activeNav="products">
   <section class="page-hero">
@@ -32,6 +37,25 @@ import MainLayout from '../layouts/MainLayout.astro';
       </div>
     </div>
   </section>
+
+  {liveParts.length > 0 && (
+    <section class="section live-parts-section">
+      <div class="container">
+        <h2 class="live-title">Live Parts Inventory</h2>
+        <div class="parts-grid">
+          {liveParts.map((part) => (
+            <a href={`/parts/${part.slug}`} class="part-card">
+              <img src={part.imageUrl || '/images/spare-parts-new.jpg'} alt={part.title} loading="lazy" />
+              <div class="part-card-body">
+                <h3>{part.title}</h3>
+                <p>{part.excerpt}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 </MainLayout>
 
 <style>
@@ -104,9 +128,46 @@ import MainLayout from '../layouts/MainLayout.astro';
   .btn-primary:hover {
     background: #a93226;
   }
+  .live-parts-section {
+    padding-top: 0;
+  }
+  .live-title {
+    text-align: center;
+    font-size: 30px;
+    margin-bottom: 24px;
+  }
+  .parts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .part-card {
+    text-decoration: none;
+    color: inherit;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  }
+  .part-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+  }
+  .part-card-body {
+    padding: 18px;
+  }
+  .part-card-body h3 {
+    margin: 0 0 10px;
+  }
+  .part-card-body p {
+    margin: 0;
+  }
 
   @media (max-width: 768px) {
     .product-detail-container { grid-template-columns: 1fr; }
     .image-side { order: -1; }
+    .parts-grid { grid-template-columns: 1fr; }
   }
 </style>

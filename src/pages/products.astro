@@ -1,5 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import { getRuntimeEnv } from '../lib/server/env';
+import { listContent } from '../lib/server/repository';
 
 const products = [
   {
@@ -47,6 +49,8 @@ const products = [
 ];
 
 const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbox', 'Auxiliary Engine', 'Diesel & Gas Generator Set', 'Spare Parts', 'Hydraulic Deck Crane Equipment', 'Anchor and Chain'];
+const env = getRuntimeEnv(Astro.locals);
+const liveProducts = await listContent(env, 'products');
 ---
 <MainLayout title="Equipments - Tahin Spare Suppliers" activeNav="products">
   <section class="page-hero">
@@ -83,6 +87,26 @@ const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbo
           </a>
         ))}
       </div>
+
+      {liveProducts.length > 0 && (
+        <>
+          <h2 class="live-section-title">Client-Managed Products</h2>
+          <div class="products-grid live-products-grid">
+            {liveProducts.map((product) => (
+              <a href={`/products/${product.slug}`} class="product-card" style="text-decoration: none;">
+                <div class="product-img">
+                  <img src={product.imageUrl || '/images/marine-engine.webp'} alt={product.title} loading="lazy" />
+                </div>
+                <div class="product-content">
+                  <h3>{product.title}</h3>
+                  <p class="live-excerpt">{product.excerpt}</p>
+                  <span class="view-details">VIEW DETAILS</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
 
       <div class="products-cta">
         <p>Can't find what you're looking for? <a href="/enquiry">Send us an enquiry</a> and we'll check our inventory.</p>
@@ -211,6 +235,17 @@ const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbo
     margin-top: 40px;
     font-size: 15px;
     color: #555;
+  }
+  .live-section-title {
+    margin: 50px 0 24px;
+    text-align: center;
+    font-size: 28px;
+    color: #222;
+  }
+  .live-excerpt {
+    margin: 0 0 16px;
+    color: #666;
+    line-height: 1.7;
   }
   .products-cta a {
     color: #c0392b;

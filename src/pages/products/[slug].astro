@@ -1,0 +1,50 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { getContentBySlug } from "../../lib/server/repository";
+
+const env = getRuntimeEnv(Astro.locals);
+const slug = Astro.params.slug;
+const product = slug ? await getContentBySlug(env, "products", slug) : null;
+
+if (!product) {
+  return Astro.redirect("/products");
+}
+---
+<MainLayout title={`${product.title} - Tahin Spare Suppliers`} activeNav="products">
+  <section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1>{product.title}</h1>
+      <p>Home / Equipments / {product.title}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container detail-grid">
+      <div>
+        <h2>{product.title}</h2>
+        <p class="excerpt">{product.excerpt}</p>
+        <div class="content">{product.content.split("\n").filter(Boolean).map((line) => <p>{line}</p>)}</div>
+        <a href="/enquiry" class="btn-primary">Request a Quote</a>
+      </div>
+      {product.imageUrl && (
+        <div class="detail-image">
+          <img src={product.imageUrl} alt={product.title} />
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { position: relative; height: 300px; background: url('/images/services-hero.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; }
+  .detail-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr); gap: 40px; align-items: start; }
+  .excerpt { font-size: 18px; color: #555; line-height: 1.7; }
+  .content p { color: #555; line-height: 1.8; }
+  .detail-image img { width: 100%; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+  .btn-primary { display: inline-block; margin-top: 18px; background: #c0392b; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 700; }
+  @media (max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
+</style>

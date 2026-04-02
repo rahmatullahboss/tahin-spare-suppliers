@@ -1,4 +1,4 @@
 > **BrainSync Context Pumper** 🧠
-> Dynamically loaded for active file: `_bmad/bmm/module-help.csv` (Domain: **Generic Logic**)
+> Dynamically loaded for active file: `src/pages/index.astro` (Domain: **Generic Logic**)
 
 *No specific memory context found for this file's domain.*

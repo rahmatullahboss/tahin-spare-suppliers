@@ -1,0 +1,40 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { getContentBySlug } from "../../lib/server/repository";
+
+const env = getRuntimeEnv(Astro.locals);
+const slug = Astro.params.slug;
+const post = slug ? await getContentBySlug(env, "blog", slug) : null;
+
+if (!post) {
+  return Astro.redirect("/blog");
+}
+---
+<MainLayout title={`${post.title} - Tahin Spare Suppliers`}>
+  <section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1>{post.title}</h1>
+      <p>{post.excerpt}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container blog-detail">
+      {post.imageUrl && <img src={post.imageUrl} alt={post.title} class="cover-image" />}
+      <div class="content">
+        {post.content.split("\n").filter(Boolean).map((line) => <p>{line}</p>)}
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { position: relative; min-height: 280px; background: url('/images/services-hero.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; max-width: 900px; padding: 20px; }
+  .blog-detail { max-width: 900px; }
+  .cover-image { width: 100%; border-radius: 18px; display: block; margin-bottom: 24px; }
+  .content p { line-height: 1.9; color: #4f4f4f; margin-bottom: 18px; }
+</style>
