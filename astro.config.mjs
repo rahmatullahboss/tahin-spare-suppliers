@@ -6,7 +6,8 @@ export default defineConfig({
   adapter: cloudflare({
     platformProxy: {
       enabled: true
-    }
+    },
+    imageService: "passthrough",
   }),
   build: {
     inlineStylesheets: "always",
