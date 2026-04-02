@@ -389,11 +389,11 @@ const shipmentImages = [
     height: 100%;
     background: #b11623;
     clip-path: polygon(0 0, 100% 0, 75% 100%, 0 100%);
-    z-index: 0;
+    z-index: 2;
   }
   .hero-container {
     position: relative;
-    z-index: 2;
+    z-index: auto;
     display: flex;
     width: 100%;
     height: 100%;
@@ -403,6 +403,8 @@ const shipmentImages = [
   .hero-left {
     flex: 0 0 50%;
     padding-right: 40px;
+    position: relative;
+    z-index: 3;
   }
   .hero-right {
     flex: 0 0 50%;
@@ -411,6 +413,7 @@ const shipmentImages = [
     align-items: center;
     justify-content: center;
     position: relative;
+    z-index: 1;
   }
   .hero-title {
     font-size: 42px;

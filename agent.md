@@ -1,5 +1,5 @@
 # Project Notes — tahin-spare-suppliers
-> 6409 notes | Updated: 4/2/2026
+> 6438 notes | Updated: 4/2/2026
 
 ## Safety Rules
 
@@ -7,7 +7,7 @@
 - **NEVER** delete untracked files or folders blindly. Always backup or stash before bulk edits.
 
 ## Quick Reference
-- 5909 warnings → see `.agent-mem/gotchas.md`
+- 5936 warnings → see `.agent-mem/gotchas.md`
 - 103 conventions → see `.agent-mem/patterns.md`
 - Codebase map → see `.agent-mem/project-brief.md`
 - Active work → see `.agent-mem/active-context.md`

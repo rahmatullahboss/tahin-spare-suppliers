@@ -1,7 +1,7 @@
 
 
 # Project Memory — tahin-spare-suppliers
-> 6406 notes | Score threshold: >40
+> 6428 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,27 +20,29 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in agent.md** — - > 6404 notes | Updated: 4/2/2026
-+ > 6405 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6426 notes | Updated: 4/2/2026
++ > 6427 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6403 notes | Updated: 4/2/2026
-+ > 6404 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6425 notes | Updated: 4/2/2026
++ > 6426 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6402 notes | Updated: 4/2/2026
-+ > 6403 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6424 notes | Updated: 4/2/2026
++ > 6425 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6400 notes | Updated: 4/2/2026
-+ > 6402 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6423 notes | Updated: 4/2/2026
++ > 6424 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6399 notes | Updated: 4/2/2026
-+ > 6400 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6422 notes | Updated: 4/2/2026
++ > 6423 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6398 notes | Updated: 4/2/2026
-+ > 6399 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6421 notes | Updated: 4/2/2026
++ > 6422 notes | Updated: 4/2/2026
 
 
 ## Project Standards
 
+- what-changed in metadata.sqlite-shm — confirmed 4x
+- what-changed in metadata.sqlite-wal — confirmed 4x
 - what-changed in agent.md — confirmed 3x
 - Updated schema Updated — confirmed 3x
 
