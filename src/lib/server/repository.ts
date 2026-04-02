@@ -31,7 +31,6 @@ export type ContentRecord = {
   imageUrl: string;
   createdAt: string;
   updatedAt: string;
-  updatedAt: string;
   category?: string;
   brand?: string;
   model_number?: string;
@@ -42,7 +41,6 @@ export type ContentInput = {
   excerpt?: string;
   content?: string;
   imageUrl?: string;
-  slug?: string;
   slug?: string;
   category?: string;
   brand?: string;
@@ -60,7 +58,6 @@ function mapRecord(type: ContentType, row: Record<string, unknown>): ContentReco
     content: String(row.content ?? ""),
     imageUrl: String(row.image_url ?? ""),
     createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
     updatedAt: String(row.updated_at),
     ...(type === 'products' ? { 
       category: String(row.category ?? "Uncategorized"),
