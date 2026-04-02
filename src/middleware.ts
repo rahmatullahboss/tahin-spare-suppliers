@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { env } from 'cloudflare:workers';
 
 const RASTER_CONTENT_TYPES = new Map([
   ['.jpg', 'image/jpeg'],
@@ -26,8 +27,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  const bucket = context.locals.runtime?.env?.MEDIA_BUCKET;
-  const mediaBaseUrl = context.locals.runtime?.env?.MEDIA_PUBLIC_URL?.replace(/\/$/, '');
+  const bucket = env.MEDIA_BUCKET;
+  const mediaBaseUrl = env.MEDIA_PUBLIC_URL?.replace(/\/$/, '');
 
   if (bucket) {
     const object = await bucket.get(url.pathname.slice(1));
