@@ -46,9 +46,15 @@ const products = [
     image: '/images/anchor-chain.jpg',
     link: '/anchor-and-chain'
   },
+  {
+    name: 'Marine Water Pump',
+    category: 'Marine Pump',
+    image: '/images/marine-pump.jpg',
+    link: '/products'
+  }
 ];
 
-const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbox', 'Auxiliary Engine', 'Diesel & Gas Generator Set', 'Spare Parts', 'Hydraulic Deck Crane Equipment', 'Anchor and Chain'];
+const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbox', 'Auxiliary Engine', 'Diesel & Gas Generator Set', 'Spare Parts', 'Hydraulic Deck Crane Equipment', 'Anchor and Chain', 'Marine Pump'];
 const env = getRuntimeEnv(Astro.locals);
 const liveProducts = await listContent(env, 'products');
 ---

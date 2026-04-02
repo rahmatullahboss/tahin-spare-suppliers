@@ -1,5 +1,9 @@
 /// <reference types="astro/client" />
 
+declare module 'cloudflare:workers' {
+  export const env: any;
+}
+
 type RuntimeEnv = {
   DATABASE_URL: string;
   ADMIN_PASSWORD: string;

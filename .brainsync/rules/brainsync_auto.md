@@ -1,7 +1,7 @@
 
 
 # Project Memory — tahin-spare-suppliers
-> 6470 notes | Score threshold: >40
+> 6719 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,27 +20,30 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in agent.md** — - > 6468 notes | Updated: 4/2/2026
-+ > 6469 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6717 notes | Updated: 4/2/2026
++ > 6718 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6467 notes | Updated: 4/2/2026
-+ > 6468 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6715 notes | Updated: 4/2/2026
++ > 6717 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6466 notes | Updated: 4/2/2026
-+ > 6467 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6714 notes | Updated: 4/2/2026
++ > 6715 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6465 notes | Updated: 4/2/2026
-+ > 6466 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6711 notes | Updated: 4/2/2026
++ > 6714 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6464 notes | Updated: 4/2/2026
-+ > 6465 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6709 notes | Updated: 4/2/2026
++ > 6711 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6463 notes | Updated: 4/2/2026
-+ > 6464 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 6708 notes | Updated: 4/2/2026
++ > 6709 notes | Updated: 4/2/2026
 
 
 ## Project Standards
 
+- Updated Bangladesh database schema — fixes memory leak from uncleared timers — confirmed 3x
+- Strengthened types ReturnType — fixes memory leak from uncleared timers
+- what-changed in index.astro — confirmed 3x
 - what-changed in metadata.sqlite-shm — confirmed 4x
 - what-changed in metadata.sqlite-wal — confirmed 4x
 - what-changed in agent.md — confirmed 3x
@@ -48,6 +51,8 @@
 
 ## Recent Decisions
 
+- decision in index.astro
+- Optimized Full — offloads heavy computation off the main thread
 - Optimized Tahin — ensures atomic multi-step database operations
 
 ## Learned Patterns

@@ -1,9 +1,13 @@
-export type RuntimeEnv = App.Locals["runtime"]["env"];
+import { env as cfEnv } from 'cloudflare:workers';
 
-export function getRuntimeEnv(locals: App.Locals): RuntimeEnv {
-  if (!locals?.runtime?.env) {
-    throw new Error("Cloudflare runtime environment is not available.");
-  }
+export type RuntimeEnv = {
+  DATABASE_URL: string;
+  ADMIN_PASSWORD: string;
+  SESSION_SECRET: string;
+  MEDIA_PUBLIC_URL: string;
+  MEDIA_BUCKET: any; // R2Bucket
+};
 
-  return locals.runtime.env;
+export function getRuntimeEnv(locals?: any): RuntimeEnv {
+  return cfEnv as unknown as RuntimeEnv;
 }
