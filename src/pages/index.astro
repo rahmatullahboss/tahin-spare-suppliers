@@ -87,9 +87,11 @@ const shipmentImages = [
       const track = document.getElementById('sliderTrack');
       const dots = document.querySelectorAll('.dot');
       let currentIndex = 0;
+      /** @type {ReturnType<typeof setInterval> | undefined} */
       let interval;
 
       if(track && dots.length > 0) {
+        /** @param {number} index */
         const updateSlider = (index) => {
           track.style.transform = `translateX(-${index * 100}%)`;
           dots.forEach(d => d.classList.remove('dot-active'));
@@ -265,8 +267,9 @@ const shipmentImages = [
   </section>
 
   <!-- Global Export & Logistics -->
-  <section class="export-logistics">
-    <div class="container">
+  <section class="export-logistics redesigned-export">
+    <div class="export-bg-accent"></div>
+    <div class="container relative-z">
       <div class="export-shell">
         <div class="export-header reveal">
           <span class="export-kicker">Worldwide Marine Supply Chain</span>
@@ -302,7 +305,7 @@ const shipmentImages = [
           </article>
         </div>
         <div class="export-cta reveal">
-          <a href="/enquiry" class="btn btn-quote">Request a Quote</a>
+          <a href="/enquiry" class="btn btn-quote-solid">REQUEST A QUOTE</a>
         </div>
       </div>
     </div>
@@ -592,6 +595,7 @@ const shipmentImages = [
     .hero-desc { margin: 20px auto; }
     .hero.redesigned-hero { height: auto; min-height: 700px; padding-bottom: 0px; }
     .parts-strip-item img { height: 90px; }
+    .export-bg-accent { width: 40%; }
   }
   @media (max-width: 768px) {
     .parts-strip { overflow-x: auto; justify-content: flex-start; }
@@ -812,12 +816,27 @@ const shipmentImages = [
 
   /* Global Export & Logistics */
   .export-logistics {
-    padding: 90px 0;
-    background:
-      linear-gradient(180deg, rgba(255, 248, 229, 0.94), rgba(247, 237, 208, 0.92)),
-      linear-gradient(135deg, #f7eed6 0%, #efe1b4 100%);
-    border-top: 1px solid rgba(166, 124, 82, 0.12);
-    border-bottom: 1px solid rgba(166, 124, 82, 0.12);
+    position: relative;
+    padding: 100px 0;
+    background: #fdfdfd;
+    overflow: hidden;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .export-bg-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background: #b11623;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); /* We can make it a simple rectangle! */
+    opacity: 0.05; /* VERY subtle red block on the left taking up less space */
+    z-index: 0;
+  }
+  .relative-z {
+    position: relative;
+    z-index: 2;
   }
   .export-shell {
     max-width: 1040px;
@@ -831,26 +850,32 @@ const shipmentImages = [
   .export-kicker {
     display: inline-block;
     margin-bottom: 12px;
-    color: #8b6240;
-    font-size: 12px;
+    color: #b11623;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
   }
   .export-title {
-    margin-bottom: 14px;
-    color: #1d1b17;
+    margin-bottom: 20px;
+    color: #111;
     font-size: 40px;
-    line-height: 1.1;
+    line-height: 1.15;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     font-family: var(--font-playfair), 'Playfair Display', serif;
+    font-weight: 800;
   }
   .export-subtitle {
-    margin: 0;
-    color: #4f4a41;
+    margin: 0 auto 35px;
+    color: #555;
     font-size: 16px;
-    line-height: 1.75;
+    line-height: 1.7;
+  }
+  .export-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
   }
   .export-grid {
     display: grid;
@@ -859,43 +884,40 @@ const shipmentImages = [
   }
   .export-card {
     overflow: hidden;
-    border-radius: 22px;
-    background: rgba(255,255,255,0.9);
-    border: 1px solid rgba(166, 124, 82, 0.12);
-    box-shadow: 0 14px 34px rgba(88, 66, 40, 0.14);
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   }
   .export-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 40px rgba(88, 66, 40, 0.18);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(177, 22, 35, 0.15);
+    border-color: #b11623;
   }
   .export-card img {
     width: 100%;
-    height: 280px;
+    height: 200px;
     object-fit: cover;
     display: block;
+    transition: transform 0.7s ease;
+  }
+  .export-card:hover img {
+    transform: scale(1.05);
   }
   .export-card-content {
-    padding: 20px 22px 24px;
+    padding: 16px;
     text-align: center;
+    background: #fff;
+    position: relative;
+    z-index: 2;
   }
   .export-card-content h3 {
-    margin-bottom: 10px;
-    color: #1f1d19;
-    font-size: 21px;
-    line-height: 1.25;
+    margin-bottom: 0px;
+    color: #111;
+    font-size: 15px;
+    line-height: 1.35;
     font-weight: 700;
-  }
-  .export-card-content p {
-    margin: 0;
-    color: #5e584f;
-    font-size: 14px;
-    line-height: 1.7;
-  }
-  .export-cta {
-    display: flex;
-    justify-content: center;
-    margin-top: 34px;
   }
 
   /* Recent Shipment */
@@ -1170,14 +1192,13 @@ const shipmentImages = [
     .hero-content { padding: 40px 20px; }
     .hero-subtitle { font-size: 14px; }
     .export-logistics { padding: 70px 0; }
-    .export-header { margin-bottom: 30px; }
-    .export-title { font-size: 26px; }
-    .export-subtitle { font-size: 14px; }
-    .export-grid { grid-template-columns: 1fr; gap: 18px; }
-    .export-card { border-radius: 18px; }
-    .export-card img { height: 220px; }
-    .export-card-content { padding: 18px 18px 22px; }
-    .export-card-content h3 { font-size: 18px; }
+    .export-title { font-size: 32px; }
+    .export-subtitle { font-size: 15px; }
+    .export-grid { grid-template-columns: 1fr; gap: 15px; }
+    .export-card { border-radius: 8px; }
+    .export-card img { height: 200px; }
+    .export-card-content { padding: 15px; }
+    .export-card-content h3 { font-size: 16px; }
     .recent-shipments { padding: 50px 0 40px; }
     .recent-shipments-title { font-size: 18px; margin: 0 auto 24px; }
     .recent-shipments-marquee::before,
