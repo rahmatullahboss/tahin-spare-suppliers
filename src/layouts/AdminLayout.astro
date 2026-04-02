@@ -43,7 +43,8 @@ const { title, active } = Astro.props;
     font-size: 24px;
   }
   :global(.admin-sidebar nav) {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 10px;
   }
   :global(.admin-sidebar a) {
@@ -64,12 +65,31 @@ const { title, active } = Astro.props;
   @media (max-width: 900px) {
     .admin-shell {
       grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
     }
     :global(.admin-sidebar) {
-      padding: 20px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    :global(.admin-sidebar h2) {
+      margin-bottom: 0;
+      font-size: 20px;
+    }
+    :global(.admin-sidebar nav) {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    :global(.admin-sidebar a) {
+      padding: 8px 14px;
+      font-size: 14px;
+      flex: 1 1 auto;
+      text-align: center;
     }
     .admin-main {
-      padding: 20px;
+      padding: 16px;
     }
   }
 </style>

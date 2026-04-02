@@ -31,6 +31,32 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         <label>Slug</label>
         <input type="text" name="slug" data-slug />
       </div>
+      {type === 'products' && (
+        <>
+          <div class="field">
+            <label>Category</label>
+            <select name="category" data-category>
+              <option value="Marine Propulsion Engine">Marine Propulsion Engine</option>
+              <option value="Marine Gearbox">Marine Gearbox</option>
+              <option value="Auxiliary Engine">Auxiliary Engine</option>
+              <option value="Diesel & Gas Generator Set">Diesel & Gas Generator Set</option>
+              <option value="Spare Parts">Spare Parts</option>
+              <option value="Hydraulic Deck Crane Equipment">Hydraulic Deck Crane Equipment</option>
+              <option value="Anchor and Chain">Anchor and Chain</option>
+              <option value="Marine Pump">Marine Pump</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Brand</label>
+            <input type="text" name="brand" placeholder="e.g. Yanmar, Daihatsu" data-brand list="brand-list" />
+            <datalist id="brand-list"></datalist>
+          </div>
+          <div class="field">
+            <label>Model</label>
+            <input type="text" name="model_number" placeholder="e.g. 6EY18AL" data-model />
+          </div>
+        </>
+      )}
       <div class="field">
         <label>{excerptLabel}</label>
         <textarea name="excerpt" rows="3" data-excerpt></textarea>
@@ -90,6 +116,17 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       form.querySelector("[data-id]").value = item.id;
       form.querySelector("[data-title]").value = item.title;
       form.querySelector("[data-slug]").value = item.slug;
+      if (type === 'products') {
+        if (document.querySelector("[data-category]")) {
+           document.querySelector("[data-category]").value = item.category || 'Marine Propulsion Engine';
+        }
+        if (document.querySelector("[data-brand]")) {
+           document.querySelector("[data-brand]").value = item.brand || '';
+        }
+        if (document.querySelector("[data-model]")) {
+           document.querySelector("[data-model]").value = item.model_number || '';
+        }
+      }
       form.querySelector("[data-excerpt]").value = item.excerpt;
       form.querySelector("[data-content]").value = item.content;
       imageUrlInput.value = item.imageUrl || "";
@@ -103,6 +140,11 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
           ${item.imageUrl ? `<img src="${item.imageUrl}" alt="" />` : ""}
           <div class="item-card-body">
             <h3>${item.title}</h3>
+            ${type === 'products' ? `
+              <small style="display:inline-block;background:#eee;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${item.category || 'Uncategorized'}</small>
+              ${item.brand ? `<small style="display:inline-block;background:#e67e22;color:#fff;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${item.brand}</small>` : ''}
+              ${item.model_number ? `<small style="display:inline-block;background:#34495e;color:#fff;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${item.model_number}</small>` : ''}
+            ` : ""}
             <p>${item.excerpt || ""}</p>
             <small>${item.slug}</small>
             <div class="item-actions">
@@ -137,7 +179,16 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     const loadItems = async () => {
       const response = await fetch(endpoint);
       const data = await response.json();
-      renderItems(data.items || []);
+      const items = data.items || [];
+      renderItems(items);
+
+      if (type === 'products') {
+        const brandList = document.getElementById("brand-list");
+        if (brandList) {
+          const uniqueBrands = [...new Set(items.map((i) => i.brand).filter(Boolean))].sort();
+          brandList.innerHTML = uniqueBrands.map((b) => `<option value="${b}">`).join("");
+        }
+      }
     };
 
     const compressImageToWebp = async (file) => {
@@ -202,7 +253,12 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         slug: form.querySelector("[data-slug]").value,
         excerpt: form.querySelector("[data-excerpt]").value,
         content: form.querySelector("[data-content]").value,
-        imageUrl: imageUrlInput.value
+        imageUrl: imageUrlInput.value,
+        ...(type === 'products' ? { 
+          category: form.querySelector("[data-category]")?.value || "Marine Propulsion Engine",
+          brand: form.querySelector("[data-brand]")?.value || "",
+          model_number: form.querySelector("[data-model]")?.value || ""
+        } : {})
       };
 
       const id = form.querySelector("[data-id]").value;
@@ -343,6 +399,31 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
   @media (max-width: 980px) {
     .editor-grid {
       grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .editor-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .editor-form,
+    .editor-list {
+      padding: 18px;
+    }
+    .actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    :global(.item-card) {
+      grid-template-columns: 1fr;
+    }
+    :global(.item-card img) {
+      height: 160px;
+      border-radius: 14px 14px 0 0;
+    }
+    :global(.item-card-body) {
+      padding: 14px;
     }
   }
 </style>

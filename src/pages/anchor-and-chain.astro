@@ -1,12 +1,18 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import ProductGrid from '../components/ProductGrid.astro';
+import { getRuntimeEnv } from '../lib/server/env';
+import { listContent } from '../lib/server/repository';
+
+const env = getRuntimeEnv(Astro.locals);
+const allProducts = await listContent(env, 'products');
+const categoryProducts = allProducts.filter((p: any) => p.category === 'Anchor and Chain');
 ---
 <MainLayout title="Anchor and Chain - Tahin Spare Suppliers" activeNav="products">
   <section class="page-hero" style="background: url('/images/anchor-chain.jpg') center/cover no-repeat;">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
       <h1 class="reveal">Anchor and Chain</h1>
-      <p class="reveal">Home / Equipments / Anchor and Chain</p>
     </div>
   </section>
 
@@ -33,6 +39,15 @@ import MainLayout from '../layouts/MainLayout.astro';
       </div>
     </div>
   </section>
+
+  {categoryProducts.length > 0 && (
+    <section class="section" style="background: #f9f9f9;">
+      <div class="container">
+        <h2 class="section-title text-center">Available Anchor and Chain</h2>
+        <ProductGrid products={categoryProducts} />
+      </div>
+    </section>
+  )}
 </MainLayout>
 
 <style>

@@ -1,0 +1,128 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import ProductGrid from '../components/ProductGrid.astro';
+import { getRuntimeEnv } from '../lib/server/env';
+import { listContent } from '../lib/server/repository';
+
+const env = getRuntimeEnv(Astro.locals);
+const allProducts = await listContent(env, 'products');
+const categoryProducts = allProducts.filter((p: any) => p.category === 'Marine Pump');
+---
+<MainLayout title="Marine Pump - Tahin Spare Suppliers" activeNav="products">
+  <section class="page-hero" style="background: url('/images/pump.webp') center/cover no-repeat;">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1 class="reveal">Marine Pump</h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container product-detail-container">
+      <div class="content-side reveal-left">
+        <h2>Reliable Marine Pumping Solutions</h2>
+        <p>We maintain an extensive inventory of fully reconditioned and tested marine pumps suitable for various onboard applications, including cooling water, ballast, fire compliance, and oil transfer.</p>
+        <p><strong>Available Types:</strong> Centrifugal, Gear, Screw, Piston, and Submersible pumps.</p>
+        <p><strong>Available Brands:</strong> Taiko Kikai, Shinko, Naniwa, Heishin, Teikoku, Desmi, and more.</p>
+        
+        <div class="features-list">
+          <ul>
+            <li>Comprehensive overhaul including new bearings and mechanical seals</li>
+            <li>Fully pressure tested before dispatch</li>
+            <li>Cost-effective alternative to new units</li>
+            <li>Huge inventory ensuring quick order turnarounds</li>
+          </ul>
+        </div>
+        
+        <a href="/enquiry" class="btn-primary" style="margin-top: 20px;">Request Inventory List</a>
+      </div>
+      <div class="image-side reveal-right img-zoom">
+        <img src="/images/pump.webp" alt="Marine Pump" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  {categoryProducts.length > 0 && (
+    <section class="section" style="background: #f9f9f9;">
+      <div class="container">
+        <h2 class="section-title text-center">Available Marine Pumps</h2>
+        <ProductGrid products={categoryProducts} />
+      </div>
+    </section>
+  )}
+</MainLayout>
+
+<style>
+  .page-hero {
+    position: relative;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+  .page-hero-content p { font-size: 14px; color: #ddd; }
+
+  .product-detail-container {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 50px;
+    align-items: center;
+  }
+  .content-side h2 {
+    font-size: 28px;
+    color: #222;
+    margin-bottom: 20px;
+  }
+  .content-side p {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 15px;
+  }
+  .features-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 25px 0;
+  }
+  .features-list li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    color: #444;
+  }
+  .features-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #c0392b;
+    font-weight: bold;
+  }
+  .image-side img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  .btn-primary {
+    display: inline-block;
+    background: #c0392b;
+    color: #fff;
+    padding: 12px 25px;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: background 0.3s;
+  }
+  .btn-primary:hover {
+    background: #a93226;
+  }
+
+  @media (max-width: 768px) {
+    .product-detail-container { grid-template-columns: 1fr; }
+    .image-side { order: -1; }
+  }
+</style>

@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import ProductGrid from '../components/ProductGrid.astro';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listContent } from '../lib/server/repository';
 
@@ -11,7 +12,6 @@ const liveParts = await listContent(env, 'parts');
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
       <h1 class="reveal">Marine Spare Parts</h1>
-      <p class="reveal">Home / Equipments / Marine Spare Parts</p>
     </div>
   </section>
 
@@ -39,20 +39,10 @@ const liveParts = await listContent(env, 'parts');
   </section>
 
   {liveParts.length > 0 && (
-    <section class="section live-parts-section">
+    <section class="section live-parts-section" style="background: #f9f9f9;">
       <div class="container">
         <h2 class="live-title">Live Parts Inventory</h2>
-        <div class="parts-grid">
-          {liveParts.map((part) => (
-            <a href={`/parts/${part.slug}`} class="part-card">
-              <img src={part.imageUrl || '/images/spare-parts-new.jpg'} alt={part.title} loading="lazy" />
-              <div class="part-card-body">
-                <h3>{part.title}</h3>
-                <p>{part.excerpt}</p>
-              </div>
-            </a>
-          ))}
-        </div>
+        <ProductGrid products={liveParts} basePath="/parts" />
       </div>
     </section>
   )}

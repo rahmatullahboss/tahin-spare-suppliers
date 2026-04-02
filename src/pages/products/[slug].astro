@@ -1,7 +1,8 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
 import { getRuntimeEnv } from "../../lib/server/env";
-import { getContentBySlug } from "../../lib/server/repository";
+import { getContentBySlug, listContent } from "../../lib/server/repository";
+import ProductGrid from "../../components/ProductGrid.astro";
 
 const env = getRuntimeEnv(Astro.locals);
 const slug = Astro.params.slug;
@@ -10,41 +11,93 @@ const product = slug ? await getContentBySlug(env, "products", slug) : null;
 if (!product) {
   return Astro.redirect("/products");
 }
+
+const allProducts = await listContent(env, "products");
+const relatedProducts = allProducts.filter(
+  (p: any) => p.category === product.category && p.brand === product.brand && p.id !== product.id && p.brand
+).slice(0, 3); // show up to 3 other models in the same category with the same brand
 ---
 <MainLayout title={`${product.title} - Tahin Spare Suppliers`} activeNav="products">
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
       <h1>{product.title}</h1>
-      <p>Home / Equipments / {product.title}</p>
     </div>
   </section>
 
   <section class="section">
     <div class="container detail-grid">
-      <div>
+      <div class="product-info-wrap">
+        {product.category && <span class="category-badge">{product.category}</span>}
         <h2>{product.title}</h2>
-        <p class="excerpt">{product.excerpt}</p>
-        <div class="content">{product.content.split("\n").filter(Boolean).map((line) => <p>{line}</p>)}</div>
-        <a href="/enquiry" class="btn-primary">Request a Quote</a>
-      </div>
-      {product.imageUrl && (
-        <div class="detail-image">
-          <img src={product.imageUrl} alt={product.title} />
+        
+        <div class="specs-box">
+          {product.brand && <div class="spec-row"><span class="spec-label">Brand</span> <span class="spec-value">{product.brand}</span></div>}
+          {product.model_number && <div class="spec-row"><span class="spec-label">Model</span> <span class="spec-value">{product.model_number}</span></div>}
+          {product.category && <div class="spec-row"><span class="spec-label">Category</span> <span class="spec-value">{product.category}</span></div>}
         </div>
-      )}
+
+        <p class="excerpt">{product.excerpt}</p>
+        <div class="content">{product.content.split("\n").filter(Boolean).map((line: string) => <p>{line}</p>)}</div>
+        
+        <div class="cta-box">
+          <h3>Interested in this model?</h3>
+          <p>Contact our sales team directly for pricing, availability, and detailed specifications.</p>
+          <a href="/enquiry" class="btn-primary">Request a Quote</a>
+        </div>
+      </div>
+      
+      <div class="image-sidebar">
+        {product.imageUrl && (
+          <div class="detail-image">
+            <img src={product.imageUrl} alt={product.title} />
+          </div>
+        )}
+      </div>
     </div>
   </section>
+
+  {relatedProducts.length > 0 && (
+    <section class="section related-section">
+      <div class="container">
+        <h3 class="related-title">Other Models from {product.brand || 'this Brand'}</h3>
+        <ProductGrid products={relatedProducts} basePath="/products" />
+      </div>
+    </section>
+  )}
 </MainLayout>
 
 <style>
   .page-hero { position: relative; height: 300px; background: url('/images/services-hero.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
   .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
   .page-hero-content { position: relative; z-index: 1; color: #fff; }
-  .detail-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr); gap: 40px; align-items: start; }
-  .excerpt { font-size: 18px; color: #555; line-height: 1.7; }
-  .content p { color: #555; line-height: 1.8; }
-  .detail-image img { width: 100%; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-  .btn-primary { display: inline-block; margin-top: 18px; background: #c0392b; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 700; }
-  @media (max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
+  .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(400px, 0.8fr); gap: 50px; align-items: start; }
+  
+  .category-badge { display: inline-block; background: #e67e22; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 1px; }
+  
+  .specs-box { background: #f8f9fa; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin: 25px 0; display: flex; flex-direction: column; gap: 12px; }
+  .spec-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #ddd; padding-bottom: 8px; }
+  .spec-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .spec-label { font-weight: 600; color: #666; font-size: 15px; text-transform: uppercase; }
+  .spec-value { font-weight: 800; color: #111; font-size: 16px; }
+
+  .excerpt { font-size: 20px; color: #333; font-weight: 500; line-height: 1.6; margin-top: 10px; margin-bottom: 20px; }
+  .content p { color: #555; line-height: 1.8; font-size: 16px; margin-bottom: 15px; }
+  
+  .cta-box { background: #111; color: #fff; padding: 30px; border-radius: 12px; margin-top: 40px; text-align: center; }
+  .cta-box h3 { color: #fff; margin-top: 0; margin-bottom: 10px; font-size: 22px; }
+  .cta-box p { color: #bbb; line-height: 1.5; margin-bottom: 25px; }
+  .btn-primary { display: inline-block; background: #c0392b; color: #fff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: background 0.3s; }
+  .btn-primary:hover { background: #e67e22; }
+
+  .detail-image { position: sticky; top: 120px; }
+  .detail-image img { width: 100%; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border: 1px solid #eaeaea; }
+
+  .related-section { background: #fdfdfd; border-top: 1px solid #eaeaea; padding: 60px 0; }
+  .related-title { font-size: 28px; font-weight: 800; margin-bottom: 30px; text-align: center; color: #111; }
+
+  @media (max-width: 992px) { 
+    .detail-grid { grid-template-columns: 1fr; gap: 40px; } 
+    .detail-image { position: relative; top: 0; }
+  }
 </style>

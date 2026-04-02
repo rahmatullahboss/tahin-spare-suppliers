@@ -31,6 +31,10 @@ export type ContentRecord = {
   imageUrl: string;
   createdAt: string;
   updatedAt: string;
+  updatedAt: string;
+  category?: string;
+  brand?: string;
+  model_number?: string;
 };
 
 export type ContentInput = {
@@ -39,6 +43,10 @@ export type ContentInput = {
   content?: string;
   imageUrl?: string;
   slug?: string;
+  slug?: string;
+  category?: string;
+  brand?: string;
+  model_number?: string;
 };
 
 function mapRecord(type: ContentType, row: Record<string, unknown>): ContentRecord {
@@ -52,7 +60,13 @@ function mapRecord(type: ContentType, row: Record<string, unknown>): ContentReco
     content: String(row.content ?? ""),
     imageUrl: String(row.image_url ?? ""),
     createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at)
+    updatedAt: String(row.updated_at),
+    updatedAt: String(row.updated_at),
+    ...(type === 'products' ? { 
+      category: String(row.category ?? "Uncategorized"),
+      brand: String(row.brand ?? ""),
+      model_number: String(row.model_number ?? "")
+    } : {})
   };
 }
 
@@ -89,13 +103,23 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
   const excerpt = input.excerpt ?? "";
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
+  const category = input.category ?? "Uncategorized";
+  const brand = input.brand ?? "";
+  const model_number = input.model_number ?? "";
 
-  const rows = await sql.query(
-    `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, updated_at)
+  let query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, updated_at)
      VALUES ($1, $2, $3, $4, $5, $6, NOW())
-     RETURNING *`,
-    [id, slug, input.title, excerpt, content, imageUrl]
-  );
+     RETURNING *`;
+  let params: any[] = [id, slug, input.title, excerpt, content, imageUrl];
+
+  if (type === 'products') {
+    query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, category, brand, model_number, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+       RETURNING *`;
+    params.push(category, brand, model_number);
+  }
+
+  const rows = await sql.query(query, params);
 
   return mapRecord(type, rows[0]);
 }
@@ -113,9 +137,11 @@ export async function updateContent(
   const excerpt = input.excerpt ?? "";
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
+  const category = input.category ?? "Uncategorized";
+  const brand = input.brand ?? "";
+  const model_number = input.model_number ?? "";
 
-  const rows = await sql.query(
-    `UPDATE ${config.table}
+  let query = `UPDATE ${config.table}
      SET slug = $1,
          ${config.titleColumn} = $2,
          ${config.excerptColumn} = $3,
@@ -123,9 +149,26 @@ export async function updateContent(
          image_url = $5,
          updated_at = NOW()
      WHERE id = $6
-     RETURNING *`,
-    [slug, input.title, excerpt, content, imageUrl, id]
-  );
+     RETURNING *`;
+  let params: any[] = [slug, input.title, excerpt, content, imageUrl, id];
+
+  if (type === 'products') {
+    query = `UPDATE ${config.table}
+       SET slug = $1,
+           ${config.titleColumn} = $2,
+           ${config.excerptColumn} = $3,
+           content = $4,
+           image_url = $5,
+           category = $6,
+           brand = $7,
+           model_number = $8,
+           updated_at = NOW()
+       WHERE id = $9
+       RETURNING *`;
+    params = [slug, input.title, excerpt, content, imageUrl, category, brand, model_number, id];
+  }
+
+  const rows = await sql.query(query, params);
 
   return rows[0] ? mapRecord(type, rows[0]) : null;
 }

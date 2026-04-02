@@ -1,7 +1,7 @@
 
 
 # Project Memory — tahin-spare-suppliers
-> 6719 notes | Score threshold: >40
+> 7034 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,40 +20,42 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in agent.md** — - > 6717 notes | Updated: 4/2/2026
-+ > 6718 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7032 notes | Updated: 4/2/2026
++ > 7033 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6715 notes | Updated: 4/2/2026
-+ > 6717 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7031 notes | Updated: 4/2/2026
++ > 7032 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6714 notes | Updated: 4/2/2026
-+ > 6715 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7030 notes | Updated: 4/2/2026
++ > 7031 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6711 notes | Updated: 4/2/2026
-+ > 6714 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7029 notes | Updated: 4/2/2026
++ > 7030 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6709 notes | Updated: 4/2/2026
-+ > 6711 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7028 notes | Updated: 4/2/2026
++ > 7029 notes | Updated: 4/2/2026
 
-- **gotcha in agent.md** — - > 6708 notes | Updated: 4/2/2026
-+ > 6709 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7027 notes | Updated: 4/2/2026
++ > 7028 notes | Updated: 4/2/2026
 
 
 ## Project Standards
 
+- what-changed in index.astro — confirmed 4x
+- Optimized ProductGrid — confirmed 3x
 - Updated Bangladesh database schema — fixes memory leak from uncleared timers — confirmed 3x
 - Strengthened types ReturnType — fixes memory leak from uncleared timers
 - what-changed in index.astro — confirmed 3x
 - what-changed in metadata.sqlite-shm — confirmed 4x
 - what-changed in metadata.sqlite-wal — confirmed 4x
 - what-changed in agent.md — confirmed 3x
-- Updated schema Updated — confirmed 3x
 
 ## Recent Decisions
 
+- decision in ProductGrid.astro
+- decision in marine-spare-parts.astro
 - decision in index.astro
-- Optimized Full — offloads heavy computation off the main thread
-- Optimized Tahin — ensures atomic multi-step database operations
+- decision in index.astro
 
 ## Learned Patterns
 

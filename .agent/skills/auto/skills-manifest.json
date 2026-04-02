@@ -1,18 +1,18 @@
 {
   "project": {
     "enabled": true,
-    "lastGenerated": "2026-04-02T09:07:19.635Z",
-    "observationCount": 6716,
+    "lastGenerated": "2026-04-02T11:37:19.493Z",
+    "observationCount": 7030,
     "skillCount": 0,
     "domain": "project",
     "triggerGlobs": [
       "**/*"
     ],
-    "description": "Project for tahin-spare-suppliers. 6201 gotchas, 106 conventions, 7 fixes."
+    "description": "Project for tahin-spare-suppliers. 6494 gotchas, 108 conventions, 10 fixes."
   },
   "convention": {
     "enabled": true,
-    "lastGenerated": "2026-04-02T09:07:19.635Z",
+    "lastGenerated": "2026-04-02T11:37:19.494Z",
     "observationCount": 0,
     "skillCount": 35,
     "domain": "convention",
@@ -23,7 +23,7 @@
   },
   "gotcha": {
     "enabled": true,
-    "lastGenerated": "2026-04-02T09:07:19.636Z",
+    "lastGenerated": "2026-04-02T11:37:19.494Z",
     "observationCount": 0,
     "skillCount": 42,
     "domain": "gotcha",
@@ -34,7 +34,7 @@
   },
   "config": {
     "enabled": true,
-    "lastGenerated": "2026-04-02T09:07:19.635Z",
+    "lastGenerated": "2026-04-02T11:37:19.493Z",
     "observationCount": 2,
     "skillCount": 0,
     "domain": "config",
