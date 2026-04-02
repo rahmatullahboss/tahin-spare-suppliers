@@ -9,7 +9,7 @@ const { activeNav = 'home' } = Astro.props;
   <div class="header-container">
     <div class="logo">
       <div class="logo-icon">
-        <img src="/images/logo.svg" alt="Tahin Spare Suppliers Logo" class="logo-image" width="56" height="56" />
+        <img src="/images/logo.svg" alt="Tahin Spare Suppliers Logo" class="logo-image" width="70" height="70" />
       </div>
       <div class="logo-text">
         <h1 class="company-name">Tahin Spare Suppliers</h1>
@@ -68,14 +68,14 @@ const { activeNav = 'home' } = Astro.props;
   }
   .company-name {
     font-family: var(--font-dancing), 'Dancing Script', cursive;
-    font-size: 28px;
+    font-size: 34px;
     color: #d4a00a;
     margin: 0;
     line-height: 1.1;
     font-weight: 700;
   }
   .company-tagline {
-    font-size: 11px;
+    font-size: 14px;
     color: #333;
     margin: 0;
     font-family: var(--font-inter), 'Inter', sans-serif;
@@ -288,8 +288,10 @@ const { activeNav = 'home' } = Astro.props;
   }
 
   @media (max-width: 600px) {
-    .company-name { font-size: 22px; }
-    .company-tagline { display: none; }
+    .company-name { font-size: 26px; }
+    .company-tagline { font-size: 11px; display: block; }
+    .logo-image { width: 50px; height: 50px; }
+    .logo { gap: 8px; }
     .header-container { padding: 0 15px; }
     .top-bar-content { justify-content: center; }
     .top-social { display: none; }
