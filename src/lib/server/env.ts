@@ -9,5 +9,6 @@ export type RuntimeEnv = {
 };
 
 export function getRuntimeEnv(locals?: any): RuntimeEnv {
-  return cfEnv as unknown as RuntimeEnv;
+  const env = locals?.runtime?.env ?? cfEnv;
+  return env as unknown as RuntimeEnv;
 }
