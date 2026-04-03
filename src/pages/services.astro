@@ -4,7 +4,7 @@ import Icon from '../components/Icon.astro';
 ---
 <MainLayout title="Our Services - Tahin Spare Suppliers" activeNav="services">
   <section class="page-hero">
-    <div class="page-hero-overlay"></div>
+    <div class="page-hero-accent"></div>
     <div class="page-hero-content">
       <h1>Our Services</h1>
     </div>
@@ -45,8 +45,8 @@ import Icon from '../components/Icon.astro';
   <!-- Service 2: Engine Overhaul & Reconditioning -->
   <section class="section">
     <div class="container">
-      <div class="service-detail reverse">
-        <div class="service-detail-text reveal-right">
+      <div class="service-detail">
+        <div class="service-detail-text reveal-left">
           <div class="service-badge"><Icon name="tools" size={24} /></div>
           <h2>Engine Overhaul & Reconditioning</h2>
           <p>Our workshop team carries out complete engine overhaul and reconditioning for all major marine engine brands. Every part is inspected, tested and certified before delivery.</p>
@@ -108,17 +108,29 @@ import Icon from '../components/Icon.astro';
 <style>
   .page-hero {
     position: relative;
-    height: 350px;
-    background: url('/images/services-hero.jpg') center/cover no-repeat;
+    height: 250px;
+    background-color: #fcfcfc;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    overflow: hidden;
   }
-  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-  .page-hero-content { position: relative; z-index: 1; color: #fff; }
-  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
-  .page-hero-content p { font-size: 14px; color: #ddd; }
+  .page-hero-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: clamp(20px, 5vw, 100px);
+    height: 100%;
+    background: #b11623;
+    clip-path: polygon(0 0, 100% 0, 30% 100%, 0 100%);
+    z-index: 0;
+  }
+  .page-hero-content { position: relative; z-index: 1; color: #222; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; color: #b11623; }
+  .page-hero-content p { font-size: 15px; color: #555; }
 
   .services-intro {
     text-align: center;
@@ -135,12 +147,7 @@ import Icon from '../components/Icon.astro';
     gap: 50px;
     align-items: center;
   }
-  .service-detail.reverse {
-    direction: rtl;
-  }
-  .service-detail.reverse > * {
-    direction: ltr;
-  }
+
   .service-badge {
     width: 56px;
     height: 56px;
@@ -224,6 +231,5 @@ import Icon from '../components/Icon.astro';
 
   @media (max-width: 768px) {
     .service-detail { grid-template-columns: 1fr; }
-    .service-detail.reverse { direction: ltr; }
   }
 </style>

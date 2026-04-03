@@ -12,8 +12,8 @@ const { activeNav = 'home' } = Astro.props;
         <img src="/images/logo.svg" alt="Tahin Spare Suppliers Logo" class="logo-image" width="70" height="70" />
       </div>
       <div class="logo-text">
-        <h1 class="company-name">Tahin Spare Suppliers</h1>
-        <p class="company-tagline">Supply & Export All Kinds Of Marine Engine & Spare Parts</p>
+        <h1 class="company-name"><span class="text-red">Tahin</span> Spare Suppliers</h1>
+        <p class="company-tagline">Exporters of Marine Engines & Spare Solutions</p>
       </div>
     </div>
 
@@ -67,18 +67,26 @@ const { activeNav = 'home' } = Astro.props;
     filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
   }
   .company-name {
-    font-family: var(--font-dancing), 'Dancing Script', cursive;
-    font-size: 30px;
-    color: #d4a00a;
+    font-family: var(--font-inter), sans-serif;
+    font-size: 20px;
+    color: #1a1a1a;
     margin: 0;
     line-height: 1.1;
-    font-weight: 700;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.2px;
+  }
+  .company-name .text-red {
+    color: #b11623;
   }
   .company-tagline {
-    font-size: 13px;
-    color: #333;
-    margin: 0;
+    font-size: 11px;
+    color: #444;
+    margin: 3px 0 0;
     font-family: var(--font-inter), 'Inter', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    opacity: 0.85;
   }
 
   /* Navigation Styles */
@@ -288,8 +296,8 @@ const { activeNav = 'home' } = Astro.props;
   }
 
   @media (max-width: 600px) {
-    .company-name { font-size: 22px; }
-    .company-tagline { font-size: 10px; display: block; }
+    .company-name { font-size: 24px; }
+    .company-tagline { font-size: 11px; display: block; }
     .logo-image { width: 50px; height: 50px; }
     .logo { gap: 8px; }
     .header-container { padding: 0 15px; }

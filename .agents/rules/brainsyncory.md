@@ -1,7 +1,7 @@
 
 
 # Project Memory — tahin-spare-suppliers
-> 7034 notes | Score threshold: >40
+> 7963 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,42 +20,42 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in agent.md** — - > 7032 notes | Updated: 4/2/2026
-+ > 7033 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7960 notes | Updated: 4/3/2026
++ > 7962 notes | Updated: 4/3/2026
 
-- **gotcha in agent.md** — - > 7031 notes | Updated: 4/2/2026
-+ > 7032 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7959 notes | Updated: 4/3/2026
++ > 7960 notes | Updated: 4/3/2026
 
-- **gotcha in agent.md** — - > 7030 notes | Updated: 4/2/2026
-+ > 7031 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7958 notes | Updated: 4/3/2026
++ > 7959 notes | Updated: 4/3/2026
 
-- **gotcha in agent.md** — - > 7029 notes | Updated: 4/2/2026
-+ > 7030 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7957 notes | Updated: 4/3/2026
++ > 7958 notes | Updated: 4/3/2026
 
-- **gotcha in agent.md** — - > 7028 notes | Updated: 4/2/2026
-+ > 7029 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7956 notes | Updated: 4/3/2026
++ > 7957 notes | Updated: 4/3/2026
 
-- **gotcha in agent.md** — - > 7027 notes | Updated: 4/2/2026
-+ > 7028 notes | Updated: 4/2/2026
+- **gotcha in agent.md** — - > 7955 notes | Updated: 4/3/2026
++ > 7956 notes | Updated: 4/3/2026
 
 
 ## Project Standards
 
-- what-changed in index.astro — confirmed 4x
-- Optimized ProductGrid — confirmed 3x
-- Updated Bangladesh database schema — fixes memory leak from uncleared timers — confirmed 3x
-- Strengthened types ReturnType — fixes memory leak from uncleared timers
 - what-changed in index.astro — confirmed 3x
-- what-changed in metadata.sqlite-shm — confirmed 4x
-- what-changed in metadata.sqlite-wal — confirmed 4x
-- what-changed in agent.md — confirmed 3x
+- Optimized Tahin — confirmed 3x
+- Fixed null crash in VIEW — confirmed 3x
+- what-changed in agent.md — confirmed 16x
+- what-changed in products.astro — confirmed 3x
+- Updated multiple database schema — externalizes configuration for environment... — confirmed 3x
+- what-changed in config.json — confirmed 3x
+- what-changed in metadata.sqlite-shm — confirmed 5x
 
 ## Recent Decisions
 
-- decision in ProductGrid.astro
-- decision in marine-spare-parts.astro
-- decision in index.astro
-- decision in index.astro
+- Optimized Team — ensures atomic multi-step database operations
+- Optimized Tahin — ensures atomic multi-step database operations
+- decision in contact.astro
+- decision in about.astro
 
 ## Learned Patterns
 

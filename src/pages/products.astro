@@ -1,120 +1,40 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import { getRuntimeEnv } from '../lib/server/env';
-import { listContent } from '../lib/server/repository';
 
-const products = [
-  {
-    name: 'Yanmar 6N18AL Marine Diesel Engine',
-    category: 'Marine Propulsion Engine',
-    image: '/images/marine-propulsion-engine.jpg',
-    link: '/marine-propulsion-engines'
-  },
-  {
-    name: '500 KVA Caterpillar Diesel Generator Set',
-    category: 'Diesel & Gas Generator Set',
-    image: '/images/diesel-generator-set.jpg',
-    link: '/diesel-generator-sets'
-  },
-  {
-    name: 'Hydraulic Luffing Winch System',
-    category: 'Hydraulic Deck Crane Equipment',
-    image: '/images/hydraulic-crane-equipment.jpg',
-    link: '/hydraulic-crane-equipment'
-  },
-  {
-    name: 'Marine Gearbox - Various Models',
-    category: 'Marine Gearbox',
-    image: '/images/marine-gearbox.jpg',
-    link: '/marine-gearbox'
-  },
-  {
-    name: 'Engine Spare Parts — Pistons, Liners, Bearings',
-    category: 'Spare Parts',
-    image: '/images/spare-parts-new.jpg',
-    link: '/marine-spare-parts'
-  },
-  {
-    name: 'Daihatsu 6DK-20 Auxiliary Engine',
-    category: 'Auxiliary Engine',
-    image: '/images/auxiliary-engine.jpg',
-    link: '/marine-auxillary-engines'
-  },
-  {
-    name: 'Anchor and Chain Set',
-    category: 'Anchor and Chain',
-    image: '/images/anchor-chain.jpg',
-    link: '/anchor-and-chain'
-  },
-  {
-    name: 'Marine Water Pump',
-    category: 'Marine Pump',
-    image: '/images/marine-pump.jpg',
-    link: '/marine-pump'
-  }
+const categories = [
+  { name: 'Marine Propulsion Engine', link: '/category/marine-propulsion-engine', image: '/images/marine-propulsion-engine.jpg' },
+  { name: 'Marine Gearbox', link: '/category/marine-gearbox', image: '/images/marine-gearbox.jpg' },
+  { name: 'Auxiliary Engine', link: '/category/auxiliary-engine', image: '/images/auxiliary-engine.jpg' },
+  { name: 'Diesel & Gas Generator Set', link: '/category/diesel-generator-set', image: '/images/diesel-generator-set.jpg' },
+  { name: 'Spare Parts', link: '/category/spare-parts', image: '/images/spare-parts-new.jpg' },
+  { name: 'Hydraulic Deck Crane Equipment', link: '/category/hydraulic-deck-crane-equipment', image: '/images/hydraulic-crane-equipment.jpg' },
+  { name: 'Anchor and Chain', link: '/category/anchor-and-chain', image: '/images/anchor-chain.jpg' },
+  { name: 'Marine Pump', link: '/category/marine-pump', image: '/images/marine-pump.jpg' }
 ];
-
-const categories = ['All Equipments', 'Marine Propulsion Engine', 'Marine Gearbox', 'Auxiliary Engine', 'Diesel & Gas Generator Set', 'Spare Parts', 'Hydraulic Deck Crane Equipment', 'Anchor and Chain', 'Marine Pump'];
-const env = getRuntimeEnv(Astro.locals);
-const liveProducts = await listContent(env, 'products');
 ---
 <MainLayout title="Equipments - Tahin Spare Suppliers" activeNav="products">
   <section class="page-hero">
-    <div class="page-hero-overlay"></div>
+    <div class="page-hero-accent"></div>
     <div class="page-hero-content">
-      <h1 class="reveal">Our Equipments</h1>
+      <h1 class="reveal">Equipments</h1>
       <p class="hero-subtitle reveal">Your one-stop solution for reconditioned marine engines & equipment</p>
     </div>
   </section>
 
-  <section class="section">
+  <section class="section stock-spares">
     <div class="container">
-      <p class="products-intro reveal">As a full-range supplier, Tahin Spare Suppliers has access to a complete spectrum of reconditioned marine engines, generator sets, auxiliary engines, hydraulic equipment, and spare parts from the top brands.</p>
-
-      <div class="filter-tabs reveal" id="filter-tabs">
+      <div class="stock-grid reveal-stagger">
         {categories.map((cat) => (
-          <button class:list={['filter-btn', { active: cat === 'All Equipments' }]} data-category={cat}>
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      <div class="products-grid reveal-stagger" id="products-grid">
-        {products.map((product) => (
-          <a href={product.link} class="product-card" data-category={product.category} style="text-decoration: none;">
-            <div class="product-img">
-              <img src={product.image} alt={product.name} loading="lazy" />
+          <a href={cat.link} class="stock-card">
+            <div class="stock-card-img">
+              <img src={cat.image} alt={cat.name} loading="lazy" />
             </div>
-            <div class="product-content">
-              <h3>{product.name}</h3>
-              <span class="view-details">VIEW DETAILS</span>
+            <div class="stock-card-content">
+              <h3>{cat.name}</h3>
+              <span class="stock-card-cta">VIEW DETAILS</span>
             </div>
           </a>
         ))}
-      </div>
-
-      {liveProducts.length > 0 && (
-        <>
-          <h2 class="live-section-title">Client-Managed Products</h2>
-          <div class="products-grid live-products-grid">
-            {liveProducts.map((product) => (
-              <a href={`/products/${product.slug}`} class="product-card" style="text-decoration: none;">
-                <div class="product-img">
-                  <img src={product.imageUrl || '/images/marine-engine.webp'} alt={product.title} loading="lazy" />
-                </div>
-                <div class="product-content">
-                  <h3>{product.title}</h3>
-                  <p class="live-excerpt">{product.excerpt}</p>
-                  <span class="view-details">VIEW DETAILS</span>
-                </div>
-              </a>
-            ))}
-          </div>
-        </>
-      )}
-
-      <div class="products-cta">
-        <p>Can't find what you're looking for? <a href="/enquiry">Send us an enquiry</a> and we'll check our inventory.</p>
       </div>
     </div>
   </section>
@@ -123,165 +43,103 @@ const liveProducts = await listContent(env, 'products');
 <style>
   .page-hero {
     position: relative;
-    height: 350px;
-    background: url('/images/services-hero.jpg') center/cover no-repeat;
+    height: 250px;
+    background-color: #fcfcfc;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-  }
-  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-  .page-hero-content { position: relative; z-index: 1; color: #fff; }
-  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
-  .page-hero-content p { font-size: 14px; color: #ddd; }
-
-  .products-intro {
-    text-align: center;
-    max-width: 700px;
-    margin: 0 auto 30px;
-    font-size: 15px;
-    color: #555;
-    line-height: 1.7;
-  }
-
-  .filter-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .filter-btn {
-    padding: 8px 20px;
-    border: 1px solid #ddd;
-    background: #fff;
-    border-radius: 4px;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    transition: all 0.3s;
-    color: #555;
-  }
-  .filter-btn:hover,
-  .filter-btn.active {
-    background: #c0392b;
-    color: #fff;
-    border-color: #c0392b;
-  }
-
-  .products-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  .product-card {
-    position: relative;
-    border-radius: 0;
-    background: #fff;
-    border: 1px solid #eaeaea;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
-    cursor: pointer;
+  }
+  .page-hero-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: clamp(20px, 5vw, 100px);
+    height: 100%;
+    background: #b11623;
+    clip-path: polygon(0 0, 100% 0, 30% 100%, 0 100%);
+    z-index: 0;
+  }
+  .page-hero-content { position: relative; z-index: 1; color: #222; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; color: #b11623; }
+  .page-hero-content p { font-size: 15px; color: #555; }
+
+  /* Stock Spare Styling */
+  .stock-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    padding-top: 40px;
+  }
+  .stock-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    transition: transform 0.3s, box-shadow 0.3s;
     display: flex;
     flex-direction: column;
+    text-decoration: none;
+    border: 1px solid #f0f0f0;
   }
-  .product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+  .stock-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
   }
-  .product-card.hidden { display: none; }
-  .product-img {
-    width: 100%;
-    height: 240px;
-    position: relative;
+  .stock-card-img {
+    height: 200px;
     overflow: hidden;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 92%);
+    position: relative;
+    border-bottom: 3px solid #b11623;
   }
-  .product-img img {
+  .stock-card-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s ease;
+    transition: transform 0.5s;
   }
-  .product-card:hover .product-img img {
-    transform: scale(1.06);
+  .stock-card:hover .stock-card-img img {
+    transform: scale(1.1);
   }
-  .product-content {
-    padding: 24px 24px 30px;
-    background: #fff;
+  .stock-card-content {
+    padding: 25px 20px;
+    text-align: center;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
-  .product-content h3 {
-    font-size: 20px;
-    color: #111;
+  .stock-card-content h3 {
+    font-size: 18px;
     font-weight: 700;
-    line-height: 1.4;
-    margin-bottom: 20px;
-    font-family: var(--font-inter), 'Inter', sans-serif;
+    color: #222;
+    margin-bottom: 12px;
   }
-  .view-details {
+  .stock-card-cta {
     font-size: 13px;
-    color: #e67e22;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: #b11623;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
     transition: color 0.3s;
   }
-  .product-card:hover .view-details {
+  .stock-card:hover .stock-card-cta {
     color: #c0392b;
   }
 
-  .products-cta {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 15px;
-    color: #555;
+  @media (max-width: 1024px) {
+    .stock-grid { grid-template-columns: repeat(3, 1fr); }
   }
-  .live-section-title {
-    margin: 50px 0 24px;
-    text-align: center;
-    font-size: 28px;
-    color: #222;
-  }
-  .live-excerpt {
-    margin: 0 0 16px;
-    color: #666;
-    line-height: 1.7;
-  }
-  .products-cta a {
-    color: #c0392b;
-    font-weight: 600;
-    text-decoration: underline;
-  }
-  .products-cta a:hover {
-    color: #a93226;
-  }
-
   @media (max-width: 768px) {
-    .products-grid { grid-template-columns: repeat(2, 1fr); }
+    .stock-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 480px) {
-    .products-grid { grid-template-columns: 1fr; }
+    .stock-grid { grid-template-columns: 1fr; }
   }
 </style>
-
-<script>
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const category = (btn as HTMLElement).dataset.category;
-      document.querySelectorAll('.product-card').forEach(card => {
-        if (category === 'All Equipments' || (card as HTMLElement).dataset.category === category) {
-          card.classList.remove('hidden');
-        } else {
-          card.classList.add('hidden');
-        }
-      });
-    });
-  });
-</script>

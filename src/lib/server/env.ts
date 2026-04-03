@@ -9,6 +9,14 @@ export type RuntimeEnv = {
 };
 
 export function getRuntimeEnv(locals?: any): RuntimeEnv {
-  const env = locals?.runtime?.env ?? cfEnv;
+  let envToUse: any = undefined;
+  try {
+    if (locals && locals.runtime && locals.runtime.env) {
+      envToUse = locals.runtime.env;
+    }
+  } catch (e) {
+    // Safely ignore getter errors
+  }
+  const env = envToUse ?? cfEnv;
   return env as unknown as RuntimeEnv;
 }

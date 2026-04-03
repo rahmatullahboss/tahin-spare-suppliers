@@ -34,8 +34,9 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       {type === 'products' && (
         <>
           <div class="field">
-            <label>Category</label>
-            <select name="category" data-category>
+            <label>Category *</label>
+            <select name="category" data-category required>
+              <option value="" disabled selected>-- Select a Category --</option>
               <option value="Marine Propulsion Engine">Marine Propulsion Engine</option>
               <option value="Marine Gearbox">Marine Gearbox</option>
               <option value="Auxiliary Engine">Auxiliary Engine</option>
@@ -118,7 +119,7 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       form.querySelector("[data-slug]").value = item.slug;
       if (type === 'products') {
         if (document.querySelector("[data-category]")) {
-           document.querySelector("[data-category]").value = item.category || 'Marine Propulsion Engine';
+           document.querySelector("[data-category]").value = item.category || '';
         }
         if (document.querySelector("[data-brand]")) {
            document.querySelector("[data-brand]").value = item.brand || '';
@@ -255,7 +256,7 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         content: form.querySelector("[data-content]").value,
         imageUrl: imageUrlInput.value,
         ...(type === 'products' ? { 
-          category: form.querySelector("[data-category]")?.value || "Marine Propulsion Engine",
+          category: form.querySelector("[data-category]")?.value || "",
           brand: form.querySelector("[data-brand]")?.value || "",
           model_number: form.querySelector("[data-model]")?.value || ""
         } : {})

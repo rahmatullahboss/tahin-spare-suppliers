@@ -4,7 +4,7 @@ import Icon from '../components/Icon.astro';
 ---
 <MainLayout title="About Us - Tahin Spare Suppliers" activeNav="about">
   <section class="page-hero">
-    <div class="page-hero-overlay"></div>
+    <div class="page-hero-accent"></div>
     <div class="page-hero-content">
       <h1>About Us</h1>
     </div>
@@ -13,12 +13,9 @@ import Icon from '../components/Icon.astro';
   <section class="section">
     <div class="container">
       <div class="about-grid">
-        <div class="about-text reveal-left" style="text-align: center;">
-          <h2 class="section-title" style="text-align:center;">Who We Are</h2>
-          <p style="text-align: center; margin-bottom: 15px;">Tahin Spare Suppliers is a trusted name in the marine and industrial machinery sector, specializing in the supply of high-quality reconditioned, used, and new engines, generators, and spare parts. With years of experience in the industry, we have built a strong reputation for reliability, competitive pricing, and customer satisfaction.</p>
-          <p style="text-align: center; margin-bottom: 15px;">Since our establishment, we have been actively sourcing equipment from ship recycling yards and global markets, ensuring a consistent supply of genuine and performance-tested machinery. Every product we offer goes through careful inspection to maintain quality and operational efficiency.</p>
-          <p style="text-align: center; margin-bottom: 15px;">Our warehouse is equipped with a wide range of marine engines, diesel generators, and spare parts from leading international brands. Whether for marine use or industrial applications, we are committed to delivering dependable solutions tailored to our clients’ needs.</p>
-          <p style="text-align: center;">At Tahin Spare Suppliers, we believe in building long-term relationships with our customers by offering transparent service, flexible pricing, and professional support. Our goal is to be a reliable partner in powering your business operations.</p>
+        <div class="about-text reveal-left" style="background:#f3e2e2; padding:30px; border-radius:10px;">
+          <h2 class="section-title">Who We Are</h2>
+          <p style="margin-bottom: 15px; font-size: 16px; line-height: 1.8;">Tahin Spare Suppliers has been serving the marine industry since 1990, specializing in the supply of reconditioned marine engines, spare parts, generators, hydraulic components, and a wide range of marine equipment worldwide. Strategically located near the Chattogram Ship-Recycling Yards in Bangladesh, we have direct access to a vast and reliable inventory. This allows us to provide high-quality products with consistent availability at competitive prices to our global clients.</p>
         </div>
         <div class="about-image reveal-right img-zoom">
           <img src="/images/shipping-dock.jpg" alt="Shipping Dock Area" loading="lazy" />
@@ -31,10 +28,7 @@ import Icon from '../components/Icon.astro';
   <section class="section proprietor-section" style="background:#fff;">
     <div class="container">
       <div class="proprietor-grid">
-        <div class="proprietor-image reveal-left">
-          <img src="/images/proprietor.jpg" alt="MD Jamal Uddin - Proprietor" loading="lazy" />
-        </div>
-        <div class="proprietor-info reveal-right">
+        <div class="proprietor-info reveal-left">
           <h2 class="section-title" style="text-align:center; margin-bottom:10px;">MEET OUR PROPRIETOR</h2>
           <h3 class="proprietor-name">MD Jamal Uddin</h3>
           <p class="proprietor-role">Proprietor, Tahin Spare Suppliers</p>
@@ -42,6 +36,28 @@ import Icon from '../components/Icon.astro';
             <p>Under the visionary leadership of <strong>MD Jamal Uddin</strong>, Tahin Spare Suppliers has grown into a global name in the marine industry. With decades of experience and deep-rooted connections within the Chattogram Ship-Breaking Hub, he has established a legacy of trust, quality, and reliability.</p>
             <blockquote>"Our commitment is to provide the highest quality reconditioned marine equipment that ensures the safety and efficiency of your maritime operations. We value every client and strive to build long-term partnerships through transparent service and competitive excellence."</blockquote>
           </div>
+        </div>
+        <div class="proprietor-image reveal-right">
+          <img src="/images/proprietor.jpg" alt="MD Jamal Uddin - Proprietor" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team Section -->
+  <section class="section team-section" style="background:#fdfdfd; border-top: 1px solid #eee;">
+    <div class="container">
+      <div class="team-grid">
+        <div class="team-info reveal-left" style="text-align: center;">
+          <h2 class="section-title" style="text-align:center; margin-bottom:10px;">MEET OUR TEAM</h2>
+          <div class="team-bio">
+            <p>The success of Tahin Spare Suppliers is built on the expertise and dedication of our professional team. Their hard work and deep industry knowledge are the main reasons behind everything we have achieved so far.</p>
+            <p>Our experts take quality very seriously. Before any delivery, every product undergoes a thorough inspection and performance check. Only after our technical team is fully satisfied with the condition of the spare parts do we prepare them for international export.</p>
+            <p>With a focus on reliability, our team is committed to delivering the best marine solutions to our global clients.</p>
+          </div>
+        </div>
+        <div class="team-image reveal-right">
+          <img src="/images/team-workshop.webp" alt="Tahin Spare Suppliers Team at Workshop" loading="lazy" />
         </div>
       </div>
     </div>
@@ -166,16 +182,28 @@ import Icon from '../components/Icon.astro';
   .page-hero {
     position: relative;
     height: 250px;
-    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    background-color: #fcfcfc;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    overflow: hidden;
   }
-  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-  .page-hero-content { position: relative; z-index: 1; color: #fff; }
-  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
-  .page-hero-content p { font-size: 14px; color: #ddd; }
+  .page-hero-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: clamp(20px, 5vw, 100px);
+    height: 100%;
+    background: #b11623;
+    clip-path: polygon(0 0, 100% 0, 30% 100%, 0 100%);
+    z-index: 0;
+  }
+  .page-hero-content { position: relative; z-index: 1; color: #222; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; color: #b11623; }
+  .page-hero-content p { font-size: 15px; color: #555; }
 
   .about-grid {
     display: grid;
@@ -206,7 +234,7 @@ import Icon from '../components/Icon.astro';
   /* Proprietor Section */
   .proprietor-grid {
     display: grid;
-    grid-template-columns: 1fr 1.5fr;
+    grid-template-columns: 1.5fr 1fr;
     gap: 60px;
     align-items: center;
   }
@@ -221,6 +249,25 @@ import Icon from '../components/Icon.astro';
     border-radius: 15px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.15);
     border: 8px solid #fff;
+  }
+  
+  /* Team Section */
+  .team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .team-image img {
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+  }
+  .team-bio p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #444;
+    margin-bottom: 20px;
   }
   .proprietor-name {
     font-size: 24px;
@@ -382,6 +429,7 @@ import Icon from '../components/Icon.astro';
 
   @media (max-width: 768px) {
     .about-grid { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: 1fr; }
     .offer-grid { grid-template-columns: repeat(2, 1fr); }
     .strength-grid { grid-template-columns: repeat(2, 1fr); }
     .qp-steps { grid-template-columns: repeat(2, 1fr); }

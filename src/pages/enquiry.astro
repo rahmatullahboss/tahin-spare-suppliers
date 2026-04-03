@@ -4,7 +4,7 @@ import Icon from '../components/Icon.astro';
 ---
 <MainLayout title="Enquiry - Tahin Spare Suppliers" activeNav="enquiry">
   <section class="page-hero">
-    <div class="page-hero-overlay"></div>
+    <div class="page-hero-accent"></div>
     <div class="page-hero-content">
       <h1>Request a Quote</h1>
     </div>
@@ -137,16 +137,28 @@ import Icon from '../components/Icon.astro';
   .page-hero {
     position: relative;
     height: 250px;
-    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    background-color: #fcfcfc;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    overflow: hidden;
   }
-  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-  .page-hero-content { position: relative; z-index: 1; color: #fff; }
-  .page-hero-content h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
-  .page-hero-content p { font-size: 14px; color: #ddd; }
+  .page-hero-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: clamp(20px, 5vw, 100px);
+    height: 100%;
+    background: #b11623;
+    clip-path: polygon(0 0, 100% 0, 30% 100%, 0 100%);
+    z-index: 0;
+  }
+  .page-hero-content { position: relative; z-index: 1; color: #222; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; color: #b11623; }
+  .page-hero-content p { font-size: 15px; color: #555; }
 
   .enquiry-grid {
     display: grid;

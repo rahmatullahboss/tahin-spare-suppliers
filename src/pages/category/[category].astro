@@ -1,0 +1,217 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getRuntimeEnv } from '../../lib/server/env';
+import { listContent } from '../../lib/server/repository';
+
+const categories = [
+  { name: 'Marine Propulsion Engine', slug: 'marine-propulsion-engine', image: '/images/marine-propulsion-engine.jpg' },
+  { name: 'Marine Gearbox', slug: 'marine-gearbox', image: '/images/marine-gearbox.jpg' },
+  { name: 'Auxiliary Engine', slug: 'auxiliary-engine', image: '/images/auxiliary-engine.jpg' },
+  { name: 'Diesel & Gas Generator Set', slug: 'diesel-generator-set', image: '/images/diesel-generator-set.jpg' },
+  { name: 'Spare Parts', slug: 'spare-parts', image: '/images/spare-parts-new.jpg' },
+  { name: 'Hydraulic Deck Crane Equipment', slug: 'hydraulic-deck-crane-equipment', image: '/images/hydraulic-crane-equipment.jpg' },
+  { name: 'Anchor and Chain', slug: 'anchor-and-chain', image: '/images/anchor-chain.jpg' },
+  { name: 'Marine Pump', slug: 'marine-pump', image: '/images/marine-pump.jpg' }
+];
+
+const { category } = Astro.params;
+const currentCategory = categories.find(c => c.slug === category);
+
+if (!currentCategory) {
+  return Astro.redirect('/products');
+}
+
+const env = getRuntimeEnv(Astro.locals);
+const liveProducts = await listContent(env, 'products');
+
+// Manual slugify for comparison
+const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+const categoryProducts = liveProducts.filter(p => toSlug(p.category || "") === currentCategory.slug);
+---
+<MainLayout title={`${currentCategory.name} - Tahin Spare Suppliers`} activeNav="products">
+  <section class="page-hero">
+    <div class="page-hero-accent"></div>
+    <div class="page-hero-content">
+      <h1 class="reveal">{currentCategory.name}</h1>
+      <p class="hero-subtitle reveal">Browse our inventory of {currentCategory.name}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="mb-5">
+        <a href="/products" class="back-link">← Back to Equipments</a>
+      </div>
+
+      {categoryProducts.length === 0 ? (
+        <div class="empty-state">
+           <h3>No products available</h3>
+           <p>We currently have no products listed under {currentCategory.name}. Please check back later or send us an enquiry!</p>
+           <a href="/enquiry" class="btn btn-primary" style="margin-top:20px;">Send Enquiry</a>
+        </div>
+      ) : (
+        <div class="products-grid reveal-stagger">
+          {categoryProducts.map((product) => (
+            <a href={`/products/${product.slug}`} class="product-card" style="text-decoration: none;">
+              <div class="product-img">
+                <img src={product.imageUrl || '/images/marine-engine.webp'} alt={product.title} loading="lazy" />
+              </div>
+              <div class="product-content">
+                <h3>{product.title}</h3>
+                <p class="live-excerpt">{product.excerpt}</p>
+                <div class="product-meta">
+                  {product.brand && <span class="badge badge-brand">{product.brand}</span>}
+                  {product.model_number && <span class="badge badge-model">{product.model_number}</span>}
+                </div>
+                <span class="view-details">VIEW DETAILS</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero {
+    position: relative;
+    height: 250px;
+    background-color: #fcfcfc;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  .page-hero-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: clamp(20px, 5vw, 100px);
+    height: 100%;
+    background: #b11623;
+    clip-path: polygon(0 0, 100% 0, 30% 100%, 0 100%);
+    z-index: 0;
+  }
+  .page-hero-content { position: relative; z-index: 1; color: #222; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; color: #b11623; }
+  .page-hero-content p { font-size: 15px; color: #555; }
+
+  .mb-5 { margin-bottom: 30px; }
+  .back-link {
+    display: inline-block;
+    color: #666;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+  .back-link:hover { color: #b11623; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    border: 1px dashed #ccc;
+  }
+  .empty-state h3 { font-size: 24px; color: #222; margin-bottom: 15px; }
+  .empty-state p { font-size: 15px; color: #666; max-width: 500px; margin: 0 auto; line-height: 1.6; }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .product-card {
+    position: relative;
+    border-radius: 0;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+  }
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+  }
+  .product-img {
+    width: 100%;
+    height: 240px;
+    position: relative;
+    overflow: hidden;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 92%);
+  }
+  .product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .product-card:hover .product-img img {
+    transform: scale(1.06);
+  }
+  .product-content {
+    padding: 24px 24px 30px;
+    background: #fff;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .product-content h3 {
+    font-size: 20px;
+    color: #111;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .live-excerpt {
+    margin: 0 0 16px;
+    color: #666;
+    line-height: 1.6;
+    flex-grow: 1;
+  }
+  .product-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge-brand { background: #eee; color: #333; }
+  .badge-model { background: #ffeaa7; color: #d35400; }
+  
+  .view-details {
+    font-size: 13px;
+    color: #b11623;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.3s;
+    margin-top: auto;
+  }
+  .product-card:hover .view-details {
+    color: #c0392b;
+  }
+
+  @media (max-width: 768px) {
+    .products-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .products-grid { grid-template-columns: 1fr; }
+  }
+</style>

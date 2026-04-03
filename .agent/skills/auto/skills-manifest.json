@@ -1,20 +1,20 @@
 {
   "project": {
     "enabled": true,
-    "lastGenerated": "2026-04-02T11:37:19.493Z",
-    "observationCount": 7030,
+    "lastGenerated": "2026-04-03T10:04:03.785Z",
+    "observationCount": 7956,
     "skillCount": 0,
     "domain": "project",
     "triggerGlobs": [
       "**/*"
     ],
-    "description": "Project for tahin-spare-suppliers. 6494 gotchas, 108 conventions, 10 fixes."
+    "description": "Project for tahin-spare-suppliers. 7348 gotchas, 121 conventions, 12 fixes."
   },
   "convention": {
     "enabled": true,
-    "lastGenerated": "2026-04-02T11:37:19.494Z",
+    "lastGenerated": "2026-04-03T10:04:03.785Z",
     "observationCount": 0,
-    "skillCount": 35,
+    "skillCount": 37,
     "domain": "convention",
     "triggerGlobs": [
       "**/*"
@@ -23,7 +23,7 @@
   },
   "gotcha": {
     "enabled": true,
-    "lastGenerated": "2026-04-02T11:37:19.494Z",
+    "lastGenerated": "2026-04-03T10:04:03.785Z",
     "observationCount": 0,
     "skillCount": 42,
     "domain": "gotcha",
@@ -34,8 +34,8 @@
   },
   "config": {
     "enabled": true,
-    "lastGenerated": "2026-04-02T11:37:19.493Z",
-    "observationCount": 2,
+    "lastGenerated": "2026-04-03T10:04:03.785Z",
+    "observationCount": 4,
     "skillCount": 0,
     "domain": "config",
     "triggerGlobs": [
@@ -44,6 +44,18 @@
       "**/*.json",
       "**/*.toml"
     ],
-    "description": "Config for tahin-spare-suppliers. ."
+    "description": "Config for tahin-spare-suppliers. 1 conventions."
+  },
+  "typescript": {
+    "enabled": true,
+    "lastGenerated": "2026-04-03T10:04:03.785Z",
+    "observationCount": 2,
+    "skillCount": 0,
+    "domain": "typescript",
+    "triggerGlobs": [
+      "**/*.ts",
+      "**/*.tsx"
+    ],
+    "description": "Typescript for tahin-spare-suppliers. ."
   }
 }
