@@ -86,6 +86,12 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
   const editor = document.querySelector(`[data-content-editor][data-type="${type}"]`);
 
   if (editor) {
+    const esc = (str) => {
+      const d = document.createElement("div");
+      d.textContent = str ?? "";
+      return d.innerHTML;
+    };
+
     const endpoint = `/api/${type}`;
     const form = editor.querySelector("[data-form]");
     const itemsEl = editor.querySelector("[data-items]");
@@ -99,9 +105,15 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     const imageUrlInput = editor.querySelector("[data-image-url]");
 
     const drawPreview = (url) => {
-      previewEl.innerHTML = url
-        ? `<img src="${url}" alt="" style="width:100%;max-width:260px;border-radius:12px;display:block;" />`
-        : "";
+      if (url) {
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "";
+        img.style.cssText = "width:100%;max-width:260px;border-radius:12px;display:block;";
+        previewEl.replaceChildren(img);
+      } else {
+        previewEl.replaceChildren();
+      }
     };
 
     const resetForm = () => {
@@ -138,19 +150,19 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     const renderItems = (items) => {
       itemsEl.innerHTML = items.map((item) => `
         <article class="item-card">
-          ${item.imageUrl ? `<img src="${item.imageUrl}" alt="" />` : ""}
+          ${item.imageUrl ? `<img src="${esc(item.imageUrl)}" alt="" />` : ""}
           <div class="item-card-body">
-            <h3>${item.title}</h3>
+            <h3>${esc(item.title)}</h3>
             ${type === 'products' ? `
-              <small style="display:inline-block;background:#eee;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${item.category || 'Uncategorized'}</small>
-              ${item.brand ? `<small style="display:inline-block;background:#e67e22;color:#fff;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${item.brand}</small>` : ''}
-              ${item.model_number ? `<small style="display:inline-block;background:#34495e;color:#fff;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${item.model_number}</small>` : ''}
+              <small style="display:inline-block;background:#eee;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${esc(item.category || 'Uncategorized')}</small>
+              ${item.brand ? `<small style="display:inline-block;background:#e67e22;color:#fff;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${esc(item.brand)}</small>` : ''}
+              ${item.model_number ? `<small style="display:inline-block;background:#34495e;color:#fff;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${esc(item.model_number)}</small>` : ''}
             ` : ""}
-            <p>${item.excerpt || ""}</p>
-            <small>${item.slug}</small>
+            <p>${esc(item.excerpt || "")}</p>
+            <small>${esc(item.slug)}</small>
             <div class="item-actions">
-              <button type="button" data-edit-id="${item.id}">Edit</button>
-              <button type="button" data-delete-id="${item.id}">Delete</button>
+              <button type="button" data-edit-id="${esc(item.id)}">Edit</button>
+              <button type="button" data-delete-id="${esc(item.id)}">Delete</button>
             </div>
           </div>
         </article>
@@ -187,7 +199,7 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         const brandList = document.getElementById("brand-list");
         if (brandList) {
           const uniqueBrands = [...new Set(items.map((i) => i.brand).filter(Boolean))].sort();
-          brandList.innerHTML = uniqueBrands.map((b) => `<option value="${b}">`).join("");
+          brandList.innerHTML = uniqueBrands.map((b) => `<option value="${esc(b)}">`).join("");
         }
       }
     };
@@ -344,7 +356,8 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     margin-bottom: 16px;
   }
   .field input,
-  .field textarea {
+  .field textarea,
+  .field select {
     width: 100%;
     border: 1px solid #ddd;
     border-radius: 10px;

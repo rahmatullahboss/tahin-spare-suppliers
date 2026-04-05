@@ -10,20 +10,28 @@ export function getDb(env: RuntimeEnv) {
 
 export async function ensureSchema(env: RuntimeEnv) {
   if (!schemaReady.has(env.DATABASE_URL)) {
-    schemaReady.set(
-      env.DATABASE_URL,
-      (async () => {
-        const sql = getDb(env);
-        const statements = schemaSql
-          .split(";")
-          .map((statement) => statement.trim())
-          .filter(Boolean);
+    const promise = (async () => {
+      const sql = getDb(env);
+      const statements = schemaSql
+        .split(";")
+        .map((statement) => statement.trim())
+        .filter(Boolean);
 
-        for (const statement of statements) {
-          await sql.query(statement);
-        }
-      })()
-    );
+      for (const statement of statements) {
+        await sql.query(statement);
+      }
+    })();
+
+    schemaReady.set(env.DATABASE_URL, promise);
+
+    try {
+      await promise;
+    } catch (error) {
+      schemaReady.delete(env.DATABASE_URL);
+      throw error;
+    }
+
+    return;
   }
 
   await schemaReady.get(env.DATABASE_URL);

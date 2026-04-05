@@ -12,24 +12,25 @@ const { activeNav = 'home' } = Astro.props;
         <img src="/images/logo.svg" alt="Tahin Spare Suppliers Logo" class="logo-image" width="70" height="70" />
       </div>
       <div class="logo-text">
-        <h1 class="company-name"><span class="text-red">Tahin</span> Spare Suppliers</h1>
+        <span class="company-name">Tahin Spare Suppliers</span>
         <p class="company-tagline">Exporters of Marine Engines & Spare Solutions</p>
       </div>
     </div>
 
     <nav class="header-nav">
-      <ul class="nav-links">
+      <ul class="nav-links" id="main-nav">
         <li><a href="/" class:list={[{ active: activeNav === 'home' }]}>Home</a></li>
         <li><a href="/about" class:list={[{ active: activeNav === 'about' }]}>About Us</a></li>
-        <li><a href="/products" class:list={[{ active: activeNav === 'products' }]}>Equipments</a></li>
+        <li><a href="/products" class:list={[{ active: activeNav === 'products' }]}>Sell Equipments</a></li>
         <li><a href="/services" class:list={[{ active: activeNav === 'services' }]}>Our Services</a></li>
         <li><a href="/enquiry" class:list={[{ active: activeNav === 'enquiry' }]}>Enquiry</a></li>
+        <li><a href="/blog" class:list={[{ active: activeNav === 'blog' }]}>Blog</a></li>
         <li><a href="/contact" class:list={[{ active: activeNav === 'contact' }]}>Contact Us</a></li>
       </ul>
     </nav>
 
     <div class="header-right">
-      <button class="mobile-menu-btn" aria-label="Menu">
+      <button class="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="main-nav">
         <Icon name="bars" size={24} />
       </button>
     </div>
@@ -69,15 +70,12 @@ const { activeNav = 'home' } = Astro.props;
   .company-name {
     font-family: var(--font-inter), sans-serif;
     font-size: 20px;
-    color: #1a1a1a;
+    color: #b11623;
     margin: 0;
     line-height: 1.1;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: -0.2px;
-  }
-  .company-name .text-red {
-    color: #b11623;
   }
   .company-tagline {
     font-size: 11px;
@@ -316,6 +314,8 @@ const { activeNav = 'home' } = Astro.props;
     mobileMenuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       navLinks.classList.toggle('open');
+      const isOpen = navLinks.classList.contains('open');
+      mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
     });
 
     // Close menu when clicking outside
@@ -329,7 +329,6 @@ const { activeNav = 'home' } = Astro.props;
     const dropdowns = document.querySelectorAll('.dropdown');
     dropdowns.forEach(dropdown => {
       const link = dropdown.querySelector('a');
-      const toggleBtn = document.createElement('span');
       // For mobile, we attach a click event to toggle the submenu
       if (window.innerWidth <= 1024) {
         link?.addEventListener('click', (e) => {

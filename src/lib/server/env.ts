@@ -5,16 +5,17 @@ export type RuntimeEnv = {
   ADMIN_PASSWORD: string;
   SESSION_SECRET: string;
   MEDIA_PUBLIC_URL: string;
-  MEDIA_BUCKET: any; // R2Bucket
+  MEDIA_BUCKET: R2Bucket;
 };
 
-export function getRuntimeEnv(locals?: any): RuntimeEnv {
-  let envToUse: any = undefined;
+export function getRuntimeEnv(locals?: Record<string, unknown>): RuntimeEnv {
+  let envToUse: Record<string, unknown> | undefined = undefined;
   try {
-    if (locals && locals.runtime && locals.runtime.env) {
-      envToUse = locals.runtime.env;
+    const loc = locals as Record<string, Record<string, Record<string, unknown>>> | undefined;
+    if (loc?.runtime?.env) {
+      envToUse = loc.runtime.env;
     }
-  } catch (e) {
+  } catch {
     // Safely ignore getter errors
   }
   const env = envToUse ?? cfEnv;

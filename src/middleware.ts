@@ -13,45 +13,67 @@ function getContentType(pathname: string) {
   return entry?.[1] ?? 'application/octet-stream';
 }
 
+const SECURITY_HEADERS: Record<string, string> = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'X-XSS-Protection': '1; mode=block',
+};
+
+function addSecurityHeaders(response: Response): Response {
+  const newResponse = new Response(response.body, response);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    newResponse.headers.set(key, value);
+  }
+  return newResponse;
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const url = new URL(context.request.url);
   const pathname = url.pathname.toLowerCase();
 
-  if (!pathname.startsWith('/images/')) {
-    return next();
-  }
+  // Handle R2 image serving
+  if (pathname.startsWith('/images/')) {
+    const isRasterAsset = [...RASTER_CONTENT_TYPES.keys()].some((extension) => pathname.endsWith(extension));
 
-  const isRasterAsset = [...RASTER_CONTENT_TYPES.keys()].some((extension) => pathname.endsWith(extension));
+    if (isRasterAsset) {
+      const bucket = env.MEDIA_BUCKET;
+      const mediaBaseUrl = env.MEDIA_PUBLIC_URL?.replace(/\/$/, '');
 
-  if (!isRasterAsset) {
-    return next();
-  }
+      if (bucket) {
+        try {
+          const object = await bucket.get(url.pathname.slice(1));
 
-  const bucket = env.MEDIA_BUCKET;
-  const mediaBaseUrl = env.MEDIA_PUBLIC_URL?.replace(/\/$/, '');
+          if (object) {
+            const headers = new Headers();
+            object.writeHttpMetadata(headers);
+            headers.set('content-type', headers.get('content-type') ?? getContentType(pathname));
+            headers.set('cache-control', 'public, max-age=31536000, immutable');
+            headers.set('etag', object.httpEtag);
 
-  if (bucket) {
-    const object = await bucket.get(url.pathname.slice(1));
+            // Add security headers to image responses too
+            for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+              headers.set(key, value);
+            }
 
-    if (object) {
-      const headers = new Headers();
-      object.writeHttpMetadata(headers);
-      headers.set('content-type', headers.get('content-type') ?? getContentType(pathname));
-      headers.set('cache-control', 'public, max-age=31536000, immutable');
-      headers.set('etag', object.httpEtag);
+            return new Response(object.body, { headers });
+          }
+        } catch {
+          // R2 error — fall through to CDN or next()
+        }
+      }
 
-      return new Response(object.body, {
-        headers,
-      });
+      if (mediaBaseUrl) {
+        const cdnResponse = await fetch(`${mediaBaseUrl}${url.pathname}`, {
+          headers: context.request.headers,
+          method: 'GET',
+        });
+        return addSecurityHeaders(cdnResponse);
+      }
     }
   }
 
-  if (mediaBaseUrl) {
-    return fetch(`${mediaBaseUrl}${url.pathname}`, {
-      headers: context.request.headers,
-      method: 'GET',
-    });
-  }
-
-  return next();
+  const response = await next();
+  return addSecurityHeaders(response);
 });

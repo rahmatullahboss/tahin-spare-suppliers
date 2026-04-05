@@ -107,7 +107,7 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
   let query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, updated_at)
      VALUES ($1, $2, $3, $4, $5, $6, NOW())
      RETURNING *`;
-  let params: any[] = [id, slug, input.title, excerpt, content, imageUrl];
+  let params: (string | number)[] = [id, slug, input.title, excerpt, content, imageUrl];
 
   if (type === 'products') {
     query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, category, brand, model_number, updated_at)
@@ -147,7 +147,7 @@ export async function updateContent(
          updated_at = NOW()
      WHERE id = $6
      RETURNING *`;
-  let params: any[] = [slug, input.title, excerpt, content, imageUrl, id];
+  let params: (string | number)[] = [slug, input.title, excerpt, content, imageUrl, id];
 
   if (type === 'products') {
     query = `UPDATE ${config.table}

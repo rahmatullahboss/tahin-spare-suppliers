@@ -44,8 +44,45 @@ export async function verifySessionToken(token: string, secret: string) {
     return false;
   }
 
+  // Check token expiry from payload
+  try {
+    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    if (typeof decoded.ts === "number" && Date.now() - decoded.ts > SESSION_MAX_AGE * 1000) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+
   const expectedSignature = await signValue(payload, secret);
-  return signature === expectedSignature;
+
+  // Constant-time comparison
+  const encoder = new TextEncoder();
+  const a = encoder.encode(signature);
+  const b = encoder.encode(expectedSignature);
+
+  if (a.byteLength !== b.byteLength) {
+    return false;
+  }
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    a,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, b));
+  const expected = new Uint8Array(await crypto.subtle.sign("HMAC", key, a));
+
+  if (mac.byteLength !== expected.byteLength) return false;
+
+  let result = 0;
+  for (let i = 0; i < mac.byteLength; i++) {
+    result |= mac[i] ^ expected[i];
+  }
+  return result === 0;
 }
 
 export async function isAuthenticated(cookies: AstroCookies, secret: string) {

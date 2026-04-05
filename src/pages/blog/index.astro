@@ -6,7 +6,7 @@ import { listContent } from "../../lib/server/repository";
 const env = getRuntimeEnv(Astro.locals);
 const posts = await listContent(env, "blog");
 ---
-<MainLayout title="Blog - Tahin Spare Suppliers">
+<MainLayout title="Blog - Tahin Spare Suppliers" activeNav="blog">
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
@@ -18,7 +18,11 @@ const posts = await listContent(env, "blog");
   <section class="section">
     <div class="container blog-grid">
       {posts.length === 0 ? (
-        <p>No posts yet.</p>
+        <div class="empty-state">
+          <h2>No Blog Posts Yet</h2>
+          <p>Check back soon for articles about marine engines, industry updates, and more.</p>
+          <a href="/products" class="btn btn-primary">Browse Our Products</a>
+        </div>
       ) : posts.map((post) => (
         <a href={`/blog/${post.slug}`} class="blog-card">
           {post.imageUrl && <img src={post.imageUrl} alt={post.title} />}
@@ -43,4 +47,17 @@ const posts = await listContent(env, "blog");
   .blog-card-body h2 { font-size: 22px; margin: 0 0 10px; }
   .blog-card-body p { margin: 0; color: #666; line-height: 1.7; }
   @media (max-width: 900px) { .blog-grid { grid-template-columns: 1fr; } }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .empty-state h2 {
+    font-size: 24px;
+    color: #222;
+    margin-bottom: 10px;
+  }
+  .empty-state p {
+    color: #666;
+    margin-bottom: 20px;
+  }
 </style>

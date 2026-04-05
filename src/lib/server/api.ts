@@ -3,8 +3,12 @@ import { requireAdmin } from "./auth";
 import { createContent, deleteContent, listContent, updateContent, type ContentType } from "./repository";
 import { getRuntimeEnv } from "./env";
 
-export async function readJson<T>(request: Request) {
-  return request.json() as Promise<T>;
+export async function readJson<T>(request: Request): Promise<T> {
+  try {
+    return await request.json() as T;
+  } catch {
+    throw new Error("Invalid JSON body");
+  }
 }
 
 export async function requireAdminRequest(context: Parameters<APIRoute>[0]) {
@@ -19,53 +23,86 @@ export async function requireAdminRequest(context: Parameters<APIRoute>[0]) {
 
 export function createListHandler(type: ContentType): APIRoute {
   return async (context) => {
-    if (context.request.method === "GET") {
-      const env = getRuntimeEnv(context.locals);
-      const items = await listContent(env, type);
-      return Response.json({ items });
-    }
+    try {
+      if (context.request.method === "GET") {
+        const env = getRuntimeEnv(context.locals);
+        const items = await listContent(env, type);
+        return Response.json({ items });
+      }
 
-    const env = await requireAdminRequest(context);
-    if (!env) {
-      return new Response("Unauthorized", { status: 401 });
+      const env = await requireAdminRequest(context);
+      if (!env) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+
+      const body = await readJson<{
+        title: string;
+        excerpt?: string;
+        content?: string;
+        imageUrl?: string;
+        slug?: string;
+        category?: string;
+        brand?: string;
+        model_number?: string;
+      }>(context.request);
+
+      if (!body.title || typeof body.title !== "string" || body.title.trim().length === 0) {
+        return Response.json({ error: "Title is required." }, { status: 400 });
+      }
+
+      const item = await createContent(env, type, body);
+      return Response.json({ item });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      if (message === "Invalid JSON body") {
+        return Response.json({ error: message }, { status: 400 });
+      }
+      return Response.json({ error: "Failed to process request." }, { status: 500 });
     }
-    const body = await readJson<{
-      title: string;
-      excerpt?: string;
-      content?: string;
-      imageUrl?: string;
-      slug?: string;
-    }>(context.request);
-    const item = await createContent(env, type, body);
-    return Response.json({ item });
   };
 }
 
 export function createDetailHandler(type: ContentType): APIRoute {
   return async (context) => {
-    const env = await requireAdminRequest(context);
-    if (!env) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-    const id = context.params.id;
+    try {
+      const env = await requireAdminRequest(context);
+      if (!env) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+      const id = context.params.id;
 
-    if (!id) {
-      return new Response("Missing id", { status: 400 });
-    }
+      if (!id) {
+        return new Response("Missing id", { status: 400 });
+      }
 
-    if (context.request.method === "DELETE") {
-      await deleteContent(env, type, id);
-      return Response.json({ ok: true });
-    }
+      if (context.request.method === "DELETE") {
+        await deleteContent(env, type, id);
+        return Response.json({ ok: true });
+      }
 
-    const body = await readJson<{
-      title: string;
-      excerpt?: string;
-      content?: string;
-      imageUrl?: string;
-      slug?: string;
-    }>(context.request);
-    const item = await updateContent(env, type, id, body);
-    return Response.json({ item });
+      const body = await readJson<{
+        title: string;
+        excerpt?: string;
+        content?: string;
+        imageUrl?: string;
+        slug?: string;
+        category?: string;
+        brand?: string;
+        model_number?: string;
+      }>(context.request);
+
+      if (!body.title || typeof body.title !== "string" || body.title.trim().length === 0) {
+        return Response.json({ error: "Title is required." }, { status: 400 });
+      }
+
+      const item = await updateContent(env, type, id, body);
+      return Response.json({ item });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      if (message === "Invalid JSON body") {
+        return Response.json({ error: message }, { status: 400 });
+      }
+      return Response.json({ error: "Failed to process request." }, { status: 500 });
+    }
   };
 }
