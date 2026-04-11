@@ -1,7 +1,7 @@
 
 
 # Project Memory — tahin-spare-suppliers
-> 7963 notes | Score threshold: >40
+> 12755 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,48 +20,39 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in agent.md** — - > 7960 notes | Updated: 4/3/2026
-+ > 7962 notes | Updated: 4/3/2026
-
-- **gotcha in agent.md** — - > 7959 notes | Updated: 4/3/2026
-+ > 7960 notes | Updated: 4/3/2026
-
-- **gotcha in agent.md** — - > 7958 notes | Updated: 4/3/2026
-+ > 7959 notes | Updated: 4/3/2026
-
-- **gotcha in agent.md** — - > 7957 notes | Updated: 4/3/2026
-+ > 7958 notes | Updated: 4/3/2026
-
-- **gotcha in agent.md** — - > 7956 notes | Updated: 4/3/2026
-+ > 7957 notes | Updated: 4/3/2026
-
-- **gotcha in agent.md** — - > 7955 notes | Updated: 4/3/2026
-+ > 7956 notes | Updated: 4/3/2026
-
+- **gotcha in agent.md** — - > 12749 notes | Updated: 4/6/2026
++ > 12752 notes | Updated: 4/6/202
+- **gotcha in agent.md** — - > 12746 notes | Updated: 4/6/2026
++ > 12749 notes | Updated: 4/6/202
+- **gotcha in agent.md** — - > 12743 notes | Updated: 4/6/2026
++ > 12746 notes | Updated: 4/6/202
+- **gotcha in agent.md** — - > 12740 notes | Updated: 4/6/2026
++ > 12743 notes | Updated: 4/6/202
+- **gotcha in agent.md** — - > 12737 notes | Updated: 4/6/2026
++ > 12740 notes | Updated: 4/6/202
+- **gotcha in agent.md** — - > 12734 notes | Updated: 4/6/2026
++ > 12737 notes | Updated: 4/6/202
 
 ## Project Standards
 
-- what-changed in index.astro — confirmed 3x
-- Optimized Tahin — confirmed 3x
-- Fixed null crash in VIEW — confirmed 3x
-- what-changed in agent.md — confirmed 16x
-- what-changed in products.astro — confirmed 3x
-- Updated multiple database schema — externalizes configuration for environment... — confirmed 3x
-- what-changed in config.json — confirmed 3x
-- what-changed in metadata.sqlite-shm — confirmed 5x
+- what-changed in shared-context.json — confirmed 18x
+- Added JWT tokens authentication — confirmed 10x
+- what-changed in shared-context.json — confirmed 19x
+- discovery in shared-context.json — confirmed 5x
+- Patched security issue PgylKCM — confirmed 3x
+- problem-fix in shared-context.json — confirmed 3x
+- Updated schema GOTCHA — confirmed 3x
+- Added JWT tokens authentication — confirmed 11x
 
-## Recent Decisions
+## Known Fixes
 
-- Optimized Team — ensures atomic multi-step database operations
-- Optimized Tahin — ensures atomic multi-step database operations
-- decision in contact.astro
-- decision in about.astro
+- ❌ - - Fixed null crash in Tahin — prevents null/undefined runtime crashes → ✅ problem-fix in agent-rules.md
 
 ## Learned Patterns
 
-- Always: what-changed in agent.md — confirmed 18x (seen 2x)
-- Always: what-changed in agent.md — confirmed 18x (seen 3x)
-- Always: what-changed in agent.md — confirmed 18x (seen 4x)
+- Always: what-changed in agent.md — confirmed 18x (seen 6x)
+- Always: what-changed in agent.md — confirmed 18x (seen 8x)
+- Always: what-changed in agent.md — confirmed 18x (seen 10x)
 - Agent generates new migration for every change (squash related changes)
 - Agent installs packages without checking if already installed
 

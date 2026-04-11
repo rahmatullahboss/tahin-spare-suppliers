@@ -1,6 +1,6 @@
 ---
 name: project
-description: "Project for tahin-spare-suppliers. 7348 gotchas, 121 conventions, 12 fixes."
+description: "Project for tahin-spare-suppliers. 11194 gotchas, 173 conventions, 16 fixes."
 domain: project
 triggers:
   - glob: "**/*"
@@ -10,7 +10,7 @@ enabled: true
 
 # Project
 
-Auto-compiled from **7956 real patterns** in **tahin-spare-suppliers**. This skill is auto-routed to agents when working on project files.
+Auto-compiled from **12227 real patterns** in **tahin-spare-suppliers**. This skill is auto-routed to agents when working on project files.
 
 ## ⚠️ Anti-Patterns & Gotchas
 
@@ -18,58 +18,134 @@ Auto-compiled from **7956 real patterns** in **tahin-spare-suppliers**. This ski
 
 | ❌ Don't | Details |
 |----------|----------|
-| gotcha in agent.md | - > 7960 notes - Updated: 4/3/2026 + > 7962 notes - Updated: 4/3/2026 - - 7346 warnings → see `.agen |
-| gotcha in agent.md | - > 7959 notes - Updated: 4/3/2026 + > 7960 notes - Updated: 4/3/2026 - - 7345 warnings → see `.agen |
-| gotcha in agent.md | - > 7958 notes - Updated: 4/3/2026 + > 7959 notes - Updated: 4/3/2026 - - 7344 warnings → see `.agen |
-| gotcha in agent.md | - > 7957 notes - Updated: 4/3/2026 + > 7958 notes - Updated: 4/3/2026 - - 7343 warnings → see `.agen |
-| gotcha in agent.md | - > 7956 notes - Updated: 4/3/2026 + > 7957 notes - Updated: 4/3/2026 - - 7342 warnings → see `.agen |
-| gotcha in agent.md | - > 7955 notes - Updated: 4/3/2026 + > 7956 notes - Updated: 4/3/2026 - - 7341 warnings → see `.agen |
-| gotcha in agent.md | - > 7954 notes - Updated: 4/3/2026 + > 7955 notes - Updated: 4/3/2026 - - 7340 warnings → see `.agen |
-| gotcha in agent.md | - > 7953 notes - Updated: 4/3/2026 + > 7954 notes - Updated: 4/3/2026 - - 7339 warnings → see `.agen |
-| gotcha in agent.md | - > 7952 notes - Updated: 4/3/2026 + > 7953 notes - Updated: 4/3/2026 - - 7338 warnings → see `.agen |
-| gotcha in agent.md | - > 7951 notes - Updated: 4/3/2026 + > 7952 notes - Updated: 4/3/2026 - - 7337 warnings → see `.agen |
-| gotcha in agent.md | - > 7950 notes - Updated: 4/3/2026 + > 7951 notes - Updated: 4/3/2026 - - 7336 warnings → see `.agen |
-| gotcha in agent.md | - > 7947 notes - Updated: 4/3/2026 + > 7950 notes - Updated: 4/3/2026 - - 7335 warnings → see `.agen |
-| gotcha in agent.md | - > 7946 notes - Updated: 4/3/2026 + > 7947 notes - Updated: 4/3/2026 - - 7334 warnings → see `.agen |
-| gotcha in agent.md | - > 7945 notes - Updated: 4/3/2026 + > 7946 notes - Updated: 4/3/2026 - - 7333 warnings → see `.agen |
-| gotcha in agent.md | - > 7944 notes - Updated: 4/3/2026 + > 7945 notes - Updated: 4/3/2026 - - 7332 warnings → see `.agen |
-| gotcha in agent.md | - > 7943 notes - Updated: 4/3/2026 + > 7944 notes - Updated: 4/3/2026 - - 7331 warnings → see `.agen |
-| ⚠️ GOTCHA: Updated multiple database schema | - > 7941 notes - Updated: 4/3/2026 + > 7943 notes - Updated: 4/3/2026 - - 7329 warnings → see `.agen |
-| ⚠️ GOTCHA: Updated multiple database schema — exte | + # Project Memory — tahin-spare-suppliers + > 7942 notes - Score threshold: >40 +  + ## Safety — Ne |
-| gotcha in agent.md | - > 7940 notes - Updated: 4/3/2026 + > 7941 notes - Updated: 4/3/2026 - - 7328 warnings → see `.agen |
-| gotcha in agent.md | - > 7939 notes - Updated: 4/3/2026 + > 7940 notes - Updated: 4/3/2026 - - 7327 warnings → see `.agen |
-| gotcha in agent.md | - > 7938 notes - Updated: 4/3/2026 + > 7939 notes - Updated: 4/3/2026 - - 7326 warnings → see `.agen |
-| gotcha in agent.md | - > 7937 notes - Updated: 4/3/2026 + > 7938 notes - Updated: 4/3/2026 - - 7325 warnings → see `.agen |
-| gotcha in agent.md | - > 7936 notes - Updated: 4/3/2026 + > 7937 notes - Updated: 4/3/2026 - - 7324 warnings → see `.agen |
-| gotcha in agent.md | - > 7935 notes - Updated: 4/3/2026 + > 7936 notes - Updated: 4/3/2026 - - 7323 warnings → see `.agen |
-| gotcha in agent.md | - > 7934 notes - Updated: 4/3/2026 + > 7935 notes - Updated: 4/3/2026 - - 7322 warnings → see `.agen |
-| gotcha in agent.md | - > 7933 notes - Updated: 4/3/2026 + > 7934 notes - Updated: 4/3/2026 - - 7321 warnings → see `.agen |
-| gotcha in agent.md | - > 7932 notes - Updated: 4/3/2026 + > 7933 notes - Updated: 4/3/2026 - - 7320 warnings → see `.agen |
-| gotcha in agent.md | - > 7931 notes - Updated: 4/3/2026 + > 7932 notes - Updated: 4/3/2026 - - 7319 warnings → see `.agen |
-| gotcha in agent.md | - > 7930 notes - Updated: 4/3/2026 + > 7931 notes - Updated: 4/3/2026 - - 7318 warnings → see `.agen |
-| gotcha in agent.md | - > 7929 notes - Updated: 4/3/2026 + > 7930 notes - Updated: 4/3/2026 - - 7317 warnings → see `.agen |
-| gotcha in agent.md | - > 7928 notes - Updated: 4/3/2026 + > 7929 notes - Updated: 4/3/2026 - - 7316 warnings → see `.agen |
-| gotcha in agent.md | - > 7927 notes - Updated: 4/3/2026 + > 7928 notes - Updated: 4/3/2026 - - 7315 warnings → see `.agen |
-| gotcha in agent.md | - > 7926 notes - Updated: 4/3/2026 + > 7927 notes - Updated: 4/3/2026 - - 7314 warnings → see `.agen |
-| gotcha in agent.md | - > 7925 notes - Updated: 4/3/2026 + > 7926 notes - Updated: 4/3/2026 - - 7313 warnings → see `.agen |
-| gotcha in agent.md | - > 7924 notes - Updated: 4/3/2026 + > 7925 notes - Updated: 4/3/2026 - - 7312 warnings → see `.agen |
-| gotcha in agent.md | - > 7923 notes - Updated: 4/3/2026 + > 7924 notes - Updated: 4/3/2026 - - 7311 warnings → see `.agen |
-| ⚠️ GOTCHA: Updated multiple database schema | - > 7921 notes - Updated: 4/3/2026 + > 7923 notes - Updated: 4/3/2026 - - 7309 warnings → see `.agen |
-| ⚠️ GOTCHA: Updated multiple database schema — exte | + # Project Memory — tahin-spare-suppliers + > 7922 notes - Score threshold: >40 +  + ## Safety — Ne |
-| gotcha in agent.md | - > 7920 notes - Updated: 4/3/2026 + > 7921 notes - Updated: 4/3/2026 - - 7308 warnings → see `.agen |
-| gotcha in agent.md | - > 7919 notes - Updated: 4/3/2026 + > 7920 notes - Updated: 4/3/2026 - - 7307 warnings → see `.agen |
-| gotcha in agent.md | - > 7918 notes - Updated: 4/3/2026 + > 7919 notes - Updated: 4/3/2026 - - 7306 warnings → see `.agen |
-| gotcha in agent.md | - > 7917 notes - Updated: 4/3/2026 + > 7918 notes - Updated: 4/3/2026 - - 7305 warnings → see `.agen |
-| gotcha in agent.md | - > 7916 notes - Updated: 4/3/2026 + > 7917 notes - Updated: 4/3/2026 - - 7304 warnings → see `.agen |
-| gotcha in agent.md | - > 7915 notes - Updated: 4/3/2026 + > 7916 notes - Updated: 4/3/2026 - - 7303 warnings → see `.agen |
-| gotcha in agent.md | - > 7914 notes - Updated: 4/3/2026 + > 7915 notes - Updated: 4/3/2026 - - 7302 warnings → see `.agen |
-| gotcha in agent.md | - > 7913 notes - Updated: 4/3/2026 + > 7914 notes - Updated: 4/3/2026 - - 7301 warnings → see `.agen |
-| gotcha in agent.md | - > 7912 notes - Updated: 4/3/2026 + > 7913 notes - Updated: 4/3/2026 - - 7300 warnings → see `.agen |
-| gotcha in agent.md | - > 7911 notes - Updated: 4/3/2026 + > 7912 notes - Updated: 4/3/2026 - - 7299 warnings → see `.agen |
-| gotcha in agent.md | - > 7910 notes - Updated: 4/3/2026 + > 7911 notes - Updated: 4/3/2026 - - 7298 warnings → see `.agen |
-| gotcha in agent.md | - > 7909 notes - Updated: 4/3/2026 + > 7910 notes - Updated: 4/3/2026 - - 7297 warnings → see `.agen |
+| gotcha in agent.md | - > 12795 notes - Updated: 4/6/2026 + > 12797 notes - Updated: 4/6/2026 - - 11203 warnings → see `.a |
+| gotcha in agent.md | - > 12793 notes - Updated: 4/6/2026 + > 12795 notes - Updated: 4/6/2026 - - 11202 warnings → see `.a |
+| gotcha in agent.md | - > 12789 notes - Updated: 4/6/2026 + > 12793 notes - Updated: 4/6/2026 - - 11200 warnings → see `.a |
+| gotcha in agent-rules.md | - - ⚠️ GOTCHA: Updated multiple database schema + - gotcha in agent.md  📌 IDE AST Context: Modified |
+| gotcha in agent.md | - > 12786 notes - Updated: 4/6/2026 + > 12789 notes - Updated: 4/6/2026 - - 11199 warnings → see `.a |
+| gotcha in agent.md | - > 12783 notes - Updated: 4/6/2026 + > 12786 notes - Updated: 4/6/2026 - - 11198 warnings → see `.a |
+| gotcha in agent.md | - > 12780 notes - Updated: 4/6/2026 + > 12783 notes - Updated: 4/6/2026 - - 11197 warnings → see `.a |
+| gotcha in agent.md | - > 12777 notes - Updated: 4/6/2026 + > 12780 notes - Updated: 4/6/2026 - - 11196 warnings → see `.a |
+| gotcha in agent.md | - > 12774 notes - Updated: 4/6/2026 + > 12777 notes - Updated: 4/6/2026 - - 11195 warnings → see `.a |
+| gotcha in agent.md | - > 12771 notes - Updated: 4/6/2026 + > 12774 notes - Updated: 4/6/2026 - - 11194 warnings → see `.a |
+| gotcha in agent.md | - > 12768 notes - Updated: 4/6/2026 + > 12771 notes - Updated: 4/6/2026 - - 11193 warnings → see `.a |
+| gotcha in agent.md | - > 12765 notes - Updated: 4/6/2026 + > 12768 notes - Updated: 4/6/2026 - - 11192 warnings → see `.a |
+| gotcha in agent.md | - > 12762 notes - Updated: 4/6/2026 + > 12765 notes - Updated: 4/6/2026 - - 11191 warnings → see `.a |
+| gotcha in agent.md | - > 12759 notes - Updated: 4/6/2026 + > 12762 notes - Updated: 4/6/2026 - - 11190 warnings → see `.a |
+| ⚠️ GOTCHA: Updated multiple database schema | - > 12752 notes - Updated: 4/6/2026 + > 12759 notes - Updated: 4/6/2026 - - 11188 warnings → see `.a |
+| ⚠️ GOTCHA: Added JWT tokens authentication — evolv | + # Project Memory — tahin-spare-suppliers + > 12755 notes - Score threshold: >40 +  + ## Safety — N |
+| gotcha in agent.md | - > 12749 notes - Updated: 4/6/2026 + > 12752 notes - Updated: 4/6/2026 - - 11187 warnings → see `.a |
+| gotcha in agent.md | - > 12746 notes - Updated: 4/6/2026 + > 12749 notes - Updated: 4/6/2026 - - 11186 warnings → see `.a |
+| gotcha in agent.md | - > 12743 notes - Updated: 4/6/2026 + > 12746 notes - Updated: 4/6/2026 - - 11185 warnings → see `.a |
+| gotcha in agent.md | - > 12740 notes - Updated: 4/6/2026 + > 12743 notes - Updated: 4/6/2026 - - 11184 warnings → see `.a |
+| gotcha in agent.md | - > 12737 notes - Updated: 4/6/2026 + > 12740 notes - Updated: 4/6/2026 - - 11183 warnings → see `.a |
+| gotcha in agent.md | - > 12734 notes - Updated: 4/6/2026 + > 12737 notes - Updated: 4/6/2026 - - 11182 warnings → see `.a |
+| gotcha in agent.md | - > 12731 notes - Updated: 4/6/2026 + > 12734 notes - Updated: 4/6/2026 - - 11181 warnings → see `.a |
+| gotcha in agent.md | - > 12728 notes - Updated: 4/6/2026 + > 12731 notes - Updated: 4/6/2026 - - 11180 warnings → see `.a |
+| gotcha in agent.md | - > 12722 notes - Updated: 4/6/2026 + > 12728 notes - Updated: 4/6/2026 - - 11178 warnings → see `.a |
+| ⚠️ GOTCHA: Added JWT tokens authentication — ensur | - - ⚠️ GOTCHA: Updated multiple database schema + - gotcha in agent.md - - ⚠️ GOTCHA: Added JWT toke |
+| gotcha in agent.md | - > 12719 notes - Updated: 4/6/2026 + > 12722 notes - Updated: 4/6/2026 - - 11177 warnings → see `.a |
+| gotcha in agent.md | - > 12716 notes - Updated: 4/6/2026 + > 12719 notes - Updated: 4/6/2026 - - 11176 warnings → see `.a |
+| gotcha in agent.md | - > 12713 notes - Updated: 4/6/2026 + > 12716 notes - Updated: 4/6/2026 - - 11175 warnings → see `.a |
+| gotcha in agent.md | - > 12710 notes - Updated: 4/6/2026 + > 12713 notes - Updated: 4/6/2026 - - 11174 warnings → see `.a |
+| gotcha in agent.md | - > 12707 notes - Updated: 4/6/2026 + > 12710 notes - Updated: 4/6/2026 - - 11173 warnings → see `.a |
+| ⚠️ GOTCHA: Updated multiple database schema | - > 12701 notes - Updated: 4/6/2026 + > 12707 notes - Updated: 4/6/2026 - - 11171 warnings → see `.a |
+| ⚠️ GOTCHA: Added JWT tokens authentication — evolv | + # Project Memory — tahin-spare-suppliers + > 12703 notes - Score threshold: >40 +  + ## Safety — N |
+| gotcha in agent.md | - > 12699 notes - Updated: 4/6/2026 + > 12701 notes - Updated: 4/6/2026 - - 11170 warnings → see `.a |
+| gotcha in agent.md | - > 12697 notes - Updated: 4/6/2026 + > 12699 notes - Updated: 4/6/2026 - - 11169 warnings → see `.a |
+| gotcha in agent.md | - > 12695 notes - Updated: 4/6/2026 + > 12697 notes - Updated: 4/6/2026 - - 11168 warnings → see `.a |
+| gotcha in agent.md | - > 12691 notes - Updated: 4/6/2026 + > 12695 notes - Updated: 4/6/2026 - - 11166 warnings → see `.a |
+| gotcha in agent-rules.md | - - ⚠️ GOTCHA: Updated multiple database schema + - gotcha in agent.md  📌 IDE AST Context: Modified |
+| gotcha in agent.md | - > 12688 notes - Updated: 4/6/2026 + > 12691 notes - Updated: 4/6/2026 - - 11165 warnings → see `.a |
+| gotcha in agent.md | - > 12685 notes - Updated: 4/6/2026 + > 12688 notes - Updated: 4/6/2026 - - 11164 warnings → see `.a |
+| gotcha in agent.md | - > 12682 notes - Updated: 4/6/2026 + > 12685 notes - Updated: 4/6/2026 - - 11163 warnings → see `.a |
+| gotcha in agent.md | - > 12679 notes - Updated: 4/6/2026 + > 12682 notes - Updated: 4/6/2026 - - 11162 warnings → see `.a |
+| gotcha in agent.md | - > 12676 notes - Updated: 4/6/2026 + > 12679 notes - Updated: 4/6/2026 - - 11161 warnings → see `.a |
+| gotcha in agent.md | - > 12673 notes - Updated: 4/6/2026 + > 12676 notes - Updated: 4/6/2026 - - 11160 warnings → see `.a |
+| gotcha in agent.md | - > 12670 notes - Updated: 4/6/2026 + > 12673 notes - Updated: 4/6/2026 - - 11159 warnings → see `.a |
+| gotcha in agent.md | - > 12667 notes - Updated: 4/6/2026 + > 12670 notes - Updated: 4/6/2026 - - 11158 warnings → see `.a |
+| gotcha in agent.md | - > 12664 notes - Updated: 4/6/2026 + > 12667 notes - Updated: 4/6/2026 - - 11157 warnings → see `.a |
+| gotcha in agent.md | - > 12661 notes - Updated: 4/6/2026 + > 12664 notes - Updated: 4/6/2026 - - 11156 warnings → see `.a |
+| ⚠️ GOTCHA: Updated multiple database schema | - > 12652 notes - Updated: 4/6/2026 + > 12661 notes - Updated: 4/6/2026 - - 11153 warnings → see `.a |
+| ⚠️ GOTCHA: Strengthened types GOTCHA — ensures ato | - - gotcha in agent.md + - ⚠️ GOTCHA: Added JWT tokens authentication — evolves the database schema  |
 
 ## 🔧 Problem Playbooks
+
+### problem-fix in agent-rules.md
+- - gotcha in agent-rules.md
++ - gotcha in agent.md
+- - gotcha in agent.md
++ - gotcha in agent-rules.md
+- - Patched security issue DZYmEy — hardens HTTP security headers
++ - problem-fix in shared-context.json
+- - Patched security issue Rmagu
++ - Patched security issue DZYmEy — hardens HTTP security headers
+- - problem-fix in shared-context.json
++ - Patched security issue Rmagu
+- - Patched security
+
+**Actionable Steps:**
+1. Modified 1 files
+
+### problem-fix in agent-rules.md
+- - problem-fix in shared-context.json
++ - Patched security issue shared-context
+- - Fixed null crash in Tahin — prevents null/undefined runtime crashes
++ - problem-fix in shared-context.json
+- - problem-fix in visual_plan.md
++ - Fixed null crash in Tahin — prevents null/undefined runtime crashes
+- - Patched security issue ProductGrid
++ - problem-fix in visual_plan.md
+
+📌 IDE AST Context: Modified
+
+**Actionable Steps:**
+1. Modified 1 files
+
+### Fixed null crash in Tahin — prevents null/undefined runtime crashes
+-         <h1 class="company-name"><span class="text-red">Tahin</span> Spare Suppliers</h1>
++         <h1 class="company-name">Tahin Spare Suppliers</h1>
+-     color: #1a1a1a;
++     color: #b11623;
+-   .company-name .text-red {
++   .company-tagline {
+-     color: #b11623;
++     font-size: 11px;
+-   }
++     color: #444;
+-   .company-tagline {
++     margin: 3px 0 0;
+-     font-size: 11px;
++     font
+
+**Actionable Steps:**
+1. Modified 1 files
+2. identifier: Tahin
+3. identifier: Spare
+4. identifier: Suppliers
+5. identifier: Inter
+
+### Fixed null crash in Tahin — prevents null/undefined runtime crashes
+-         <h1 class="company-name">Tahin Spare Suppliers</h1>
++         <h1 class="company-name"><span class="text-red">Tahin</span> Spare Suppliers</h1>
+-     color: #b11623;
++     color: #1a1a1a;
+-   .company-tagline {
++   .company-name .text-red {
+-     font-size: 11px;
++     color: #b11623;
+-     color: #444;
++   }
+-     margin: 3px 0 0;
++   .company-tagline {
+-     font-family: var(--font-int
+
+**Actionable Steps:**
+1. Modified 1 files
+2. identifier: Tahin
+3. identifier: Spare
+4. identifier: Suppliers
+5. identifier: Inter
 
 ### Fixed null crash in Tahin — prevents null/undefined runtime crashes
 -         <h1 class="company-name">Tahin Spare Suppliers</h1>
@@ -147,77 +223,6 @@ Auto-compiled from **7956 real patterns** in **tahin-spare-suppliers**. This ski
 + import { listContent } from '../lib/server/repository';
 - const env = getRuntimeEnv(Astro.locals);
 + 
-- const liveParts = await listContent(env, 'parts');
-+ const env = g
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: ProductGrid
-3. identifier: Astro
-4. identifier: MainLayout
-5. identifier: Marine
-
-### Fixed null crash in Services — prevents null/undefined runtime crashes
--         <li class="dropdown">
-+         <li><a href="/services" class:list={[{ active: activeNav === 'services' }]}>Our Services</a></li>
--           <a href="/services" class:list={[{ active: activeNav === 'services' }]}>Our Services <Icon name="chevron-down" size={10} /></a>
-+         <li><a href="/enquiry" class:list={[{ active: activeNav === 'enquiry' }]}>Enquiry</a></li>
--           <ul cla
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Our
-3. identifier: Services
-4. identifier: Enquiry
-5. identifier: Contact
-
-### Fixed null crash in Services — prevents null/undefined runtime crashes
--     padding: 50px 0 40px;
-+     padding: 60px 0 50px;
--     background: #1a1a2e;
-+     background: #fff;
--   }
-+     border-bottom: 1px solid #eee;
--   .brands-title {
-+     border-top: 1px solid #eee;
--     text-align: center;
-+   }
--     font-size: 22px;
-+   .brands-title {
--     font-weight: 700;
-+     text-align: center;
--     color: #fff;
-+     font-size: 22px;
--     margin-bottom: 30px;
-+ 
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Services
-3. identifier: Section
-4. identifier: Workshop
-5. identifier: Full
-
-### Fixed null crash in Yanmar — prevents null/undefined runtime crashes
--         <span class="brand-item">Yanmar</span>
-+         <img src="/images/brands/yanmar-1.svg" alt="Yanmar" class="brand-logo" />
--         <span class="brand-item">Daihatsu</span>
-+         <img src="/images/brands/caterpillar-logo2.svg" alt="Caterpillar" class="brand-logo" />
--         <span class="brand-item">Caterpillar</span>
-+         <img src="/images/brands/man-logo.svg" alt="MAN" class
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Yanmar
-3. identifier: Caterpillar
-4. identifier: MAN
-5. identifier: Wartsila
-
-### Fixed null crash in Major — prevents null/undefined runtime crashes
--   <!-- Our Services -->
-+   <!-- Major Brands Marquee -->
--   <section class="section services-section">
-+   <section class="brands-section">
--       <h2 class="section-title re
+- const liveParts =
 
 ... [Truncated — see individual observations for full content]

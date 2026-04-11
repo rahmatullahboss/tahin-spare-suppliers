@@ -8,9 +8,10 @@ const { label = "Image" } = Astro.props;
 <div class="image-uploader">
   <label>{label}</label>
   <input type="file" accept="image/*" data-image-input />
-  <button type="button" class="upload-btn" data-upload-trigger>Compress & Upload</button>
+  <button type="button" class="remove-btn" data-image-remove-btn>Remove Image</button>
   <p class="upload-status" data-upload-status></p>
   <input type="hidden" name="imageUrl" data-image-url />
+  <input type="hidden" name="imageKey" data-image-key />
 </div>
 
 <style>
@@ -18,10 +19,10 @@ const { label = "Image" } = Astro.props;
     display: grid;
     gap: 10px;
   }
-  .upload-btn {
+  .remove-btn {
     width: fit-content;
     border: none;
-    background: #c78f40;
+    background: #ececec;
     color: #111;
     padding: 10px 14px;
     border-radius: 8px;

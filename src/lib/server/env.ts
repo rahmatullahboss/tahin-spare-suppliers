@@ -8,7 +8,7 @@ export type RuntimeEnv = {
   MEDIA_BUCKET: R2Bucket;
 };
 
-export function getRuntimeEnv(locals?: Record<string, unknown>): RuntimeEnv {
+export function getRuntimeEnv(locals?: any): RuntimeEnv {
   let envToUse: Record<string, unknown> | undefined = undefined;
   try {
     const loc = locals as Record<string, Record<string, Record<string, unknown>>> | undefined;

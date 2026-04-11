@@ -1,16 +1,18 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import { EQUIPMENT_CATEGORIES } from '../lib/categories';
 
-const categories = [
-  { name: 'Marine Propulsion Engine', link: '/category/marine-propulsion-engine', image: '/images/marine-propulsion-engine.jpg' },
-  { name: 'Marine Gearbox', link: '/category/marine-gearbox', image: '/images/marine-gearbox.jpg' },
-  { name: 'Auxiliary Engine', link: '/category/auxiliary-engine', image: '/images/auxiliary-engine.jpg' },
-  { name: 'Diesel & Gas Generator Set', link: '/category/diesel-generator-set', image: '/images/diesel-generator-set.jpg' },
-  { name: 'Spare Parts', link: '/category/spare-parts', image: '/images/spare-parts-new.jpg' },
-  { name: 'Hydraulic Deck Crane Equipment', link: '/category/hydraulic-deck-crane-equipment', image: '/images/hydraulic-crane-equipment.jpg' },
-  { name: 'Anchor and Chain', link: '/category/anchor-and-chain', image: '/images/anchor-chain.jpg' },
-  { name: 'Marine Pump', link: '/category/marine-pump', image: '/images/marine-pump.jpg' }
-];
+// Map category slugs to their showcase images
+const CATEGORY_IMAGES: Record<string, string> = {
+  'marine-propulsion-engine': '/images/marine-propulsion-engine.jpg',
+  'marine-gearbox': '/images/marine-gearbox.jpg',
+  'auxiliary-engine': '/images/auxiliary-engine.jpg',
+  'diesel-generator-set': '/images/diesel-generator-set.jpg',
+  'spare-parts': '/images/spare-parts-new.jpg',
+  'hydraulic-deck-crane-equipment': '/images/hydraulic-crane-equipment.jpg',
+  'anchor-and-chain': '/images/anchor-chain.jpg',
+  'marine-pump': '/images/marine-pump.jpg',
+};
 ---
 <MainLayout title="Sell Equipments - Tahin Spare Suppliers" activeNav="products" description="Browse our complete catalog of marine propulsion engines, gearboxes, generators, spare parts, cranes, and pumps. Quality reconditioned marine equipment.">
   <section class="page-hero">
@@ -24,13 +26,13 @@ const categories = [
   <section class="section stock-spares">
     <div class="container">
       <div class="stock-grid reveal-stagger">
-        {categories.map((cat) => (
-          <a href={cat.link} class="stock-card">
+        {EQUIPMENT_CATEGORIES.map((cat) => (
+          <a href={`/category/${cat.slug}`} class="stock-card">
             <div class="stock-card-img">
-              <img src={cat.image} alt={cat.name} loading="lazy" />
+              <img src={CATEGORY_IMAGES[cat.slug] ?? '/images/marine-propulsion-engine.jpg'} alt={cat.value} loading="lazy" />
             </div>
             <div class="stock-card-content">
-              <h3>{cat.name}</h3>
+              <h3>{cat.value}</h3>
               <span class="stock-card-cta">VIEW DETAILS</span>
             </div>
           </a>

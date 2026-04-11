@@ -2,20 +2,10 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listContent } from '../../lib/server/repository';
-
-const categories = [
-  { name: 'Marine Propulsion Engine', slug: 'marine-propulsion-engine', image: '/images/marine-propulsion-engine.jpg' },
-  { name: 'Marine Gearbox', slug: 'marine-gearbox', image: '/images/marine-gearbox.jpg' },
-  { name: 'Auxiliary Engine', slug: 'auxiliary-engine', image: '/images/auxiliary-engine.jpg' },
-  { name: 'Diesel & Gas Generator Set', slug: 'diesel-generator-set', image: '/images/diesel-generator-set.jpg' },
-  { name: 'Spare Parts', slug: 'spare-parts', image: '/images/spare-parts-new.jpg' },
-  { name: 'Hydraulic Deck Crane Equipment', slug: 'hydraulic-deck-crane-equipment', image: '/images/hydraulic-crane-equipment.jpg' },
-  { name: 'Anchor and Chain', slug: 'anchor-and-chain', image: '/images/anchor-chain.jpg' },
-  { name: 'Marine Pump', slug: 'marine-pump', image: '/images/marine-pump.jpg' }
-];
+import { EQUIPMENT_CATEGORIES, getCategoryBySlug } from '../../lib/categories';
 
 const { category } = Astro.params;
-const currentCategory = categories.find(c => c.slug === category);
+const currentCategory = getCategoryBySlug(category ?? '');
 
 if (!currentCategory) {
   return Astro.redirect('/products');
@@ -24,17 +14,14 @@ if (!currentCategory) {
 const env = getRuntimeEnv(Astro.locals);
 const liveProducts = await listContent(env, 'products');
 
-// Manual slugify for comparison
-const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-
-const categoryProducts = liveProducts.filter(p => toSlug(p.category || "") === currentCategory.slug);
+const categoryProducts = liveProducts.filter((p) => p.category === currentCategory.value);
 ---
-<MainLayout title={`${currentCategory.name} - Tahin Spare Suppliers`} activeNav="products">
+<MainLayout title={`${currentCategory.value} - Tahin Spare Suppliers`} activeNav="products">
   <section class="page-hero">
     <div class="page-hero-accent"></div>
     <div class="page-hero-content">
-      <h1 class="reveal">{currentCategory.name}</h1>
-      <p class="hero-subtitle reveal">Browse our inventory of {currentCategory.name}</p>
+      <h1 class="reveal">{currentCategory.value}</h1>
+      <p class="hero-subtitle reveal">Browse our inventory of {currentCategory.value}</p>
     </div>
   </section>
 
@@ -47,7 +34,7 @@ const categoryProducts = liveProducts.filter(p => toSlug(p.category || "") === c
       {categoryProducts.length === 0 ? (
         <div class="empty-state">
            <h3>No products available</h3>
-           <p>We currently have no products listed under {currentCategory.name}. Please check back later or send us an enquiry!</p>
+           <p>We currently have no products listed under {currentCategory.value}. Please check back later or send us an enquiry!</p>
            <a href="/enquiry" class="btn btn-primary" style="margin-top:20px;">Send Enquiry</a>
         </div>
       ) : (

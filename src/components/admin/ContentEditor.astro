@@ -1,8 +1,9 @@
 ---
 import ImageUploader from "./ImageUploader.astro";
+import { EQUIPMENT_CATEGORIES } from "../../lib/categories";
 
 interface Props {
-  type: "products" | "parts" | "blog";
+  type: "products" | "blog";
   title: string;
   itemLabel: string;
   titleLabel: string;
@@ -16,6 +17,7 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     <div>
       <h1>{title}</h1>
       <p>Create, edit and delete live {itemLabel.toLowerCase()} entries.</p>
+      <p class="editor-help">Select an image and click Save. Compression and upload happen automatically.</p>
     </div>
     <button type="button" class="logout-btn" data-logout-btn>Logout</button>
   </div>
@@ -37,14 +39,9 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
             <label>Category *</label>
             <select name="category" data-category required>
               <option value="" disabled selected>-- Select a Category --</option>
-              <option value="Marine Propulsion Engine">Marine Propulsion Engine</option>
-              <option value="Marine Gearbox">Marine Gearbox</option>
-              <option value="Auxiliary Engine">Auxiliary Engine</option>
-              <option value="Diesel & Gas Generator Set">Diesel & Gas Generator Set</option>
-              <option value="Spare Parts">Spare Parts</option>
-              <option value="Hydraulic Deck Crane Equipment">Hydraulic Deck Crane Equipment</option>
-              <option value="Anchor and Chain">Anchor and Chain</option>
-              <option value="Marine Pump">Marine Pump</option>
+              {EQUIPMENT_CATEGORIES.map((cat) => (
+                <option value={cat.value}>{cat.value}</option>
+              ))}
             </select>
           </div>
           <div class="field">
@@ -99,10 +96,28 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     const previewEl = editor.querySelector("[data-preview]");
     const logoutBtn = editor.querySelector("[data-logout-btn]");
     const resetBtn = editor.querySelector("[data-reset-btn]");
-    const uploadTrigger = editor.querySelector("[data-upload-trigger]");
+    const imageRemoveBtn = editor.querySelector("[data-image-remove-btn]");
     const uploadStatus = editor.querySelector("[data-upload-status]");
     const imageInput = editor.querySelector("[data-image-input]");
     const imageUrlInput = editor.querySelector("[data-image-url]");
+    const imageKeyInput = editor.querySelector("[data-image-key]");
+    let selectedFile = null;
+    let selectedPreviewUrl = "";
+    let existingImageUrl = "";
+    let existingImageKey = "";
+    let imageRemoved = false;
+
+    const clearPreviewUrl = () => {
+      if (selectedPreviewUrl) {
+        URL.revokeObjectURL(selectedPreviewUrl);
+        selectedPreviewUrl = "";
+      }
+    };
+
+    const setExistingImageState = (url, key) => {
+      existingImageUrl = url ?? "";
+      existingImageKey = key ?? "";
+    };
 
     const drawPreview = (url) => {
       if (url) {
@@ -119,7 +134,15 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     const resetForm = () => {
       form.reset();
       form.querySelector("[data-id]").value = "";
+      clearPreviewUrl();
+      selectedFile = null;
+      imageRemoved = false;
+      setExistingImageState("", "");
       imageUrlInput.value = "";
+      imageKeyInput.value = "";
+      if (imageInput) {
+        imageInput.value = "";
+      }
       statusEl.textContent = "";
       uploadStatus.textContent = "";
       drawPreview("");
@@ -130,20 +153,27 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       form.querySelector("[data-title]").value = item.title;
       form.querySelector("[data-slug]").value = item.slug;
       if (type === 'products') {
-        if (document.querySelector("[data-category]")) {
-           document.querySelector("[data-category]").value = item.category || '';
-        }
-        if (document.querySelector("[data-brand]")) {
-           document.querySelector("[data-brand]").value = item.brand || '';
-        }
-        if (document.querySelector("[data-model]")) {
-           document.querySelector("[data-model]").value = item.model_number || '';
-        }
+        const categoryEl = editor.querySelector("[data-category]");
+        if (categoryEl) categoryEl.value = item.category || '';
+        const brandEl = editor.querySelector("[data-brand]");
+        if (brandEl) brandEl.value = item.brand || '';
+        const modelEl = editor.querySelector("[data-model]");
+        if (modelEl) modelEl.value = item.model_number || '';
       }
       form.querySelector("[data-excerpt]").value = item.excerpt;
       form.querySelector("[data-content]").value = item.content;
+      clearPreviewUrl();
+      selectedFile = null;
+      imageRemoved = false;
+      setExistingImageState(item.imageUrl || "", item.imageKey || "");
       imageUrlInput.value = item.imageUrl || "";
-      drawPreview(item.imageUrl || "");
+      imageKeyInput.value = item.imageKey || "";
+      if (imageInput) {
+        imageInput.value = "";
+      }
+      drawPreview(existingImageUrl);
+      uploadStatus.textContent = "";
+      statusEl.textContent = "";
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
@@ -224,73 +254,148 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       });
     };
 
-    uploadTrigger?.addEventListener("click", async () => {
-      const file = imageInput?.files?.[0];
-      if (!file) {
-        uploadStatus.textContent = "Select an image first.";
+    const uploadImage = async (file) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Image upload failed.");
+      }
+
+      return response.json();
+    };
+
+    const deleteImageByKey = async (key) => {
+      if (!key) {
         return;
       }
 
-      uploadStatus.textContent = "Compressing image...";
+      await fetch("/api/upload/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ key })
+      });
+    };
 
-      try {
-        const compressed = await compressImageToWebp(file);
-        const formData = new FormData();
-        formData.append("file", compressed);
-        uploadStatus.textContent = "Uploading to storage...";
+    imageInput?.addEventListener("change", () => {
+      const file = imageInput.files?.[0] ?? null;
+      clearPreviewUrl();
+      selectedFile = file;
+      imageRemoved = false;
 
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData
-        });
-
-        if (!response.ok) {
-          throw new Error("Upload failed.");
-        }
-
-        const data = await response.json();
-        imageUrlInput.value = data.url;
-        drawPreview(data.url);
-        uploadStatus.textContent = "Upload complete.";
-      } catch (error) {
-        uploadStatus.textContent = error instanceof Error ? error.message : "Upload failed.";
+      if (file) {
+        selectedPreviewUrl = URL.createObjectURL(file);
+        drawPreview(selectedPreviewUrl);
+        uploadStatus.textContent = "Image selected. It will be compressed and uploaded when you save.";
+      } else {
+        drawPreview(existingImageUrl);
+        uploadStatus.textContent = "";
       }
+    });
+
+    imageRemoveBtn?.addEventListener("click", () => {
+      clearPreviewUrl();
+      selectedFile = null;
+      imageRemoved = true;
+
+      if (imageInput) {
+        imageInput.value = "";
+      }
+
+      imageUrlInput.value = "";
+      imageKeyInput.value = "";
+      drawPreview("");
+      uploadStatus.textContent = "Image will be removed when you save.";
     });
 
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
       statusEl.textContent = "Saving...";
+      let nextImageUrl = existingImageUrl;
+      let nextImageKey = existingImageKey;
+      let uploadedKeyToRollback = "";
 
-      const payload = {
-        title: form.querySelector("[data-title]").value,
-        slug: form.querySelector("[data-slug]").value,
-        excerpt: form.querySelector("[data-excerpt]").value,
-        content: form.querySelector("[data-content]").value,
-        imageUrl: imageUrlInput.value,
-        ...(type === 'products' ? { 
-          category: form.querySelector("[data-category]")?.value || "",
-          brand: form.querySelector("[data-brand]")?.value || "",
-          model_number: form.querySelector("[data-model]")?.value || ""
-        } : {})
-      };
+      try {
+        if (selectedFile) {
+          uploadStatus.textContent = "Compressing image...";
+          const compressed = await compressImageToWebp(selectedFile);
+          uploadStatus.textContent = "Uploading image...";
+          const uploaded = await uploadImage(compressed);
+          nextImageUrl = uploaded.url || "";
+          nextImageKey = uploaded.key || "";
+          uploadedKeyToRollback = nextImageKey;
+        }
 
-      const id = form.querySelector("[data-id]").value;
-      const response = await fetch(id ? `${endpoint}/${id}` : endpoint, {
-        method: id ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+        if (imageRemoved) {
+          nextImageUrl = "";
+          nextImageKey = "";
+        }
 
-      if (!response.ok) {
-        statusEl.textContent = "Save failed.";
-        return;
+        const payload = {
+          title: form.querySelector("[data-title]").value,
+          slug: form.querySelector("[data-slug]").value,
+          excerpt: form.querySelector("[data-excerpt]").value,
+          content: form.querySelector("[data-content]").value,
+          imageUrl: nextImageUrl,
+          imageKey: nextImageKey,
+          ...(type === 'products' ? {
+            category: form.querySelector("[data-category]")?.value || "",
+            brand: form.querySelector("[data-brand]")?.value || "",
+            model_number: form.querySelector("[data-model]")?.value || ""
+          } : {})
+        };
+
+        const id = form.querySelector("[data-id]").value;
+        const response = await fetch(id ? `${endpoint}/${id}` : endpoint, {
+          method: id ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => null);
+          throw new Error(data?.error || "Save failed.");
+        }
+
+        const shouldDeleteOldImage =
+          Boolean(existingImageKey) &&
+          existingImageKey !== nextImageKey &&
+          (Boolean(selectedFile) || imageRemoved);
+
+        if (shouldDeleteOldImage) {
+          await deleteImageByKey(existingImageKey);
+        }
+
+        setExistingImageState(nextImageUrl, nextImageKey);
+        imageUrlInput.value = nextImageUrl;
+        imageKeyInput.value = nextImageKey;
+        clearPreviewUrl();
+        selectedFile = null;
+        imageRemoved = false;
+        if (imageInput) {
+          imageInput.value = "";
+        }
+        uploadStatus.textContent = "";
+        statusEl.textContent = "Saved and live.";
+        await loadItems();
+        resetForm();
+      } catch (error) {
+        if (uploadedKeyToRollback) {
+          await deleteImageByKey(uploadedKeyToRollback);
+        }
+        uploadStatus.textContent = "";
+        statusEl.textContent = error instanceof Error ? error.message : "Save failed.";
       }
-
-      statusEl.textContent = "Saved and live.";
-      await loadItems();
-      resetForm();
     });
 
     logoutBtn?.addEventListener("click", async () => {
@@ -310,6 +415,10 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
   .editor-shell p {
     margin-top: 0;
     color: #666;
+  }
+  .editor-help {
+    margin-top: 6px;
+    font-size: 14px;
   }
   .editor-header {
     display: flex;

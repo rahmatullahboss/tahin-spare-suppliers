@@ -1,41 +1,19 @@
 {
   "project": {
     "enabled": true,
-    "lastGenerated": "2026-04-03T10:04:03.785Z",
-    "observationCount": 7956,
+    "lastGenerated": "2026-04-06T14:04:19.265Z",
+    "observationCount": 12227,
     "skillCount": 0,
     "domain": "project",
     "triggerGlobs": [
       "**/*"
     ],
-    "description": "Project for tahin-spare-suppliers. 7348 gotchas, 121 conventions, 12 fixes."
-  },
-  "convention": {
-    "enabled": true,
-    "lastGenerated": "2026-04-03T10:04:03.785Z",
-    "observationCount": 0,
-    "skillCount": 37,
-    "domain": "convention",
-    "triggerGlobs": [
-      "**/*"
-    ],
-    "description": "Convention for tahin-spare-suppliers. ."
-  },
-  "gotcha": {
-    "enabled": true,
-    "lastGenerated": "2026-04-03T10:04:03.785Z",
-    "observationCount": 0,
-    "skillCount": 42,
-    "domain": "gotcha",
-    "triggerGlobs": [
-      "**/*"
-    ],
-    "description": "Gotcha for tahin-spare-suppliers. ."
+    "description": "Project for tahin-spare-suppliers. 11194 gotchas, 173 conventions, 16 fixes."
   },
   "config": {
     "enabled": true,
-    "lastGenerated": "2026-04-03T10:04:03.785Z",
-    "observationCount": 4,
+    "lastGenerated": "2026-04-06T14:04:19.263Z",
+    "observationCount": 577,
     "skillCount": 0,
     "domain": "config",
     "triggerGlobs": [
@@ -44,11 +22,11 @@
       "**/*.json",
       "**/*.toml"
     ],
-    "description": "Config for tahin-spare-suppliers. 1 conventions."
+    "description": "Config for tahin-spare-suppliers. 11 gotchas, 50 conventions, 26 fixes."
   },
   "typescript": {
     "enabled": true,
-    "lastGenerated": "2026-04-03T10:04:03.785Z",
+    "lastGenerated": "2026-04-06T14:04:19.265Z",
     "observationCount": 2,
     "skillCount": 0,
     "domain": "typescript",
@@ -57,5 +35,27 @@
       "**/*.tsx"
     ],
     "description": "Typescript for tahin-spare-suppliers. ."
+  },
+  "convention": {
+    "enabled": true,
+    "lastGenerated": "2026-04-06T14:04:19.266Z",
+    "observationCount": 0,
+    "skillCount": 69,
+    "domain": "convention",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Convention for tahin-spare-suppliers. ."
+  },
+  "gotcha": {
+    "enabled": true,
+    "lastGenerated": "2026-04-06T14:04:19.266Z",
+    "observationCount": 0,
+    "skillCount": 58,
+    "domain": "gotcha",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Gotcha for tahin-spare-suppliers. ."
   }
 }

@@ -1,7 +1,7 @@
 
 
 # Project Memory — tahin-spare-suppliers
-> 12755 notes | Score threshold: >40
+> 271 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,39 +20,46 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in agent.md** — - > 12749 notes | Updated: 4/6/2026
-+ > 12752 notes | Updated: 4/6/202
-- **gotcha in agent.md** — - > 12746 notes | Updated: 4/6/2026
-+ > 12749 notes | Updated: 4/6/202
-- **gotcha in agent.md** — - > 12743 notes | Updated: 4/6/2026
-+ > 12746 notes | Updated: 4/6/202
-- **gotcha in agent.md** — - > 12740 notes | Updated: 4/6/2026
-+ > 12743 notes | Updated: 4/6/202
-- **gotcha in agent.md** — - > 12737 notes | Updated: 4/6/2026
-+ > 12740 notes | Updated: 4/6/202
-- **gotcha in agent.md** — - > 12734 notes | Updated: 4/6/2026
-+ > 12737 notes | Updated: 4/6/202
+- **⚠️ GOTCHA: Optimized Optimized** — - 
++ - Optimized Architectural
+- ## Recent fixes
++ 
+- 
++ ## Recent fix
+- **sys_03 in agent.md** — - > 66 notes | Updated: 4/5/2026
++ > 69 notes | Updated: 4/5/2026
+- - 
+- **sys_03 in agent.md** — - > 62 notes | Updated: 4/5/2026
++ > 66 notes | Updated: 4/5/2026
+- - 
+- **sys_03 in agent.md** — File updated (external): agent.md
+
+Content summary (33 lines):
+# Proje
+- **sys_03 in agent-rules.md** — File updated (external): .bsync_core/agent-rules.md
+
+Content summary (
 
 ## Project Standards
 
-- what-changed in shared-context.json — confirmed 18x
-- Added JWT tokens authentication — confirmed 10x
-- what-changed in shared-context.json — confirmed 19x
-- discovery in shared-context.json — confirmed 5x
-- Patched security issue PgylKCM — confirmed 3x
-- problem-fix in shared-context.json — confirmed 3x
-- Updated schema GOTCHA — confirmed 3x
-- Added JWT tokens authentication — confirmed 11x
+- sys_01 in brainsync_auto.md — confirmed 3x
+- Updated multiple database schema — confirmed 3x
+- sys_01 in brainsync_auto.md — confirmed 3x
+- Updated schema Score — confirmed 3x
+- Updated multiple database schema — evolves the database schema to support new... — confirmed 3x
+- Updated schema Score — confirmed 3x
+- Updated multiple database schema — evolves the database schema to support new... — confirmed 3x
+- sys_01 in metadata.sqlite-wal — confirmed 3x
 
-## Known Fixes
+## Recent Decisions
 
-- ❌ - - Fixed null crash in Tahin — prevents null/undefined runtime crashes → ✅ problem-fix in agent-rules.md
+- Optimized Strengthened — ensures atomic multi-step database operations
 
 ## Learned Patterns
 
-- Always: what-changed in agent.md — confirmed 18x (seen 6x)
-- Always: what-changed in agent.md — confirmed 18x (seen 8x)
-- Always: what-changed in agent.md — confirmed 18x (seen 10x)
+- Always: sys_01 in agent.md — confirmed 17x (seen 3x)
+- Always: Updated multiple database schema — confirmed 5x (seen 2x)
+- Always: sys_01 in agent.md — confirmed 18x (seen 4x)
 - Agent generates new migration for every change (squash related changes)
 - Agent installs packages without checking if already installed
 

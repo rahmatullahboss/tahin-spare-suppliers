@@ -5,7 +5,8 @@ import { getRuntimeEnv } from '../lib/server/env';
 import { listContent } from '../lib/server/repository';
 
 const env = getRuntimeEnv(Astro.locals);
-const liveParts = await listContent(env, 'parts');
+const allProducts = await listContent(env, 'products');
+const liveParts = allProducts.filter((p) => p.category === 'Spare Parts');
 ---
 <MainLayout title="Marine Spare Parts - Tahin Spare Suppliers" activeNav="products">
   <section class="page-hero">

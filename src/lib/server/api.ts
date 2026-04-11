@@ -1,6 +1,13 @@
 import type { APIRoute } from "astro";
 import { requireAdmin } from "./auth";
-import { createContent, deleteContent, listContent, updateContent, type ContentType } from "./repository";
+import {
+  createContent,
+  deleteContent,
+  getContentById,
+  listContent,
+  updateContent,
+  type ContentType
+} from "./repository";
 import { getRuntimeEnv } from "./env";
 
 export async function readJson<T>(request: Request): Promise<T> {
@@ -40,6 +47,7 @@ export function createListHandler(type: ContentType): APIRoute {
         excerpt?: string;
         content?: string;
         imageUrl?: string;
+        imageKey?: string;
         slug?: string;
         category?: string;
         brand?: string;
@@ -76,7 +84,17 @@ export function createDetailHandler(type: ContentType): APIRoute {
       }
 
       if (context.request.method === "DELETE") {
+        const existingItem = await getContentById(env, type, id);
         await deleteContent(env, type, id);
+
+        if (existingItem?.imageKey) {
+          try {
+            await env.MEDIA_BUCKET.delete(existingItem.imageKey);
+          } catch (error) {
+            console.error("Failed to delete media object", existingItem.imageKey, error);
+          }
+        }
+
         return Response.json({ ok: true });
       }
 
@@ -85,6 +103,7 @@ export function createDetailHandler(type: ContentType): APIRoute {
         excerpt?: string;
         content?: string;
         imageUrl?: string;
+        imageKey?: string;
         slug?: string;
         category?: string;
         brand?: string;

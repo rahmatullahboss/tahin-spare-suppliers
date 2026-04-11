@@ -8,11 +8,6 @@ const CONTENT_TABLES = {
     titleColumn: "name",
     excerptColumn: "short_description"
   },
-  parts: {
-    table: "parts",
-    titleColumn: "name",
-    excerptColumn: "short_description"
-  },
   blog: {
     table: "blog_posts",
     titleColumn: "title",
@@ -29,6 +24,7 @@ export type ContentRecord = {
   excerpt: string;
   content: string;
   imageUrl: string;
+  imageKey: string;
   createdAt: string;
   updatedAt: string;
   category?: string;
@@ -41,6 +37,7 @@ export type ContentInput = {
   excerpt?: string;
   content?: string;
   imageUrl?: string;
+  imageKey?: string;
   slug?: string;
   category?: string;
   brand?: string;
@@ -57,6 +54,7 @@ function mapRecord(type: ContentType, row: Record<string, unknown>): ContentReco
     excerpt: String(row[config.excerptColumn] ?? ""),
     content: String(row.content ?? ""),
     imageUrl: String(row.image_url ?? ""),
+    imageKey: String(row.image_key ?? ""),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     ...(type === 'products' ? { 
@@ -100,20 +98,21 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
   const excerpt = input.excerpt ?? "";
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
+  const imageKey = input.imageKey ?? "";
   const category = input.category ?? "Uncategorized";
   const brand = input.brand ?? "";
   const model_number = input.model_number ?? "";
 
-  let query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, NOW())
+  let query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
      RETURNING *`;
-  let params: (string | number)[] = [id, slug, input.title, excerpt, content, imageUrl];
+  let params: (string | number)[] = [id, slug, input.title, excerpt, content, imageUrl, imageKey];
 
   if (type === 'products') {
-    query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, category, brand, model_number, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+    query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, category, brand, model_number, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
        RETURNING *`;
-    params.push(category, brand, model_number);
+    params = [id, slug, input.title, excerpt, content, imageUrl, imageKey, category, brand, model_number];
   }
 
   const rows = await sql.query(query, params);
@@ -134,6 +133,7 @@ export async function updateContent(
   const excerpt = input.excerpt ?? "";
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
+  const imageKey = input.imageKey ?? "";
   const category = input.category ?? "Uncategorized";
   const brand = input.brand ?? "";
   const model_number = input.model_number ?? "";
@@ -144,10 +144,11 @@ export async function updateContent(
          ${config.excerptColumn} = $3,
          content = $4,
          image_url = $5,
+         image_key = $6,
          updated_at = NOW()
-     WHERE id = $6
+     WHERE id = $7
      RETURNING *`;
-  let params: (string | number)[] = [slug, input.title, excerpt, content, imageUrl, id];
+  let params: (string | number)[] = [slug, input.title, excerpt, content, imageUrl, imageKey, id];
 
   if (type === 'products') {
     query = `UPDATE ${config.table}
@@ -156,13 +157,14 @@ export async function updateContent(
            ${config.excerptColumn} = $3,
            content = $4,
            image_url = $5,
-           category = $6,
-           brand = $7,
-           model_number = $8,
+           image_key = $6,
+           category = $7,
+           brand = $8,
+           model_number = $9,
            updated_at = NOW()
-       WHERE id = $9
+       WHERE id = $10
        RETURNING *`;
-    params = [slug, input.title, excerpt, content, imageUrl, category, brand, model_number, id];
+    params = [slug, input.title, excerpt, content, imageUrl, imageKey, category, brand, model_number, id];
   }
 
   const rows = await sql.query(query, params);
