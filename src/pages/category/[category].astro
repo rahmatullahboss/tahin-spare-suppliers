@@ -15,8 +15,46 @@ const env = getRuntimeEnv(Astro.locals);
 const liveProducts = await listContent(env, 'products');
 
 const categoryProducts = liveProducts.filter((p) => p.category === currentCategory.value);
+
+// Extract unique brands for this category to build internal links
+const uniqueBrands = [...new Set(categoryProducts.map(p => p.brand).filter(Boolean))];
+const fallbackBrands = ["Yanmar", "Caterpillar", "Cummins", "Mitsubishi", "Wartsila"];
+const displayBrands = uniqueBrands.length > 0 ? uniqueBrands : fallbackBrands;
+
+// Generate FAQ Schema for AI SEO
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": `Do you export ${currentCategory.value} globally?`,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": `Yes, Tahin Spare Suppliers exports reconditioned and used ${currentCategory.value} worldwide directly from the Chattogram Ship-Recycling Yards. We provide secure crating and complete export documentation.`
+      }
+    },
+    {
+      "@type": "Question",
+      "name": `What brands of ${currentCategory.value} do you supply?`,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": `We maintain a vast inventory of major brands including Yanmar, Caterpillar, Wartsila, Cummins, and MAN for ${currentCategory.value}.`
+      }
+    },
+    {
+      "@type": "Question",
+      "name": `What is the condition of the ${currentCategory.value}?`,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": `All our ${currentCategory.value} units are carefully salvaged and fully reconditioned. They undergo strict inspection by our marine technical team before being verified for stock.`
+      }
+    }
+  ]
+};
 ---
-<MainLayout title={`${currentCategory.value} - Tahin Spare Suppliers`} activeNav="products">
+<MainLayout title={`Reconditioned ${currentCategory.value} Exporter | Tahin Spare`} description={`Browse genuine reconditioned ${currentCategory.value} sourced from ship recycling yards. Ready for global export.`} activeNav="products">
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <section class="page-hero">
     <div class="page-hero-accent"></div>
     <div class="page-hero-content">
@@ -57,6 +95,35 @@ const categoryProducts = liveProducts.filter((p) => p.category === currentCatego
           ))}
         </div>
       )}
+
+      <!-- Programmatic SEO Brand Links -->
+      <div class="brand-seo-links">
+        <h3>Browse {currentCategory.value} by Brand</h3>
+        <div class="tags-container">
+          {displayBrands.map((brand: any) => (
+            <a href={`/inventory/${String(brand).toLowerCase().replace(/\s+/g, '-')}-${currentCategory.slug}`} class="brand-tag">
+              {brand} {currentCategory.value}
+            </a>
+          ))}
+        </div>
+      </div>
+      
+      <!-- FAQ Section for AI SEO -->
+      <div class="faq-section mt-5">
+        <h3 class="reveal">Frequently Asked Questions</h3>
+        <div class="faq-item reveal">
+          <h4>Do you export {currentCategory.value} globally?</h4>
+          <p>Yes, Tahin Spare Suppliers exports reconditioned and used {currentCategory.value} worldwide directly from the Chattogram Ship-Recycling Yards. We provide secure crating and complete export documentation.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h4>What brands of {currentCategory.value} do you supply?</h4>
+          <p>We maintain a vast inventory of major brands including Yanmar, Caterpillar, Wartsila, Cummins, and MAN for {currentCategory.value}. Browse our specific brand pages for available stock.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h4>What is the condition of the {currentCategory.value}?</h4>
+          <p>All our {currentCategory.value} units are carefully salvaged and fully reconditioned. They undergo strict inspection by our marine technical team before being verified for stock.</p>
+        </div>
+      </div>
     </div>
   </section>
 </MainLayout>
@@ -194,6 +261,29 @@ const categoryProducts = liveProducts.filter((p) => p.category === currentCatego
   .product-card:hover .view-details {
     color: #c0392b;
   }
+
+  .mt-5 { margin-top: 50px; }
+  .brand-seo-links { margin-top: 50px; padding-top: 30px; border-top: 1px solid #eee; }
+  .brand-seo-links h3 { font-size: 20px; color: #222; margin-bottom: 20px; }
+  .tags-container { display: flex; flex-wrap: wrap; gap: 10px; }
+  .brand-tag {
+    background: #fdfdfd;
+    border: 1px solid #ddd;
+    color: #444;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .brand-tag:hover { background: #b11623; color: #fff; border-color: #b11623; }
+
+  .faq-section { background: #fafafa; padding: 40px; border-radius: 8px; margin-bottom: 30px; }
+  .faq-section h3 { font-size: 24px; color: #222; margin-bottom: 30px; font-weight: 800; }
+  .faq-item { margin-bottom: 25px; }
+  .faq-item:last-child { margin-bottom: 0; }
+  .faq-item h4 { font-size: 18px; color: #b11623; margin-bottom: 10px; font-weight: 600; }
+  .faq-item p { font-size: 15px; color: #555; line-height: 1.6; margin: 0; }
 
   @media (max-width: 768px) {
     .products-grid { grid-template-columns: repeat(2, 1fr); }

@@ -61,14 +61,16 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
     <title>{title}</title>
 
-    <!-- JSON-LD Organization Schema -->
+    <!-- JSON-LD LocalBusiness Schema -->
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
-      "@type": "Organization",
+      "@type": "LocalBusiness",
       "name": "Tahin Spare Suppliers",
       "url": siteUrl,
       "logo": `${siteUrl}/images/logo.svg`,
+      "image": fullOgImage,
       "description": defaultDescription,
+      "priceRange": "$$$",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "Kadamrasul (Saleh Carpet), D.T. Road, Bhatiary",
@@ -82,6 +84,7 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
         "email": "tahinship@gmail.com"
       },
       "foundingDate": "1990",
+      "areaServed": "Worldwide",
       "sameAs": [
         "https://www.facebook.com/profile.php?id=61581355746283",
         "https://www.linkedin.com/in/tahin-spare-suppliers-a65b133a8/"
