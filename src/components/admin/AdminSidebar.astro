@@ -1,6 +1,6 @@
 ---
 interface Props {
-  active: "dashboard" | "products" | "blog";
+  active: "dashboard" | "products" | "blog" | "contacts" | "enquiries" | "categories";
 }
 
 const { active } = Astro.props;
@@ -11,5 +11,8 @@ const { active } = Astro.props;
     <a href="/admin" class:list={[{ active: active === "dashboard" }]}>Dashboard</a>
     <a href="/admin/products" class:list={[{ active: active === "products" }]}>Equipment</a>
     <a href="/admin/blog" class:list={[{ active: active === "blog" }]}>Blog</a>
+    <a href="/admin/contact-messages" class:list={[{ active: active === "contacts" }]}>Contact Messages</a>
+    <a href="/admin/enquiries" class:list={[{ active: active === "enquiries" }]}>Enquiries</a>
+    <a href="/admin/categories" class:list={[{ active: active === "categories" }]}>Categories</a>
   </nav>
 </aside>

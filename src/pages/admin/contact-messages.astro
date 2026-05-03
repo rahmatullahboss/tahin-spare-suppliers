@@ -1,0 +1,166 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { getDb } from "../../lib/server/db";
+import { isAuthenticated } from "../../lib/server/session";
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+
+if (!authenticated) {
+  return Astro.redirect("/admin/login");
+}
+
+const sql = getDb(env);
+const messages = await sql.query(
+  `SELECT id, name, email, subject, message, created_at
+   FROM contact_messages
+   ORDER BY created_at DESC`
+);
+---
+
+<AdminLayout title="Contact Messages" active="contacts">
+  <div class="page-header">
+    <h1>Contact Messages</h1>
+    <p class="subtitle">{messages.length} message{messages.length !== 1 ? 's' : ''}</p>
+  </div>
+
+  {messages.length === 0 ? (
+    <div class="empty-state">
+      <div class="empty-icon">📧</div>
+      <h2>No messages yet</h2>
+      <p>Contact form submissions will appear here.</p>
+    </div>
+  ) : (
+    <div class="messages-list">
+      {messages.map((msg: any) => (
+        <article class="message-card">
+          <header class="message-header">
+            <div class="message-from">
+              <strong>{msg.name}</strong>
+              <a href={`mailto:${msg.email}`}>{msg.email}</a>
+            </div>
+            <time class="message-date">
+              {new Date(msg.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </time>
+          </header>
+          {msg.subject && <p class="message-subject">{msg.subject}</p>}
+          <p class="message-content">{msg.message}</p>
+        </article>
+      ))}
+    </div>
+  )}
+</AdminLayout>
+
+<style>
+  .page-header {
+    margin-bottom: 30px;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    margin: 0 0 5px;
+  }
+  .subtitle {
+    color: #666;
+    margin: 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  }
+  .empty-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+  }
+  .empty-state h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #333;
+  }
+  .empty-state p {
+    margin: 0;
+    color: #888;
+  }
+
+  .messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .message-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    padding: 24px;
+  }
+
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 20px;
+  }
+
+  .message-from {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .message-from strong {
+    font-size: 16px;
+    color: #222;
+  }
+
+  .message-from a {
+    color: #c0392b;
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  .message-from a:hover {
+    text-decoration: underline;
+  }
+
+  .message-date {
+    color: #888;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .message-subject {
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .message-content {
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  @media (max-width: 600px) {
+    .message-header {
+      flex-direction: column;
+    }
+    .message-date {
+      margin-top: 5px;
+    }
+  }
+</style>

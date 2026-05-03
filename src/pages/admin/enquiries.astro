@@ -1,0 +1,181 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { getDb } from "../../lib/server/db";
+import { isAuthenticated } from "../../lib/server/session";
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+
+if (!authenticated) {
+  return Astro.redirect("/admin/login");
+}
+
+const sql = getDb(env);
+const enquiries = await sql.query(
+  `SELECT id, name, email, phone, equipment, message, created_at
+   FROM enquiries
+   ORDER BY created_at DESC`
+);
+---
+
+<AdminLayout title="Enquiries" active="enquiries">
+  <div class="page-header">
+    <h1>Enquiries</h1>
+    <p class="subtitle">{enquiries.length} submission{enquiries.length !== 1 ? 's' : ''}</p>
+  </div>
+
+  {enquiries.length === 0 ? (
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h2>No enquiries yet</h2>
+      <p>Enquiry form submissions will appear here.</p>
+    </div>
+  ) : (
+    <div class="enquiries-list">
+      {enquiries.map((eq: any) => (
+        <article class="enquiry-card">
+          <header class="enquiry-header">
+            <div class="enquiry-from">
+              <strong>{eq.name}</strong>
+              <div class="contact-info">
+                <a href={`mailto:${eq.email}`}>{eq.email}</a>
+                {eq.phone && <span class="phone">{eq.phone}</span>}
+              </div>
+            </div>
+            <time class="enquiry-date">
+              {new Date(eq.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </time>
+          </header>
+          {eq.equipment && <p class="enquiry-equipment"><strong>Equipment:</strong> {eq.equipment}</p>}
+          <p class="enquiry-message">{eq.message}</p>
+        </article>
+      ))}
+    </div>
+  )}
+</AdminLayout>
+
+<style>
+  .page-header {
+    margin-bottom: 30px;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    margin: 0 0 5px;
+  }
+  .subtitle {
+    color: #666;
+    margin: 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  }
+  .empty-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+  }
+  .empty-state h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #333;
+  }
+  .empty-state p {
+    margin: 0;
+    color: #888;
+  }
+
+  .enquiries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .enquiry-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    padding: 24px;
+  }
+
+  .enquiry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 20px;
+  }
+
+  .enquiry-from {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .enquiry-from strong {
+    font-size: 16px;
+    color: #222;
+  }
+
+  .contact-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .contact-info a {
+    color: #c0392b;
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  .contact-info a:hover {
+    text-decoration: underline;
+  }
+
+  .phone {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .enquiry-date {
+    color: #888;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .enquiry-equipment {
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .enquiry-message {
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  @media (max-width: 600px) {
+    .enquiry-header {
+      flex-direction: column;
+    }
+    .enquiry-date {
+      margin-top: 5px;
+    }
+  }
+</style>

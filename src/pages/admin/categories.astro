@@ -1,0 +1,181 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { getDb } from "../../lib/server/db";
+import { isAuthenticated } from "../../lib/server/session";
+import { EQUIPMENT_CATEGORIES } from "../../lib/categories";
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+
+if (!authenticated) {
+  return Astro.redirect("/admin/login");
+}
+
+const sql = getDb(env);
+const customCategories = await sql.query(`SELECT id, name, slug, created_at FROM categories ORDER BY name`);
+---
+
+<AdminLayout title="Categories" active="categories">
+  <div class="page-header">
+    <h1>Equipment Categories</h1>
+    <p class="subtitle">{customCategories.length} custom + {EQUIPMENT_CATEGORIES.length} default</p>
+  </div>
+
+  <section class="add-form">
+    <h2>Add New Category</h2>
+    <form id="add-category-form">
+      <input type="text" id="category-name" placeholder="Category name" required />
+      <button type="submit" class="btn btn-primary">Add Category</button>
+    </form>
+    <div id="form-message"></div>
+  </section>
+
+  <section class="categories-section">
+    <h2>Default Categories (read-only)</h2>
+    <div class="category-list">
+      {EQUIPMENT_CATEGORIES.map(cat => (
+        <div class="category-item default">
+          <span class="cat-name">{cat.value}</span>
+          <span class="cat-slug">/{cat.slug}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  {customCategories.length > 0 && (
+    <section class="categories-section">
+      <h2>Custom Categories</h2>
+      <div class="category-list">
+        {customCategories.map((cat: any) => (
+          <div class="category-item custom">
+            <div class="cat-info">
+              <span class="cat-name">{cat.name}</span>
+              <span class="cat-slug">/{cat.slug}</span>
+            </div>
+            <button class="delete-btn" data-id={cat.id}>Delete</button>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <style>
+    .page-header { margin-bottom: 30px; }
+    .page-header h1 { font-size: 28px; margin: 0 0 5px; }
+    .subtitle { color: #666; margin: 0; }
+
+    .add-form {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      margin-bottom: 30px;
+    }
+    .add-form h2 { font-size: 18px; margin: 0 0 15px; }
+    #add-category-form { display: flex; gap: 12px; }
+    #category-name {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; }
+    .btn-primary { background: #c0392b; color: #fff; }
+    .btn-primary:hover { background: #a93226; }
+    #form-message { margin-top: 12px; font-size: 14px; }
+
+    .categories-section {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+    }
+    .categories-section h2 { font-size: 18px; margin: 0 0 15px; }
+
+    .category-list { display: flex; flex-direction: column; gap: 10px; }
+    .category-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    .category-item.default { background: #f0f0f0; }
+    .category-item.custom { background: #f9f9f9; }
+    .cat-info { display: flex; align-items: center; gap: 12px; }
+    .cat-name { font-weight: 600; color: #222; }
+    .cat-slug { color: #888; font-size: 13px; }
+    .delete-btn {
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .delete-btn:hover { background: #c82333; }
+  </style>
+
+  <script>
+    const form = document.getElementById('add-category-form') as HTMLFormElement;
+    const messageEl = document.getElementById('form-message') as HTMLElement;
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('category-name') as HTMLInputElement;
+      const name = nameInput.value.trim();
+
+      messageEl.textContent = 'Adding...';
+      messageEl.style.color = '#666';
+
+      try {
+        const res = await fetch('/api/admin/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+
+        if (res.ok) {
+          messageEl.textContent = 'Category added! Refreshing...';
+          messageEl.style.color = '#28a745';
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          const data = await res.json();
+          messageEl.textContent = data.error || 'Failed to add category';
+          messageEl.style.color = '#dc3545';
+        }
+      } catch {
+        messageEl.textContent = 'Network error';
+        messageEl.style.color = '#dc3545';
+      }
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Delete this category?')) return;
+        const id = (btn as HTMLElement).dataset.id;
+
+        try {
+          const res = await fetch('/api/admin/categories', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+          });
+
+          if (res.ok) {
+            location.reload();
+          } else {
+            alert('Failed to delete');
+          }
+        } catch {
+          alert('Network error');
+        }
+      });
+    });
+  </script>
+</AdminLayout>
