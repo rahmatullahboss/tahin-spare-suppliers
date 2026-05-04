@@ -58,6 +58,9 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     <Font cssVariable="--font-inter" preload />
     <Font cssVariable="--font-playfair" preload />
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.svg" />
+    <link rel="apple-touch-icon" href="/images/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
     {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
     <title>{title}</title>
 
