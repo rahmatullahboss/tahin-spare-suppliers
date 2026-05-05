@@ -70,3 +70,27 @@ CREATE TABLE IF NOT EXISTS categories (
   slug TEXT NOT NULL UNIQUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS sent_emails (
+  id TEXT PRIMARY KEY,
+  to_address TEXT NOT NULL,
+  from_address TEXT NOT NULL DEFAULT 'contact@tahinspare.com',
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL,
+  resend_id TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS inbound_emails (
+  id TEXT PRIMARY KEY,
+  from_address TEXT NOT NULL,
+  to_address TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL DEFAULT '',
+  is_read BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_sent_emails_created ON sent_emails(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inbound_emails_created ON inbound_emails(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inbound_emails_read ON inbound_emails(is_read);
