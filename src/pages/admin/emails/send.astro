@@ -1,0 +1,248 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../../lib/server/env";
+import { isAuthenticated } from "../../../lib/server/session";
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+
+if (!authenticated) {
+  return Astro.redirect("/admin/login");
+}
+---
+
+<AdminLayout title="Compose Email" active="emails">
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Compose Email</h1>
+      <p class="subtitle">Send an email to a recipient</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <form id="send-form">
+      <div class="field">
+        <label for="to">To</label>
+        <input
+          type="email"
+          id="to"
+          name="to"
+          placeholder="recipient@example.com"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="field">
+        <label for="subject">Subject</label>
+        <input
+          type="text"
+          id="subject"
+          name="subject"
+          placeholder="Email subject"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="field">
+        <label for="body">Body</label>
+        <textarea
+          id="body"
+          name="body"
+          placeholder="Write your message here..."
+          required
+          rows="10"
+        ></textarea>
+      </div>
+
+      <div class="actions">
+        <a href="/admin/emails" class="cancel-btn">Cancel</a>
+        <button type="submit" id="send-btn">Send Email</button>
+      </div>
+
+      <p id="status-message" class="status-message"></p>
+    </form>
+  </div>
+</AdminLayout>
+
+<style>
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 20px;
+  }
+  .header-left h1 {
+    font-size: 28px;
+    margin: 0 0 5px;
+  }
+  .subtitle {
+    color: #666;
+    margin: 0;
+  }
+
+  .form-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    padding: 32px;
+    max-width: 700px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .field input,
+  .field textarea {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+
+  .field input:focus,
+  .field textarea:focus {
+    border-color: #c78f40;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 150px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .cancel-btn {
+    background: #f0f0f0;
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    transition: background 0.15s;
+  }
+
+  .cancel-btn:hover {
+    background: #e0e0e0;
+  }
+
+  #send-btn {
+    background: #c78f40;
+    color: #111;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  #send-btn:hover:not(:disabled) {
+    background: #b07d35;
+  }
+
+  #send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .status-message {
+    margin: 16px 0 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+  }
+
+  .status-message.success {
+    display: block;
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .status-message.error {
+    display: block;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+</style>
+
+<script>
+  const form = document.getElementById("send-form") as HTMLFormElement;
+  const sendBtn = document.getElementById("send-btn") as HTMLButtonElement;
+  const statusEl = document.getElementById("status-message") as HTMLParagraphElement;
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const to = (document.getElementById("to") as HTMLInputElement).value.trim();
+    const subject = (document.getElementById("subject") as HTMLInputElement).value.trim();
+    const body = (document.getElementById("body") as HTMLTextAreaElement).value.trim();
+
+    if (!to || !subject || !body) {
+      statusEl.textContent = "All fields are required.";
+      statusEl.className = "status-message error";
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Sending...";
+    statusEl.textContent = "";
+    statusEl.className = "status-message";
+
+    try {
+      const response = await fetch("/api/admin/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ to, subject, body }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send email");
+      }
+
+      statusEl.textContent = "Email sent successfully! Redirecting...";
+      statusEl.className = "status-message success";
+
+      setTimeout(() => {
+        window.location.href = "/admin/emails";
+      }, 1000);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to send email";
+      statusEl.textContent = message;
+      statusEl.className = "status-message error";
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Send Email";
+    }
+  });
+</script>
