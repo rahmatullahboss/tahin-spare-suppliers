@@ -10,6 +10,15 @@ export function getResendClient(env: RuntimeEnv): Resend {
   return new Resend(env.RESEND_API_KEY);
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function sendEmail(
   env: RuntimeEnv,
   to: string,
@@ -48,10 +57,10 @@ export async function forwardInboundEmail(
           <h1 style="color: #fff; margin: 0; font-size: 22px;">New Email Received</h1>
         </div>
         <div style="padding: 25px; background: #f9f9f9;">
-          <p><strong>From:</strong> ${from}</p>
-          <p><strong>Subject:</strong> ${originalSubject}</p>
+          <p><strong>From:</strong> ${escapeHtml(from)}</p>
+          <p><strong>Subject:</strong> ${escapeHtml(originalSubject)}</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-          <div style="white-space: pre-wrap;">${body}</div>
+          <div style="white-space: pre-wrap;">${escapeHtml(body)}</div>
         </div>
         <div style="padding: 15px; text-align: center; font-size: 12px; color: #999;">
           Reply to this email at: contact@tahinspare.com
