@@ -1,0 +1,368 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { getDb } from "../../lib/server/db";
+import { isAuthenticated } from "../../lib/server/session";
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+
+if (!authenticated) {
+  return Astro.redirect("/admin/login");
+}
+
+const sql = getDb(env);
+const result = await sql.query(
+  `SELECT COUNT(*) as total FROM sent_emails`
+);
+const total = result[0]?.total ?? 0;
+---
+
+<AdminLayout title="Sent Emails" active="enquiries">
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Sent Emails</h1>
+      <p class="subtitle" id="email-count">{total} email{total !== 1 ? 's' : ''}</p>
+    </div>
+    <a href="/admin/emails/send" class="compose-btn">Compose Email</a>
+  </div>
+
+  <div class="search-bar">
+    <input
+      type="text"
+      id="search-input"
+      placeholder="Search by recipient or subject..."
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="table-container">
+    <table class="emails-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>To</th>
+          <th>Subject</th>
+        </tr>
+      </thead>
+      <tbody id="emails-body">
+        <tr class="loading-row">
+          <td colspan="3">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+</AdminLayout>
+
+<style>
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 20px;
+  }
+  .header-left h1 {
+    font-size: 28px;
+    margin: 0 0 5px;
+  }
+  .subtitle {
+    color: #666;
+    margin: 0;
+  }
+
+  .compose-btn {
+    background: #c78f40;
+    color: #111;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .compose-btn:hover {
+    background: #b07d35;
+  }
+
+  .search-bar {
+    margin-bottom: 20px;
+  }
+  .search-bar input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+  }
+  .search-bar input:focus {
+    border-color: #c78f40;
+  }
+
+  .table-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+
+  .emails-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .emails-table th {
+    background: #f8f8f8;
+    padding: 14px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .emails-table td {
+    padding: 16px 20px;
+    border-top: 1px solid #eee;
+    color: #333;
+  }
+  .emails-table tbody tr {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .emails-table tbody tr:hover {
+    background: #f9f9f9;
+  }
+  .emails-table .date-col {
+    color: #888;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .emails-table .to-col {
+    color: #c0392b;
+    font-size: 14px;
+  }
+  .emails-table .subject-col {
+    font-weight: 500;
+  }
+
+  .loading-row td {
+    text-align: center;
+    color: #888;
+    padding: 40px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .empty-state h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #333;
+  }
+  .empty-state p {
+    margin: 0;
+    color: #888;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .pagination button {
+    padding: 8px 14px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+  .pagination button:hover:not(:disabled) {
+    background: #f0f0f0;
+    border-color: #ccc;
+  }
+  .pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .pagination .page-info {
+    padding: 8px 12px;
+    color: #666;
+    font-size: 14px;
+  }
+</style>
+
+<script>
+  const PAGE_SIZE = 20;
+  let currentPage = 1;
+  let searchQuery = "";
+  let totalPages = 1;
+
+  const tbody = document.getElementById("emails-body") as HTMLTableSectionElement;
+  const pagination = document.getElementById("pagination") as HTMLDivElement;
+  const countEl = document.getElementById("email-count") as HTMLParagraphElement;
+  const searchInput = document.getElementById("search-input") as HTMLInputElement;
+
+  let searchTimeout: ReturnType<typeof setTimeout>;
+
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      searchQuery = searchInput.value.trim();
+      currentPage = 1;
+      loadEmails();
+    }, 300);
+  });
+
+  async function loadEmails() {
+    try {
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(PAGE_SIZE),
+      });
+      if (searchQuery) {
+        params.set("search", searchQuery);
+      }
+
+      const res = await fetch(`/api/admin/emails?${params}`);
+      if (!res.ok) throw new Error("Failed to load");
+
+      const data = await res.json();
+      totalPages = data.totalPages || 1;
+
+      renderEmails(data.emails);
+      renderPagination();
+      countEl.textContent = `${data.total} email${data.total !== 1 ? 's' : ''}`;
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#c0392b;padding:40px;">Failed to load emails</td></tr>`;
+    }
+  }
+
+  function renderEmails(emails: Array<{id: string; to_address: string; subject: string; created_at: string}>) {
+    if (emails.length === 0) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.setAttribute("colspan", "3");
+      td.appendChild(Object.assign(document.createElement("div"), {
+        className: "empty-state",
+        innerHTML: `<h2>No emails found</h2><p>${searchQuery ? 'Try a different search term' : 'No sent emails yet'}</p>`
+      }).cloneNode(true) as Node);
+      tr.appendChild(td);
+      tbody.textContent = "";
+      tbody.appendChild(tr);
+      return;
+    }
+
+    tbody.textContent = "";
+    emails.forEach(email => {
+      const tr = document.createElement("tr");
+      tr.style.cursor = "pointer";
+      tr.addEventListener("click", () => { window.location.href = `/admin/emails/${email.id}`; });
+
+      const dateTd = document.createElement("td");
+      dateTd.className = "date-col";
+      dateTd.textContent = formatDate(email.created_at);
+
+      const toTd = document.createElement("td");
+      toTd.className = "to-col";
+      toTd.textContent = email.to_address;
+
+      const subjectTd = document.createElement("td");
+      subjectTd.className = "subject-col";
+      subjectTd.textContent = email.subject;
+
+      tr.appendChild(dateTd);
+      tr.appendChild(toTd);
+      tr.appendChild(subjectTd);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderPagination() {
+    if (totalPages <= 1) {
+      pagination.textContent = "";
+      return;
+    }
+
+    pagination.textContent = "";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "Prev";
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
+    pagination.appendChild(prevBtn);
+
+    const pages = getPageNumbers();
+
+    pages.forEach(p => {
+      if (typeof p === "string") {
+        const info = document.createElement("span");
+        info.className = "page-info";
+        info.textContent = "…";
+        pagination.appendChild(info);
+      } else {
+        const btn = document.createElement("button");
+        btn.textContent = String(p);
+        if (p === currentPage) btn.style.fontWeight = "bold";
+        btn.addEventListener("click", () => goToPage(p));
+        pagination.appendChild(btn);
+      }
+    });
+
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+    pagination.appendChild(nextBtn);
+
+    const info = document.createElement("span");
+    info.className = "page-info";
+    info.textContent = `Page ${currentPage} of ${totalPages}`;
+    pagination.appendChild(info);
+  }
+
+  function getPageNumbers(): (number | string)[] {
+    const pages: (number | string)[] = [1];
+    if (totalPages <= 7) {
+      for (let i = 2; i <= totalPages; i++) pages.push(i);
+    } else {
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      if (start > 2) pages.push("...");
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages - 1) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  }
+
+  function goToPage(page: number) {
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    loadEmails();
+  }
+
+  function formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  loadEmails();
+</script>
