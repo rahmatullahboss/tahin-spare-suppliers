@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     let query = `SELECT id, to_address, subject, created_at FROM sent_emails`;
     let countQuery = `SELECT COUNT(*) as total FROM sent_emails`;
-    const params: any[] = [];
+    const params: (string | number)[] = [];
 
     if (search) {
       query += ` WHERE to_address ILIKE $1 OR subject ILIKE $1`;
