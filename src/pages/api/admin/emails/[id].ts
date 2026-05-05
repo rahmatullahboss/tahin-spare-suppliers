@@ -4,9 +4,9 @@ import { ensureSchema, getDb } from "../../../lib/server/db";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, locals }) => {
   try {
-    const env = getRuntimeEnv(Astro.locals);
+    const env = getRuntimeEnv(locals);
     await ensureSchema(env);
     const sql = getDb(env);
 
