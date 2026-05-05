@@ -6,6 +6,7 @@ export type RuntimeEnv = {
   SESSION_SECRET: string;
   MEDIA_PUBLIC_URL: string;
   MEDIA_BUCKET: R2Bucket;
+  RESEND_API_KEY: string;
 };
 
 export function getRuntimeEnv(locals?: any): RuntimeEnv {
