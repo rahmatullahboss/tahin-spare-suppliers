@@ -65,12 +65,43 @@ function mapRecord(type: ContentType, row: Record<string, unknown>): ContentReco
   };
 }
 
-export async function listContent(env: RuntimeEnv, type: ContentType) {
+export async function listContent(env: RuntimeEnv, type: ContentType, options?: { page?: number; limit?: number; search?: string }) {
   await ensureSchema(env);
   const sql = getDb(env);
   const { table } = CONTENT_TABLES[type];
-  const rows = await sql.query(`SELECT * FROM ${table} ORDER BY updated_at DESC`);
+  const page = Math.max(1, options?.page ?? 1);
+  const limit = Math.min(100, Math.max(1, options?.limit ?? 20));
+  const offset = (page - 1) * limit;
+
+  let query = `SELECT * FROM ${table}`;
+  const params: (string | number)[] = [];
+
+  if (options?.search) {
+    query += ` WHERE title ILIKE $1 OR excerpt ILIKE $1`;
+    params.push(`%${options.search}%`);
+  }
+
+  query += ` ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
+
+  const rows = await sql.query(query, params.length ? params : undefined);
   return rows.map((row) => mapRecord(type, row));
+}
+
+export async function countContent(env: RuntimeEnv, type: ContentType, search?: string): Promise<number> {
+  await ensureSchema(env);
+  const sql = getDb(env);
+  const { table } = CONTENT_TABLES[type];
+
+  let query = `SELECT COUNT(*) as total FROM ${table}`;
+  const params: string[] = [];
+
+  if (search) {
+    query += ` WHERE title ILIKE $1 OR excerpt ILIKE $1`;
+    params.push(`%${search}%`);
+  }
+
+  const rows = await sql.query(query, params.length ? params : undefined);
+  return Number(rows[0]?.total ?? 0);
 }
 
 export async function getContentBySlug(env: RuntimeEnv, type: ContentType, slug: string) {
