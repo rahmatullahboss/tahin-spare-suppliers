@@ -75,6 +75,7 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     <div class="editor-list">
       <h2>Live {itemLabel}</h2>
       <div class="items" data-items></div>
+      <div class="pagination" data-pagination></div>
     </div>
   </div>
 </section>
@@ -92,6 +93,7 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     const endpoint = `/api/${type}`;
     const form = editor.querySelector("[data-form]");
     const itemsEl = editor.querySelector("[data-items]");
+    const paginationEl = editor.querySelector("[data-pagination]");
     const statusEl = editor.querySelector("[data-form-status]");
     const previewEl = editor.querySelector("[data-preview]");
     const logoutBtn = editor.querySelector("[data-logout-btn]");
@@ -106,6 +108,10 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     let existingImageUrl = "";
     let existingImageKey = "";
     let imageRemoved = false;
+
+    let currentPage = 1;
+    const PAGE_SIZE = 20;
+    let totalPages = 1;
 
     const clearPreviewUrl = () => {
       if (selectedPreviewUrl) {
@@ -219,11 +225,78 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       });
     };
 
+    function renderPagination() {
+      if (totalPages <= 1) {
+        paginationEl.textContent = "";
+        return;
+      }
+
+      paginationEl.textContent = "";
+
+      const prevBtn = document.createElement("button");
+      prevBtn.textContent = "Prev";
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
+      paginationEl.appendChild(prevBtn);
+
+      const pages = getPageNumbers();
+      pages.forEach((p) => {
+        if (typeof p === "string") {
+          const info = document.createElement("span");
+          info.className = "page-info";
+          info.textContent = "…";
+          paginationEl.appendChild(info);
+        } else {
+          const btn = document.createElement("button");
+          btn.textContent = String(p);
+          if (p === currentPage) btn.style.fontWeight = "bold";
+          btn.addEventListener("click", () => goToPage(p));
+          paginationEl.appendChild(btn);
+        }
+      });
+
+      const nextBtn = document.createElement("button");
+      nextBtn.textContent = "Next";
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+      paginationEl.appendChild(nextBtn);
+
+      const info = document.createElement("span");
+      info.className = "page-info";
+      info.textContent = `Page ${currentPage} of ${totalPages}`;
+      paginationEl.appendChild(info);
+    }
+
+    function getPageNumbers() {
+      const pages = [1];
+      if (totalPages <= 7) {
+        for (let i = 2; i <= totalPages; i++) pages.push(i);
+      } else {
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        if (start > 2) pages.push("…");
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < totalPages - 1) pages.push("…");
+        pages.push(totalPages);
+      }
+      return pages;
+    }
+
+    function goToPage(page) {
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      loadItems();
+    }
+
     const loadItems = async () => {
-      const response = await fetch(endpoint);
+      const params = new URLSearchParams({ page: String(currentPage), limit: String(PAGE_SIZE) });
+      const response = await fetch(`${endpoint}?${params}`);
       const data = await response.json();
       const items = data.items || [];
+      totalPages = data.totalPages || 1;
+      currentPage = data.page || 1;
       renderItems(items);
+      renderPagination();
 
       if (type === 'products') {
         const brandList = document.getElementById("brand-list");
@@ -548,5 +621,33 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     :global(.item-card-body) {
       padding: 14px;
     }
+  }
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .pagination button {
+    padding: 8px 14px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .pagination button:hover:not(:disabled) {
+    background: #f0f0f0;
+  }
+  .pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .pagination .page-info {
+    padding: 8px 12px;
+    color: #666;
+    font-size: 14px;
   }
 </style>
