@@ -4,16 +4,153 @@ interface Props {
 }
 
 const { active } = Astro.props;
+
+interface NavItem {
+  name: string;
+  id: string;
+  href: string;
+  icon: string;
+}
+
+const navItems: NavItem[] = [
+  { name: "Dashboard", id: "dashboard", href: "/admin", icon: "dashboard" },
+  { name: "Equipment", id: "products", href: "/admin/products", icon: "products" },
+  { name: "Blog", id: "blog", href: "/admin/blog", icon: "blog" },
+  { name: "Contact Messages", id: "contacts", href: "/admin/contact-messages", icon: "contacts" },
+  { name: "Enquiries", id: "enquiries", href: "/admin/enquiries", icon: "enquiries" },
+  { name: "Categories", id: "categories", href: "/admin/categories", icon: "categories" },
+  { name: "Emails", id: "emails", href: "/admin/emails", icon: "emails" },
+];
+
+function getIcon(iconName: string): string {
+  const icons: Record<string, string> = {
+    dashboard: '<rect x="3" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+    products: '<path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 3v18" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+    blog: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 2v6h6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 13h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 17h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    contacts: '<path d="M22 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+    enquiries: '<path d="M22 12h-4l-3 9-4-18-3 9H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+    categories: '<path d="M4 4h6l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+    emails: '<path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.8"/><polyline points="22,6 12,13 2,6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  };
+  return icons[iconName] || icons.dashboard;
+}
 ---
 <aside class="admin-sidebar">
-  <h2>Admin Panel</h2>
-  <nav>
-    <a href="/admin" class:list={[{ active: active === "dashboard" }]}>Dashboard</a>
-    <a href="/admin/products" class:list={[{ active: active === "products" }]}>Equipment</a>
-    <a href="/admin/blog" class:list={[{ active: active === "blog" }]}>Blog</a>
-    <a href="/admin/contact-messages" class:list={[{ active: active === "contacts" }]}>Contact Messages</a>
-    <a href="/admin/enquiries" class:list={[{ active: active === "enquiries" }]}>Enquiries</a>
-    <a href="/admin/categories" class:list={[{ active: active === "categories" }]}>Categories</a>
-    <a href="/admin/emails" class:list={[{ active: active === "emails" }]}>Emails</a>
+  <div class="sidebar-brand">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    <span>Admin Panel</span>
+  </div>
+  <nav class="sidebar-nav">
+    {navItems.map(item => (
+      <a
+        href={item.href}
+        class:list={["sidebar-link", { active: active === item.id }]}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" set:html={getIcon(item.icon)} />
+        {item.name}
+      </a>
+    ))}
   </nav>
+  <div class="sidebar-footer">
+    <a href="/" class="sidebar-link" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 10V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4"/><polyline points="10 14 22 14 18 10"/><polyline points="10 14 14 18 22 14"/>
+      </svg>
+      View Site
+    </a>
+  </div>
 </aside>
+<style>
+  .admin-sidebar {
+    background: #fff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .sidebar-brand {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .sidebar-brand span {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 1.25rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow-y: auto;
+  }
+
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+
+  .sidebar-link:hover {
+    background: #f8fafc;
+    color: #0f172a;
+  }
+
+  .sidebar-link.active {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  .sidebar-link svg {
+    flex-shrink: 0;
+    stroke: currentColor;
+  }
+
+  .sidebar-footer {
+    padding: 1rem 0.75rem;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  @media (max-width: 900px) {
+    .admin-sidebar {
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .sidebar-nav {
+      flex-direction: row;
+      overflow-x: auto;
+      padding: 0.5rem;
+      gap: 0.5rem;
+    }
+    .sidebar-link {
+      padding: 0.5rem 0.75rem;
+      white-space: nowrap;
+    }
+    .sidebar-brand {
+      padding: 1rem;
+    }
+    .sidebar-footer {
+      display: none;
+    }
+  }
+</style>

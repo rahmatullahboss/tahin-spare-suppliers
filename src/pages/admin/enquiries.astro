@@ -18,141 +18,242 @@ const total = countResult[0]?.total ?? 0;
 
 <AdminLayout title="Enquiries" active="enquiries">
   <div class="page-header">
-    <h1>Enquiries</h1>
-    <p class="subtitle" id="count-display">{total} submission{total !== 1 ? 's' : ''}</p>
+    <div>
+      <h1>Product Enquiries</h1>
+      <p class="subtitle" id="count-display">{total} submission{total !== 1 ? 's' : ''}</p>
+    </div>
   </div>
 
-  <div class="filters">
-    <input
-      type="text"
-      id="search-input"
-      placeholder="Search by name, email, equipment..."
-      autocomplete="off"
-    />
-  </div>
+  <div class="card">
+    <div class="card-toolbar">
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" placeholder="Search by name, email, equipment..." autocomplete="off" />
+      </div>
+    </div>
 
-  <div class="enquiries-list" id="enquiries-list">
-    <div class="loading-state">Loading...</div>
-  </div>
+    <div class="enquiries-list" id="enquiries-list">
+      <div class="loading-state">Loading...</div>
+    </div>
 
-  <div class="pagination" id="pagination"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
 </AdminLayout>
 
-<style>
-  .page-header {
-    margin-bottom: 30px;
+<style is:global>
+  .admin-main .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+  .admin-main .page-header h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+  .admin-main .subtitle { color: #64748b; margin: 0; font-size: 0.9rem; }
+
+  .admin-main .card { background: #fff; border-radius: 0.75rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); overflow: hidden; }
+  .admin-main .card-toolbar { padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+  .admin-main .search-wrap { position: relative; max-width: 360px; }
+  .admin-main .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+  .admin-main #search-input {
+    width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;
+    font-size: 0.85rem; outline: none; box-sizing: border-box; background: #fff;
   }
-  .page-header h1 {
-    font-size: 28px;
-    margin: 0 0 5px;
+  .admin-main #search-input:focus { border-color: #d97706; box-shadow: 0 0 0 3px rgba(217,119,6,0.08); }
+
+  .admin-main .enquiries-list { display: flex; flex-direction: column; }
+  .admin-main .enquiry-card {
+    padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.12s;
   }
-  .subtitle {
-    color: #666;
-    margin: 0;
+  .admin-main .enquiry-card:hover { background: #f8fafc; }
+  .admin-main .enquiry-card:last-child { border-bottom: none; }
+
+  .admin-main .enquiry-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem; }
+  .admin-main .enquiry-from { display: flex; align-items: center; gap: 0.75rem; }
+  .admin-main .avatar {
+    width: 36px; height: 36px; border-radius: 999px; background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+  }
+  .admin-main .enquiry-from strong { font-size: 0.9rem; color: #0f172a; }
+  .admin-main .contact-info { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .admin-main .contact-info a { color: #d97706; font-size: 0.8rem; text-decoration: none; }
+  .admin-main .contact-info a:hover { text-decoration: underline; }
+  .admin-main .phone { color: #64748b; font-size: 0.8rem; }
+  .admin-main .enquiry-date { color: #94a3b8; font-size: 0.78rem; white-space: nowrap; flex-shrink: 0; }
+
+  .admin-main .enquiry-meta { margin: 0.25rem 0 0.5rem 3rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .admin-main .equipment-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: #fef3c7; color: #92400e; padding: 0.2rem 0.6rem; border-radius: 0.35rem;
+    font-size: 0.78rem; font-weight: 600;
   }
 
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-  }
-  .empty-icon {
-    font-size: 60px;
-    margin-bottom: 20px;
-  }
-  .empty-state h2 {
-    margin: 0 0 10px;
-    font-size: 20px;
-    color: #333;
-  }
-  .empty-state p {
-    margin: 0;
-    color: #888;
+  .admin-main .enquiry-message {
+    color: #64748b; line-height: 1.6; margin: 0 0 0 3rem; white-space: pre-wrap; font-size: 0.85rem;
+    padding: 0.75rem; background: #f8fafc; border-radius: 0.5rem; border: 1px solid #f1f5f9;
   }
 
-  .enquiries-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+  .admin-main .empty-state { text-align: center; padding: 3rem 1rem; }
+  .admin-main .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.4; }
+  .admin-main .empty-state h2 { margin: 0 0 0.25rem; font-size: 1rem; color: #0f172a; }
+  .admin-main .empty-state p { margin: 0; color: #94a3b8; font-size: 0.85rem; }
 
-  .enquiry-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    padding: 24px;
-  }
+  .admin-main .loading-state, .admin-main .error-state { text-align: center; padding: 3rem 1rem; color: #94a3b8; font-size: 0.9rem; }
+  .admin-main .error-state { color: #dc2626; }
 
-  .enquiry-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    gap: 20px;
+  .admin-main .pagination {
+    display: flex; justify-content: center; align-items: center; gap: 0.3rem;
+    padding: 0.75rem; border-top: 1px solid #e2e8f0; background: #f8fafc;
   }
-
-  .enquiry-from {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  .admin-main .pagination button {
+    padding: 0.35rem 0.7rem; border: 1px solid #e2e8f0; background: #fff; border-radius: 0.4rem;
+    cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.15s;
   }
-
-  .enquiry-from strong {
-    font-size: 16px;
-    color: #222;
-  }
-
-  .contact-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .contact-info a {
-    color: #c0392b;
-    font-size: 14px;
-    text-decoration: none;
-  }
-
-  .contact-info a:hover {
-    text-decoration: underline;
-  }
-
-  .phone {
-    color: #666;
-    font-size: 14px;
-  }
-
-  .enquiry-date {
-    color: #888;
-    font-size: 13px;
-    white-space: nowrap;
-  }
-
-  .enquiry-equipment {
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .enquiry-message {
-    color: #555;
-    line-height: 1.6;
-    margin: 0;
-    white-space: pre-wrap;
-  }
+  .admin-main .pagination button:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+  .admin-main .pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .admin-main .pagination .page-info { padding: 0.35rem 0.4rem; color: #94a3b8; font-size: 0.8rem; }
 
   @media (max-width: 600px) {
-    .enquiry-header {
-      flex-direction: column;
-    }
-    .enquiry-date {
-      margin-top: 5px;
-    }
+    .admin-main .enquiry-header { flex-direction: column; }
+    .admin-main .enquiry-message, .admin-main .enquiry-meta { margin-left: 0; }
   }
 </style>
+
+<script>
+  const PAGE_SIZE = 20;
+  let currentPage = 1;
+  let searchQuery = "";
+  let totalPages = 1;
+
+  const listEl = document.getElementById("enquiries-list");
+  const paginationEl = document.getElementById("pagination");
+  const countEl = document.getElementById("count-display");
+  const searchInput = document.getElementById("search-input");
+
+  let searchTimeout;
+
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      searchQuery = searchInput.value.trim();
+      currentPage = 1;
+      loadEnquiries();
+    }, 300);
+  });
+
+  async function loadEnquiries() {
+    try {
+      const params = new URLSearchParams({ page: String(currentPage), limit: String(PAGE_SIZE) });
+      if (searchQuery) params.set("search", searchQuery);
+
+      const res = await fetch(`/api/admin/enquiries?${params}`, { credentials: 'include' });
+
+      if (!res.ok) {
+        if (res.status === 401) { listEl.innerHTML = '<div class="error-state">Session expired. Please refresh.</div>'; return; }
+        throw new Error("Failed to load");
+      }
+
+      const data = await res.json();
+      totalPages = data.totalPages || 1;
+      renderEnquiries(data.items || []);
+      renderPagination();
+      countEl.textContent = `${data.total || 0} submission${(data.total || 0) !== 1 ? 's' : ''}`;
+    } catch (err) {
+      console.error(err);
+      listEl.innerHTML = '<div class="error-state">Failed to load enquiries</div>';
+    }
+  }
+
+  function getInitials(name) {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+  }
+
+  function renderEnquiries(enquiries) {
+    if (enquiries.length === 0) {
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h2>No enquiries found</h2><p>${searchQuery ? 'Try a different search term' : 'Enquiry form submissions will appear here.'}</p></div>`;
+      return;
+    }
+
+    listEl.innerHTML = enquiries.map(eq => `
+      <article class="enquiry-card">
+        <header class="enquiry-header">
+          <div class="enquiry-from">
+            <div class="avatar">${getInitials(eq.name)}</div>
+            <div>
+              <strong>${escapeHtml(eq.name)}</strong><br/>
+              <div class="contact-info">
+                <a href="mailto:${escapeHtml(eq.email)}">${escapeHtml(eq.email)}</a>
+                ${eq.phone ? `<span class="phone">${escapeHtml(eq.phone)}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <time class="enquiry-date">${formatDate(eq.created_at)}</time>
+        </header>
+        <div class="enquiry-meta">
+          ${eq.equipment ? `<span class="equipment-badge">🔧 ${escapeHtml(eq.equipment)}</span>` : ''}
+        </div>
+        <p class="enquiry-message">${escapeHtml(eq.message)}</p>
+      </article>
+    `).join('');
+  }
+
+  function renderPagination() {
+    if (totalPages <= 1) { paginationEl.textContent = ""; return; }
+    paginationEl.textContent = "";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "← Prev";
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
+    paginationEl.appendChild(prevBtn);
+
+    getPageNumbers().forEach(p => {
+      if (typeof p === "string") {
+        const info = document.createElement("span");
+        info.className = "page-info";
+        info.textContent = "…";
+        paginationEl.appendChild(info);
+      } else {
+        const btn = document.createElement("button");
+        btn.textContent = String(p);
+        if (p === currentPage) btn.style.fontWeight = "bold";
+        btn.addEventListener("click", () => goToPage(p));
+        paginationEl.appendChild(btn);
+      }
+    });
+
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next →";
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+    paginationEl.appendChild(nextBtn);
+  }
+
+  function getPageNumbers() {
+    const pages = [1];
+    if (totalPages <= 7) {
+      for (let i = 2; i <= totalPages; i++) pages.push(i);
+    } else {
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      if (start > 2) pages.push("…");
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages - 1) pages.push("…");
+      pages.push(totalPages);
+    }
+    return pages;
+  }
+
+  function goToPage(page) {
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    loadEnquiries();
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement("div");
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
+  loadEnquiries();
+</script>

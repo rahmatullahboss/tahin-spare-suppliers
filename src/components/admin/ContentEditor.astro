@@ -16,67 +16,96 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
   <div class="editor-header">
     <div>
       <h1>{title}</h1>
-      <p>Create, edit and delete live {itemLabel.toLowerCase()} entries.</p>
-      <p class="editor-help">Select an image and click Save. Compression and upload happen automatically.</p>
+      <p>Create, edit and delete {itemLabel.toLowerCase()} entries.</p>
     </div>
-    <button type="button" class="logout-btn" data-logout-btn>Logout</button>
+    <div class="header-actions">
+      <button type="button" class="btn-logout" data-logout-btn>Logout</button>
+    </div>
   </div>
 
   <div class="editor-grid">
-    <form class="editor-form" data-form>
-      <input type="hidden" name="id" data-id />
-      <div class="field">
-        <label>{titleLabel}</label>
-        <input type="text" name="title" required data-title />
-      </div>
-      <div class="field">
-        <label>Slug</label>
-        <input type="text" name="slug" data-slug />
-      </div>
-      {type === 'products' && (
-        <>
-          <div class="field">
-            <label>Category *</label>
-            <select name="category" data-category required>
-              <option value="" disabled selected>-- Select a Category --</option>
-              {EQUIPMENT_CATEGORIES.map((cat) => (
-                <option value={cat.value}>{cat.value}</option>
-              ))}
-            </select>
-          </div>
-          <div class="field">
-            <label>Brand</label>
-            <input type="text" name="brand" placeholder="e.g. Yanmar, Daihatsu" data-brand list="brand-list" />
-            <datalist id="brand-list"></datalist>
-          </div>
-          <div class="field">
-            <label>Model</label>
-            <input type="text" name="model_number" placeholder="e.g. 6EY18AL" data-model />
-          </div>
-        </>
-      )}
-      <div class="field">
-        <label>{excerptLabel}</label>
-        <textarea name="excerpt" rows="3" data-excerpt></textarea>
-      </div>
-      <div class="field">
-        <label>Details</label>
-        <textarea name="content" rows="10" data-content></textarea>
-      </div>
-      <ImageUploader label="Featured Image" />
-      <div class="preview" data-preview></div>
-      <div class="actions">
-        <button type="submit" class="save-btn">Save</button>
-        <button type="button" class="secondary-btn" data-reset-btn>Reset</button>
-      </div>
-      <p class="form-status" data-form-status></p>
-    </form>
-
     <div class="editor-list">
-      <h2>Live {itemLabel}</h2>
-      <div class="items" data-items></div>
+      <div class="list-toolbar">
+        <div class="search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" class="search-input" data-search placeholder="Search..." />
+        </div>
+        <span class="list-count" data-count>0</span>
+      </div>
+      <div class="items-container">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th class="col-img"></th>
+              <th class="col-title">{titleLabel}</th>
+              {type === 'products' && <th class="col-cat">Category</th>}
+              {type === 'products' && <th class="col-brand">Brand</th>}
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody data-items>
+            <tr><td colspan="5" class="empty-row">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
       <div class="pagination" data-pagination></div>
     </div>
+
+    <form class="editor-form" data-form>
+      <div class="form-panel">
+        <div class="form-panel-header">
+          <h2>{type === "products" ? "Equipment Details" : "Post Details"}</h2>
+        </div>
+        <input type="hidden" name="id" data-id />
+        <div class="field">
+          <label>{titleLabel} *</label>
+          <input type="text" name="title" required data-title placeholder={`Enter ${titleLabel.toLowerCase()}`} />
+        </div>
+        <div class="field">
+          <label>Slug</label>
+          <input type="text" name="slug" data-slug placeholder="auto-generated if empty" />
+        </div>
+        {type === 'products' && (
+          <>
+            <div class="field">
+              <label>Category *</label>
+              <select name="category" data-category required>
+                <option value="" disabled selected>-- Select --</option>
+                {EQUIPMENT_CATEGORIES.map((cat) => (
+                  <option value={cat.value}>{cat.value}</option>
+                ))}
+              </select>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Brand</label>
+                <input type="text" name="brand" placeholder="e.g. Yanmar" data-brand list="brand-list" />
+                <datalist id="brand-list"></datalist>
+              </div>
+              <div class="field">
+                <label>Model</label>
+                <input type="text" name="model_number" placeholder="e.g. 6EY18AL" data-model />
+              </div>
+            </div>
+          </>
+        )}
+        <div class="field">
+          <label>{excerptLabel}</label>
+          <textarea name="excerpt" rows="3" data-excerpt placeholder={`Enter ${excerptLabel.toLowerCase()}`}></textarea>
+        </div>
+        <div class="field">
+          <label>Details</label>
+          <textarea name="content" rows="8" data-content placeholder="Enter full details..."></textarea>
+        </div>
+        <ImageUploader label="Featured Image" />
+        <div class="preview" data-preview></div>
+        <div class="actions">
+          <button type="submit" class="btn-save">Save</button>
+          <button type="button" class="btn-reset" data-reset-btn>Reset</button>
+        </div>
+        <p class="form-status" data-form-status></p>
+      </div>
+    </form>
   </div>
 </section>
 
@@ -103,15 +132,19 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     const imageInput = editor.querySelector("[data-image-input]");
     const imageUrlInput = editor.querySelector("[data-image-url]");
     const imageKeyInput = editor.querySelector("[data-image-key]");
+    const countEl = editor.querySelector("[data-count]");
+    const searchInput = editor.querySelector("[data-search]");
     let selectedFile = null;
     let selectedPreviewUrl = "";
     let existingImageUrl = "";
     let existingImageKey = "";
     let imageRemoved = false;
+    let allItems = [];
 
     let currentPage = 1;
     const PAGE_SIZE = 20;
     let totalPages = 1;
+    let searchQuery = "";
 
     const clearPreviewUrl = () => {
       if (selectedPreviewUrl) {
@@ -146,11 +179,9 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       setExistingImageState("", "");
       imageUrlInput.value = "";
       imageKeyInput.value = "";
-      if (imageInput) {
-        imageInput.value = "";
-      }
+      if (imageInput) { imageInput.value = ""; }
       statusEl.textContent = "";
-      uploadStatus.textContent = "";
+      if (uploadStatus) uploadStatus.textContent = "";
       drawPreview("");
     };
 
@@ -174,39 +205,51 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       setExistingImageState(item.imageUrl || "", item.imageKey || "");
       imageUrlInput.value = item.imageUrl || "";
       imageKeyInput.value = item.imageKey || "";
-      if (imageInput) {
-        imageInput.value = "";
-      }
+      if (imageInput) { imageInput.value = ""; }
       drawPreview(existingImageUrl);
-      uploadStatus.textContent = "";
+      if (uploadStatus) uploadStatus.textContent = "";
       statusEl.textContent = "";
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const renderItems = (items) => {
-      itemsEl.innerHTML = items.map((item) => `
-        <article class="item-card">
-          ${item.imageUrl ? `<img src="${esc(item.imageUrl)}" alt="" />` : ""}
-          <div class="item-card-body">
-            <h3>${esc(item.title)}</h3>
-            ${type === 'products' ? `
-              <small style="display:inline-block;background:#eee;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${esc(item.category || 'Uncategorized')}</small>
-              ${item.brand ? `<small style="display:inline-block;background:#e67e22;color:#fff;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${esc(item.brand)}</small>` : ''}
-              ${item.model_number ? `<small style="display:inline-block;background:#34495e;color:#fff;padding:2px 6px;border-radius:4px;margin-bottom:6px;">${esc(item.model_number)}</small>` : ''}
-            ` : ""}
-            <p>${esc(item.excerpt || "")}</p>
-            <small>${esc(item.slug)}</small>
-            <div class="item-actions">
-              <button type="button" data-edit-id="${esc(item.id)}">Edit</button>
-              <button type="button" data-delete-id="${esc(item.id)}">Delete</button>
-            </div>
-          </div>
-        </article>
-      `).join("");
+      if (items.length === 0) {
+        itemsEl.innerHTML = `<tr><td colspan="5" class="empty-row"><div class="empty-state"><div class="empty-icon">📦</div><h3>No ${itemLabel.toLowerCase()} found</h3><p>${searchQuery ? 'Try a different search' : 'Add your first entry using the form.'}</p></div></td></tr>`;
+        return;
+      }
+
+      itemsEl.innerHTML = items.map((item) => {
+        let imgHtml = '<div class="item-thumb-placeholder"></div>';
+        if (item.imageUrl) {
+          imgHtml = `<img src="${esc(item.imageUrl)}" alt="" />`;
+        }
+        let extraCols = '';
+        if (type === 'products') {
+          extraCols = `
+            <td class="col-cat"><span class="badge badge-cat">${esc(item.category || '—')}</span></td>
+            <td class="col-brand"><span class="badge badge-brand">${esc(item.brand || '—')}</span></td>
+          `;
+        }
+        return `
+          <tr class="item-row">
+            <td class="col-img">${imgHtml}</td>
+            <td class="col-title">
+              <strong>${esc(item.title)}</strong>
+              ${item.excerpt ? `<p class="item-excerpt">${esc(item.excerpt)}</p>` : ''}
+              ${type === 'products' && item.model_number ? `<span class="badge badge-model">${esc(item.model_number)}</span>` : ''}
+            </td>
+            ${extraCols}
+            <td class="col-actions">
+              <button type="button" data-edit-id="${esc(item.id)}" class="btn-action btn-edit">Edit</button>
+              <button type="button" data-delete-id="${esc(item.id)}" class="btn-action btn-delete">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
 
       itemsEl.querySelectorAll("[data-edit-id]").forEach((button) => {
         button.addEventListener("click", () => {
-          const item = items.find((entry) => entry.id === button.getAttribute("data-edit-id"));
+          const item = allItems.find((entry) => entry.id === button.getAttribute("data-edit-id"));
           if (item) fillForm(item);
         });
       });
@@ -215,7 +258,6 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         button.addEventListener("click", async () => {
           const id = button.getAttribute("data-delete-id");
           if (!id || !confirm(`Delete this ${itemLabel.toLowerCase()}?`)) return;
-
           const response = await fetch(`${endpoint}/${id}`, { method: "DELETE" });
           if (response.ok) {
             await loadItems();
@@ -226,15 +268,11 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     };
 
     function renderPagination() {
-      if (totalPages <= 1) {
-        paginationEl.textContent = "";
-        return;
-      }
-
+      if (totalPages <= 1) { paginationEl.textContent = ""; return; }
       paginationEl.textContent = "";
 
       const prevBtn = document.createElement("button");
-      prevBtn.textContent = "Prev";
+      prevBtn.textContent = "← Prev";
       prevBtn.disabled = currentPage === 1;
       prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
       paginationEl.appendChild(prevBtn);
@@ -249,22 +287,17 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         } else {
           const btn = document.createElement("button");
           btn.textContent = String(p);
-          if (p === currentPage) btn.style.fontWeight = "bold";
+          if (p === currentPage) btn.dataset.active = "true";
           btn.addEventListener("click", () => goToPage(p));
           paginationEl.appendChild(btn);
         }
       });
 
       const nextBtn = document.createElement("button");
-      nextBtn.textContent = "Next";
+      nextBtn.textContent = "Next →";
       nextBtn.disabled = currentPage === totalPages;
       nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
       paginationEl.appendChild(nextBtn);
-
-      const info = document.createElement("span");
-      info.className = "page-info";
-      info.textContent = `Page ${currentPage} of ${totalPages}`;
-      paginationEl.appendChild(info);
     }
 
     function getPageNumbers() {
@@ -285,27 +318,56 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
     function goToPage(page) {
       if (page < 1 || page > totalPages) return;
       currentPage = page;
-      loadItems();
+      renderCurrentPage();
+    }
+
+    function renderCurrentPage() {
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageItems = allItems.slice(start, start + PAGE_SIZE);
+      renderItems(pageItems);
+      renderPagination();
     }
 
     const loadItems = async () => {
-      const params = new URLSearchParams({ page: String(currentPage), limit: String(PAGE_SIZE) });
+      const params = new URLSearchParams({ page: String(currentPage), limit: '500' });
       const response = await fetch(`${endpoint}?${params}`);
       const data = await response.json();
-      const items = data.items || [];
-      totalPages = data.totalPages || 1;
-      currentPage = data.page || 1;
-      renderItems(items);
-      renderPagination();
+      allItems = data.items || [];
+      totalPages = Math.ceil(allItems.length / PAGE_SIZE) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      renderCurrentPage();
+
+      if (countEl) countEl.textContent = String(data.total || allItems.length);
 
       if (type === 'products') {
         const brandList = document.getElementById("brand-list");
         if (brandList) {
-          const uniqueBrands = [...new Set(items.map((i) => i.brand).filter(Boolean))].sort();
+          const uniqueBrands = [...new Set(allItems.map((i) => i.brand).filter(Boolean))].sort();
           brandList.innerHTML = uniqueBrands.map((b) => `<option value="${esc(b)}">`).join("");
         }
       }
     };
+
+    let searchTimeout;
+    searchInput?.addEventListener("input", () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        searchQuery = searchInput.value.trim().toLowerCase();
+        const filtered = allItems.filter(item => 
+          item.title?.toLowerCase().includes(searchQuery) ||
+          item.brand?.toLowerCase().includes(searchQuery) ||
+          item.category?.toLowerCase().includes(searchQuery) ||
+          item.model_number?.toLowerCase().includes(searchQuery)
+        );
+        currentPage = 1;
+        totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+        const start = 0;
+        const pageItems = filtered.slice(start, start + PAGE_SIZE);
+        renderItems(pageItems);
+        renderPagination();
+        if (countEl) countEl.textContent = String(filtered.length);
+      }, 250);
+    });
 
     const compressImageToWebp = async (file) => {
       const bitmap = await createImageBitmap(file);
@@ -314,48 +376,26 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       const scale = Math.min(1, maxWidth / bitmap.width);
       canvas.width = Math.round(bitmap.width * scale);
       canvas.height = Math.round(bitmap.height * scale);
-
       const context = canvas.getContext("2d");
       context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-
-      const blob = await new Promise((resolve) =>
-        canvas.toBlob(resolve, "image/webp", 0.82)
-      );
-
-      return new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.webp`, {
-        type: "image/webp"
-      });
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.82));
+      return new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.webp`, { type: "image/webp" });
     };
 
     const uploadImage = async (file) => {
       const formData = new FormData();
       formData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData
-      });
-
+      const response = await fetch("/api/upload", { method: "POST", body: formData });
       if (!response.ok) {
         const data = await response.json().catch(() => null);
         throw new Error(data?.error || "Image upload failed.");
       }
-
       return response.json();
     };
 
     const deleteImageByKey = async (key) => {
-      if (!key) {
-        return;
-      }
-
-      await fetch("/api/upload/delete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ key })
-      });
+      if (!key) return;
+      await fetch("/api/upload/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key }) });
     };
 
     imageInput?.addEventListener("change", () => {
@@ -363,14 +403,13 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       clearPreviewUrl();
       selectedFile = file;
       imageRemoved = false;
-
       if (file) {
         selectedPreviewUrl = URL.createObjectURL(file);
         drawPreview(selectedPreviewUrl);
-        uploadStatus.textContent = "Image selected. It will be compressed and uploaded when you save.";
+        if (uploadStatus) uploadStatus.textContent = "Image selected. Compressed & uploaded on save.";
       } else {
         drawPreview(existingImageUrl);
-        uploadStatus.textContent = "";
+        if (uploadStatus) uploadStatus.textContent = "";
       }
     });
 
@@ -378,15 +417,11 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
       clearPreviewUrl();
       selectedFile = null;
       imageRemoved = true;
-
-      if (imageInput) {
-        imageInput.value = "";
-      }
-
+      if (imageInput) { imageInput.value = ""; }
       imageUrlInput.value = "";
       imageKeyInput.value = "";
       drawPreview("");
-      uploadStatus.textContent = "Image will be removed when you save.";
+      if (uploadStatus) uploadStatus.textContent = "Image will be removed on save.";
     });
 
     form?.addEventListener("submit", async (event) => {
@@ -398,19 +433,15 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
 
       try {
         if (selectedFile) {
-          uploadStatus.textContent = "Compressing image...";
+          if (uploadStatus) uploadStatus.textContent = "Compressing...";
           const compressed = await compressImageToWebp(selectedFile);
-          uploadStatus.textContent = "Uploading image...";
+          if (uploadStatus) uploadStatus.textContent = "Uploading...";
           const uploaded = await uploadImage(compressed);
           nextImageUrl = uploaded.url || "";
           nextImageKey = uploaded.key || "";
           uploadedKeyToRollback = nextImageKey;
         }
-
-        if (imageRemoved) {
-          nextImageUrl = "";
-          nextImageKey = "";
-        }
+        if (imageRemoved) { nextImageUrl = ""; nextImageKey = ""; }
 
         const payload = {
           title: form.querySelector("[data-title]").value,
@@ -429,9 +460,7 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         const id = form.querySelector("[data-id]").value;
         const response = await fetch(id ? `${endpoint}/${id}` : endpoint, {
           method: id ? "PUT" : "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
 
@@ -440,14 +469,8 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
           throw new Error(data?.error || "Save failed.");
         }
 
-        const shouldDeleteOldImage =
-          Boolean(existingImageKey) &&
-          existingImageKey !== nextImageKey &&
-          (Boolean(selectedFile) || imageRemoved);
-
-        if (shouldDeleteOldImage) {
-          await deleteImageByKey(existingImageKey);
-        }
+        const shouldDeleteOldImage = Boolean(existingImageKey) && existingImageKey !== nextImageKey && (Boolean(selectedFile) || imageRemoved);
+        if (shouldDeleteOldImage) await deleteImageByKey(existingImageKey);
 
         setExistingImageState(nextImageUrl, nextImageKey);
         imageUrlInput.value = nextImageUrl;
@@ -455,18 +478,14 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         clearPreviewUrl();
         selectedFile = null;
         imageRemoved = false;
-        if (imageInput) {
-          imageInput.value = "";
-        }
-        uploadStatus.textContent = "";
-        statusEl.textContent = "Saved and live.";
+        if (imageInput) { imageInput.value = ""; }
+        if (uploadStatus) uploadStatus.textContent = "";
+        statusEl.textContent = "✓ Saved successfully";
         await loadItems();
         resetForm();
       } catch (error) {
-        if (uploadedKeyToRollback) {
-          await deleteImageByKey(uploadedKeyToRollback);
-        }
-        uploadStatus.textContent = "";
+        if (uploadedKeyToRollback) await deleteImageByKey(uploadedKeyToRollback);
+        if (uploadStatus) uploadStatus.textContent = "";
         statusEl.textContent = error instanceof Error ? error.message : "Save failed.";
       }
     });
@@ -481,173 +500,259 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
   }
 </script>
 
-<style>
-  .editor-shell h1 {
-    margin-bottom: 8px;
-  }
-  .editor-shell p {
-    margin-top: 0;
-    color: #666;
-  }
-  .editor-help {
-    margin-top: 6px;
-    font-size: 14px;
-  }
-  .editor-header {
+<style is:global>
+  .admin-main .editor-shell h1 { font-size: 1.5rem; margin: 0; }
+  .admin-main .editor-shell > p { color: #64748b; font-size: 0.9rem; margin: 0; }
+  .admin-main .editor-header {
     display: flex;
     justify-content: space-between;
-    gap: 20px;
     align-items: center;
-    margin-bottom: 28px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
   }
-  .logout-btn,
-  .save-btn,
-  .secondary-btn,
-  :global(.item-actions button) {
-    border: none;
+  .admin-main .header-actions { display: flex; gap: 0.5rem; }
+  .admin-main .btn-logout {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
     cursor: pointer;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-weight: 700;
+    transition: background 0.15s;
   }
-  .logout-btn,
-  .secondary-btn,
-  :global(.item-actions button) {
-    background: #ececec;
-  }
-  .save-btn {
-    background: #c78f40;
-    color: #111;
-  }
-  .editor-grid {
+  .admin-main .btn-logout:hover { background: #f1f5f9; }
+
+  .admin-main .editor-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-    gap: 24px;
+    grid-template-columns: 1fr 420px;
+    gap: 1.5rem;
     align-items: start;
   }
-  .editor-form,
-  .editor-list {
+
+  .admin-main .editor-list {
     background: #fff;
-    padding: 24px;
-    border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  }
-  .field {
-    display: grid;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .field input,
-  .field textarea,
-  .field select {
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 12px 14px;
-    font: inherit;
-  }
-  .actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 18px;
-  }
-  .form-status {
-    margin: 14px 0 0;
-    color: #666;
-  }
-  :global(.items) {
-    display: grid;
-    gap: 14px;
-  }
-  :global(.item-card) {
-    display: grid;
-    grid-template-columns: 90px 1fr;
-    gap: 12px;
-    background: #fafafa;
-    border-radius: 14px;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     overflow: hidden;
   }
-  :global(.item-card img) {
-    width: 100%;
-    height: 100%;
-    min-height: 90px;
-    object-fit: cover;
-  }
-  :global(.item-card-body) {
-    padding: 12px 12px 12px 0;
-  }
-  :global(.item-card-body h3) {
-    margin: 0 0 6px;
-    font-size: 18px;
-  }
-  :global(.item-card-body p) {
-    margin: 0 0 8px;
-    font-size: 14px;
-  }
-  :global(.item-card-body small) {
-    color: #888;
-  }
-  :global(.item-actions) {
+
+  .admin-main .list-toolbar {
     display: flex;
-    gap: 8px;
-    margin-top: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
   }
-  @media (max-width: 980px) {
-    .editor-grid {
-      grid-template-columns: 1fr;
-    }
+  .admin-main .search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 300px;
   }
-  @media (max-width: 600px) {
-    .editor-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .editor-form,
-    .editor-list {
-      padding: 18px;
-    }
-    .actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    :global(.item-card) {
-      grid-template-columns: 1fr;
-    }
-    :global(.item-card img) {
-      height: 160px;
-      border-radius: 14px 14px 0 0;
-    }
-    :global(.item-card-body) {
-      padding: 14px;
-    }
+  .admin-main .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
   }
-  .pagination {
+  .admin-main .search-input {
+    width: 100%;
+    padding: 0.45rem 0.75rem 0.45rem 2.2rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    outline: none;
+    box-sizing: border-box;
+    background: #fff;
+  }
+  .admin-main .search-input:focus { border-color: #d97706; box-shadow: 0 0 0 3px rgba(217,119,6,0.1); }
+  .admin-main .list-count {
+    background: #e2e8f0;
+    color: #475569;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .admin-main .items-container { overflow-x: auto; }
+  .admin-main .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 650px;
+    table-layout: fixed;
+  }
+  .admin-main .items-table th {
+    background: #f8fafc;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+  }
+  .admin-main .col-img { width: 70px; }
+  .admin-main .col-actions { width: 150px; text-align: right; }
+  .admin-main .col-title { width: auto; }
+  .admin-main .col-cat, .admin-main .col-brand { width: 130px; }
+
+  .admin-main .item-row { transition: background 0.12s; }
+  .admin-main .item-row:hover { background: #f8fafc; }
+  .admin-main .item-row td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+
+  .admin-main .col-img img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    display: block;
+  }
+  .admin-main .item-thumb-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.5rem;
+    background: #f1f5f9;
+  }
+
+  .admin-main .col-title strong { 
+    font-size: 0.9rem; 
+    color: #0f172a; 
+    display: block; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .admin-main .item-excerpt { font-size: 0.78rem; color: #94a3b8; margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .admin-main .badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .admin-main .badge-cat { background: #fef3c7; color: #92400e; }
+  .admin-main .badge-brand { background: #dbeafe; color: #1e40af; }
+  .admin-main .badge-model { background: #e0e7ff; color: #3730a3; margin-top: 0.25rem; display: block; width: fit-content; }
+
+  .admin-main .btn-action {
+    border: none;
+    padding: 0.35rem 0.7rem;
+    border-radius: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .admin-main .btn-edit { background: #f1f5f9; color: #334155; }
+  .admin-main .btn-edit:hover { background: #e2e8f0; }
+  .admin-main .btn-delete { background: #fef2f2; color: #dc2626; margin-left: 0.25rem; }
+  .admin-main .btn-delete:hover { background: #fee2e2; }
+
+  .admin-main .empty-row .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+  .admin-main .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.4; }
+  .admin-main .empty-state h3 { margin: 0 0 0.25rem; font-size: 1rem; color: #0f172a; }
+  .admin-main .empty-state p { margin: 0; color: #94a3b8; font-size: 0.85rem; }
+
+  .admin-main .pagination {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
-    margin-top: 20px;
-    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
   }
-  .pagination button {
-    padding: 8px 14px;
-    border: 1px solid #ddd;
+  .admin-main .pagination button {
+    padding: 0.35rem 0.7rem; border: 1px solid #e2e8f0; background: #fff; border-radius: 0.4rem;
+    cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.15s;
+  }
+  .admin-main .pagination button:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+  .admin-main .pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .admin-main .pagination button[data-active] { background: #d97706; color: #fff; border-color: #d97706; }
+  .admin-main .pagination .page-info { padding: 0.35rem 0.4rem; color: #94a3b8; font-size: 0.8rem; }
+
+  .admin-main .editor-form { position: sticky; top: 1rem; }
+  .admin-main .form-panel {
     background: #fff;
-    border-radius: 6px;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    padding: 1.25rem;
+  }
+  .admin-main .form-panel-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .admin-main .form-panel-header h2 { font-size: 1rem; margin: 0; color: #0f172a; }
+
+  .admin-main .field { margin-bottom: 0.85rem; }
+  .admin-main .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.3rem; }
+  .admin-main .field input, .admin-main .field textarea, .admin-main .field select {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    font: inherit;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: #fff;
+  }
+  .admin-main .field input:focus, .admin-main .field textarea:focus, .admin-main .field select:focus {
+    outline: none;
+    border-color: #d97706;
+    box-shadow: 0 0 0 3px rgba(217,119,6,0.08);
+  }
+  .admin-main .field textarea { resize: vertical; min-height: 70px; }
+  .admin-main .field select { cursor: pointer; }
+  .admin-main .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+  .admin-main .actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+  .admin-main .btn-save, .admin-main .btn-reset {
+    border: none;
+    padding: 0.55rem 1.2rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
-    font-size: 14px;
+    transition: background 0.15s;
   }
-  .pagination button:hover:not(:disabled) {
-    background: #f0f0f0;
+  .admin-main .btn-save { background: #d97706; color: #fff; }
+  .admin-main .btn-save:hover { background: #b45309; }
+  .admin-main .btn-reset { background: #f1f5f9; color: #475569; }
+  .admin-main .btn-reset:hover { background: #e2e8f0; }
+  .admin-main .form-status { margin: 0.75rem 0 0; font-size: 0.85rem; color: #64748b; }
+  .admin-main .preview { margin-top: 0.75rem; }
+
+  @media (max-width: 1100px) {
+    .admin-main .editor-grid { grid-template-columns: 1fr; }
+    .admin-main .editor-form { position: static; }
   }
-  .pagination button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  .pagination .page-info {
-    padding: 8px 12px;
-    color: #666;
-    font-size: 14px;
+  @media (max-width: 600px) {
+    .admin-main .field-row { grid-template-columns: 1fr; }
+    .admin-main .col-cat, .admin-main .col-brand { display: none; }
+    .admin-main .items-table { min-width: 0; }
   }
 </style>

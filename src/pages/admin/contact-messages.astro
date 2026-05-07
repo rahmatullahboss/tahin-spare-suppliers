@@ -18,142 +18,90 @@ const total = countResult[0]?.total ?? 0;
 
 <AdminLayout title="Contact Messages" active="contacts">
   <div class="page-header">
-    <h1>Contact Messages</h1>
-    <p class="subtitle" id="count-display">{total} message{total !== 1 ? 's' : ''}</p>
+    <div>
+      <h1>Contact Messages</h1>
+      <p class="subtitle" id="count-display">{total} message{total !== 1 ? 's' : ''}</p>
+    </div>
   </div>
 
-  <div class="filters">
-    <input
-      type="text"
-      id="search-input"
-      placeholder="Search by name, email, subject..."
-      autocomplete="off"
-    />
-  </div>
+  <div class="card">
+    <div class="card-toolbar">
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" placeholder="Search by name, email, subject..." autocomplete="off" />
+      </div>
+    </div>
 
-  <div class="messages-list" id="messages-list">
-    <div class="loading-state">Loading...</div>
-  </div>
+    <div class="messages-list" id="messages-list">
+      <div class="loading-state">Loading...</div>
+    </div>
 
-  <div class="pagination" id="pagination"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
 </AdminLayout>
 
-<style>
-  .page-header {
-    margin-bottom: 30px;
-  }
-  .page-header h1 {
-    font-size: 28px;
-    margin: 0 0 5px;
-  }
-  .subtitle {
-    color: #666;
-    margin: 0;
-  }
+<style is:global>
+  .admin-main .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+  .admin-main .page-header h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+  .admin-main .subtitle { color: #64748b; margin: 0; font-size: 0.9rem; }
 
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  .admin-main .card { background: #fff; border-radius: 0.75rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); overflow: hidden; }
+  .admin-main .card-toolbar { padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+  .admin-main .search-wrap { position: relative; max-width: 360px; }
+  .admin-main .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+  .admin-main #search-input {
+    width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;
+    font-size: 0.85rem; outline: none; box-sizing: border-box; background: #fff;
   }
-  .empty-icon {
-    font-size: 60px;
-    margin-bottom: 20px;
-  }
-  .empty-state h2 {
-    margin: 0 0 10px;
-    font-size: 20px;
-    color: #333;
-  }
-  .empty-state p {
-    margin: 0;
-    color: #888;
-  }
+  .admin-main #search-input:focus { border-color: #d97706; box-shadow: 0 0 0 3px rgba(217,119,6,0.08); }
 
-  .messages-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  .admin-main .messages-list { display: flex; flex-direction: column; }
+  .admin-main .message-card {
+    padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.12s;
   }
+  .admin-main .message-card:hover { background: #f8fafc; }
+  .admin-main .message-card:last-child { border-bottom: none; }
 
-  .message-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    padding: 24px;
+  .admin-main .message-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem; }
+  .admin-main .message-from { display: flex; align-items: center; gap: 0.75rem; }
+  .admin-main .avatar {
+    width: 36px; height: 36px; border-radius: 999px; background: linear-gradient(135deg, #d97706, #b45309);
+    color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
   }
+  .admin-main .message-from strong { font-size: 0.9rem; color: #0f172a; }
+  .admin-main .message-email { color: #d97706; font-size: 0.8rem; text-decoration: none; }
+  .admin-main .message-email:hover { text-decoration: underline; }
+  .admin-main .message-date { color: #94a3b8; font-size: 0.78rem; white-space: nowrap; flex-shrink: 0; }
 
-  .message-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    gap: 20px;
+  .admin-main .message-subject {
+    font-weight: 600; color: #374151; margin: 0 0 0.5rem 3rem; font-size: 0.85rem;
+    padding: 0.4rem 0.75rem; background: #fef3c7; border-radius: 0.35rem; display: inline-block;
   }
+  .admin-main .message-content { color: #64748b; line-height: 1.6; margin: 0 0 0 3rem; white-space: pre-wrap; font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-  .message-from {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
+  .admin-main .empty-state { text-align: center; padding: 3rem 1rem; }
+  .admin-main .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.4; }
+  .admin-main .empty-state h2 { margin: 0 0 0.25rem; font-size: 1rem; color: #0f172a; }
+  .admin-main .empty-state p { margin: 0; color: #94a3b8; font-size: 0.85rem; }
 
-  .message-from strong {
-    font-size: 16px;
-    color: #222;
-  }
+  .admin-main .loading-state, .admin-main .error-state { text-align: center; padding: 3rem 1rem; color: #94a3b8; font-size: 0.9rem; }
+  .admin-main .error-state { color: #dc2626; }
 
-  .message-from a {
-    color: #c0392b;
-    font-size: 14px;
-    text-decoration: none;
+  .admin-main .pagination {
+    display: flex; justify-content: center; align-items: center; gap: 0.3rem;
+    padding: 0.75rem; border-top: 1px solid #e2e8f0; background: #f8fafc;
   }
-
-  .message-from a:hover {
-    text-decoration: underline;
+  .admin-main .pagination button {
+    padding: 0.35rem 0.7rem; border: 1px solid #e2e8f0; background: #fff; border-radius: 0.4rem;
+    cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.15s;
   }
-
-  .message-date {
-    color: #888;
-    font-size: 13px;
-    white-space: nowrap;
-  }
-
-  .message-subject {
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .message-content {
-    color: #555;
-    line-height: 1.6;
-    margin: 0;
-    white-space: pre-wrap;
-  }
-
-  .loading-state, .error-state {
-    text-align: center;
-    padding: 60px 20px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    color: #888;
-  }
-  .error-state {
-    color: #c0392b;
-  }
+  .admin-main .pagination button:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+  .admin-main .pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .admin-main .pagination .page-info { padding: 0.35rem 0.4rem; color: #94a3b8; font-size: 0.8rem; }
 
   @media (max-width: 600px) {
-    .message-header {
-      flex-direction: column;
-    }
-    .message-date {
-      margin-top: 5px;
-    }
+    .admin-main .message-header { flex-direction: column; }
+    .admin-main .message-subject, .admin-main .message-content { margin-left: 0; }
   }
 </style>
 
@@ -163,12 +111,12 @@ const total = countResult[0]?.total ?? 0;
   let searchQuery = "";
   let totalPages = 1;
 
-  const listEl = document.getElementById("messages-list") as HTMLDivElement;
-  const paginationEl = document.getElementById("pagination") as HTMLDivElement;
-  const countEl = document.getElementById("count-display") as HTMLParagraphElement;
-  const searchInput = document.getElementById("search-input") as HTMLInputElement;
+  const listEl = document.getElementById("messages-list");
+  const paginationEl = document.getElementById("pagination");
+  const countEl = document.getElementById("count-display");
+  const searchInput = document.getElementById("search-input");
 
-  let searchTimeout: ReturnType<typeof setTimeout>;
+  let searchTimeout;
 
   searchInput.addEventListener("input", () => {
     clearTimeout(searchTimeout);
@@ -181,44 +129,46 @@ const total = countResult[0]?.total ?? 0;
 
   async function loadMessages() {
     try {
-      const params = new URLSearchParams({
-        page: String(currentPage),
-        limit: String(PAGE_SIZE),
-      });
+      const params = new URLSearchParams({ page: String(currentPage), limit: String(PAGE_SIZE) });
       if (searchQuery) params.set("search", searchQuery);
 
-      const res = await fetch(`/api/admin/contact-messages?${params}`);
-      if (!res.ok) throw new Error("Failed to load");
+      const res = await fetch(`/api/admin/contact-messages?${params}`, { credentials: 'include' });
+
+      if (!res.ok) {
+        if (res.status === 401) { listEl.innerHTML = '<div class="error-state">Session expired. Please refresh.</div>'; return; }
+        throw new Error("Failed to load");
+      }
 
       const data = await res.json();
       totalPages = data.totalPages || 1;
-      renderMessages(data.items);
+      renderMessages(data.items || []);
       renderPagination();
-      countEl.textContent = `${data.total} message${data.total !== 1 ? 's' : ''}`;
+      countEl.textContent = `${data.total || 0} message${(data.total || 0) !== 1 ? 's' : ''}`;
     } catch (err) {
       console.error(err);
       listEl.innerHTML = '<div class="error-state">Failed to load messages</div>';
     }
   }
 
-  function renderMessages(messages: Array<{id: string; name: string; email: string; subject: string; message: string; created_at: string}>) {
+  function getInitials(name) {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+  }
+
+  function renderMessages(messages) {
     if (messages.length === 0) {
-      listEl.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">📧</div>
-          <h2>No messages found</h2>
-          <p>${searchQuery ? 'Try a different search term' : 'Contact form submissions will appear here.'}</p>
-        </div>
-      `;
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-icon">📧</div><h2>No messages found</h2><p>${searchQuery ? 'Try a different search term' : 'Contact form submissions will appear here.'}</p></div>`;
       return;
     }
 
-    listEl.innerHTML = messages.map((msg) => `
+    listEl.innerHTML = messages.map(msg => `
       <article class="message-card">
         <header class="message-header">
           <div class="message-from">
-            <strong>${escapeHtml(msg.name)}</strong>
-            <a href="mailto:${escapeHtml(msg.email)}">${escapeHtml(msg.email)}</a>
+            <div class="avatar">${getInitials(msg.name)}</div>
+            <div>
+              <strong>${escapeHtml(msg.name)}</strong><br/>
+              <a href="mailto:${escapeHtml(msg.email)}" class="message-email">${escapeHtml(msg.email)}</a>
+            </div>
           </div>
           <time class="message-date">${formatDate(msg.created_at)}</time>
         </header>
@@ -229,20 +179,16 @@ const total = countResult[0]?.total ?? 0;
   }
 
   function renderPagination() {
-    if (totalPages <= 1) {
-      paginationEl.textContent = "";
-      return;
-    }
-
+    if (totalPages <= 1) { paginationEl.textContent = ""; return; }
     paginationEl.textContent = "";
 
     const prevBtn = document.createElement("button");
-    prevBtn.textContent = "Prev";
+    prevBtn.textContent = "← Prev";
     prevBtn.disabled = currentPage === 1;
     prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
     paginationEl.appendChild(prevBtn);
 
-    getPageNumbers().forEach((p) => {
+    getPageNumbers().forEach(p => {
       if (typeof p === "string") {
         const info = document.createElement("span");
         info.className = "page-info";
@@ -258,19 +204,14 @@ const total = countResult[0]?.total ?? 0;
     });
 
     const nextBtn = document.createElement("button");
-    nextBtn.textContent = "Next";
+    nextBtn.textContent = "Next →";
     nextBtn.disabled = currentPage === totalPages;
     nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
     paginationEl.appendChild(nextBtn);
-
-    const info = document.createElement("span");
-    info.className = "page-info";
-    info.textContent = `Page ${currentPage} of ${totalPages}`;
-    paginationEl.appendChild(info);
   }
 
   function getPageNumbers() {
-    const pages: (number | string)[] = [1];
+    const pages = [1];
     if (totalPages <= 7) {
       for (let i = 2; i <= totalPages; i++) pages.push(i);
     } else {
@@ -284,27 +225,21 @@ const total = countResult[0]?.total ?? 0;
     return pages;
   }
 
-  function goToPage(page: number) {
+  function goToPage(page) {
     if (page < 1 || page > totalPages) return;
     currentPage = page;
     loadMessages();
   }
 
-  function escapeHtml(str: string): string {
+  function escapeHtml(str) {
     const d = document.createElement("div");
     d.textContent = str;
     return d.innerHTML;
   }
 
-  function formatDate(dateStr: string): string {
+  function formatDate(dateStr) {
     const d = new Date(dateStr);
-    return d.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
   loadMessages();
