@@ -13,13 +13,41 @@ export const GET: APIRoute = async (context) => {
 
   try {
     const sql = getDb(env);
-    const enquiries = await sql.query(
-      `SELECT id, name, email, phone, equipment, message, created_at
-       FROM enquiries
-       ORDER BY created_at DESC`
-    );
+    const url = new URL(context.request.url);
+    const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)));
+    const offset = (page - 1) * limit;
+    const search = url.searchParams.get("search") ?? undefined;
 
-    return Response.json(enquiries);
+    let countQuery = "SELECT COUNT(*) as total FROM enquiries";
+    let query = `SELECT id, name, email, phone, equipment, message, created_at FROM enquiries`;
+
+    if (search) {
+      const searchCondition = ` WHERE name ILIKE $1 OR email ILIKE $1 OR equipment ILIKE $1 OR message ILIKE $1`;
+      countQuery += searchCondition;
+      query += searchCondition;
+      query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+
+      const [countResult, items] = await Promise.all([
+        sql.query(countQuery, [`%${search}%`]),
+        sql.query(query, [`%${search}%`])
+      ]);
+
+      const total = Number(countResult[0]?.total ?? 0);
+      const totalPages = Math.ceil(total / limit);
+      return Response.json({ items, total, page, totalPages, limit });
+    } else {
+      query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+
+      const [countResult, items] = await Promise.all([
+        sql.query(countQuery),
+        sql.query(query)
+      ]);
+
+      const total = Number(countResult[0]?.total ?? 0);
+      const totalPages = Math.ceil(total / limit);
+      return Response.json({ items, total, page, totalPages, limit });
+    }
   } catch {
     return Response.json(
       { error: "Failed to fetch enquiries." },
