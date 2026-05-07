@@ -12,53 +12,30 @@ if (!authenticated) {
 }
 
 const sql = getDb(env);
-const enquiries = await sql.query(
-  `SELECT id, name, email, phone, equipment, message, created_at
-   FROM enquiries
-   ORDER BY created_at DESC`
-);
+const countResult = await sql.query(`SELECT COUNT(*) as total FROM enquiries`);
+const total = countResult[0]?.total ?? 0;
 ---
 
 <AdminLayout title="Enquiries" active="enquiries">
   <div class="page-header">
     <h1>Enquiries</h1>
-    <p class="subtitle">{enquiries.length} submission{enquiries.length !== 1 ? 's' : ''}</p>
+    <p class="subtitle" id="count-display">{total} submission{total !== 1 ? 's' : ''}</p>
   </div>
 
-  {enquiries.length === 0 ? (
-    <div class="empty-state">
-      <div class="empty-icon">📋</div>
-      <h2>No enquiries yet</h2>
-      <p>Enquiry form submissions will appear here.</p>
-    </div>
-  ) : (
-    <div class="enquiries-list">
-      {enquiries.map((eq: any) => (
-        <article class="enquiry-card">
-          <header class="enquiry-header">
-            <div class="enquiry-from">
-              <strong>{eq.name}</strong>
-              <div class="contact-info">
-                <a href={`mailto:${eq.email}`}>{eq.email}</a>
-                {eq.phone && <span class="phone">{eq.phone}</span>}
-              </div>
-            </div>
-            <time class="enquiry-date">
-              {new Date(eq.created_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </time>
-          </header>
-          {eq.equipment && <p class="enquiry-equipment"><strong>Equipment:</strong> {eq.equipment}</p>}
-          <p class="enquiry-message">{eq.message}</p>
-        </article>
-      ))}
-    </div>
-  )}
+  <div class="filters">
+    <input
+      type="text"
+      id="search-input"
+      placeholder="Search by name, email, equipment..."
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="enquiries-list" id="enquiries-list">
+    <div class="loading-state">Loading...</div>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
 </AdminLayout>
 
 <style>
