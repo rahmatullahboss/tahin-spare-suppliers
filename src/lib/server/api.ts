@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { requireAdmin } from "./auth";
 import {
+  countContent,
   createContent,
   deleteContent,
   getContentById,
@@ -33,8 +34,18 @@ export function createListHandler(type: ContentType): APIRoute {
     try {
       if (context.request.method === "GET") {
         const env = getRuntimeEnv(context.locals);
-        const items = await listContent(env, type);
-        return Response.json({ items });
+        const url = new URL(context.request.url);
+        const page = parseInt(url.searchParams.get("page") ?? "1", 10);
+        const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
+        const search = url.searchParams.get("search") ?? undefined;
+
+        const [items, total] = await Promise.all([
+          listContent(env, type, { page, limit, search }),
+          countContent(env, type, search)
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+        return Response.json({ items, total, page, totalPages, limit });
       }
 
       const env = await requireAdminRequest(context);
