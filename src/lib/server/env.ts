@@ -7,9 +7,10 @@ export type RuntimeEnv = {
   MEDIA_PUBLIC_URL: string;
   MEDIA_BUCKET: R2Bucket;
   RESEND_API_KEY: string;
+  RESEND_WEBHOOK_SECRET: string;
 };
 
-export function getRuntimeEnv(locals?: any): RuntimeEnv {
+export function getRuntimeEnv(locals?: unknown): RuntimeEnv {
   let envToUse: Record<string, unknown> | undefined = undefined;
   try {
     const loc = locals as Record<string, Record<string, Record<string, unknown>>> | undefined;

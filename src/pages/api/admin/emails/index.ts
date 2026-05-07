@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
-import { getRuntimeEnv } from "../../../lib/server/env";
-import { ensureSchema, getDb } from "../../../lib/server/db";
-import { sendEmail } from "../../../lib/server/email";
+import { getRuntimeEnv } from "../../../../lib/server/env";
+import { ensureSchema, getDb } from "../../../../lib/server/db";
+import { sendEmail } from "../../../../lib/server/email";
 
 export const prerender = false;
 
@@ -56,7 +56,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const sql = getDb(env);
 
     const body = await request.json();
-    const { to, subject, body: emailBody } = body;
+    const {
+      to,
+      subject,
+      body: emailBody,
+      inReplyToId,
+    }: {
+      to?: string;
+      subject?: string;
+      body?: string;
+      inReplyToId?: string;
+    } = body;
 
     if (!to || !subject || !emailBody) {
       return Response.json(
@@ -73,13 +83,38 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const result = await sendEmail(env, to, subject, emailBody);
+    let replyHeaders: Record<string, string> | undefined = undefined;
+    if (inReplyToId) {
+      const inboundResult = await sql.query(
+        `SELECT message_id FROM inbound_emails WHERE id = $1`,
+        [inReplyToId]
+      );
+      const messageId = inboundResult[0]?.message_id;
+      if (messageId) {
+        replyHeaders = {
+          "In-Reply-To": messageId,
+          References: messageId,
+        };
+      }
+    }
+
+    const result = await sendEmail(env, to, subject, emailBody, replyHeaders);
     const id = result.id;
 
     await sql.query(
-      `INSERT INTO sent_emails (id, to_address, from_address, subject, body, resend_id)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [id, to, "contact@tahinspare.com", subject, emailBody, result.resendId]
+      `INSERT INTO sent_emails (
+         id, to_address, from_address, subject, body, resend_id, in_reply_to_inbound_id
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        id,
+        to,
+        "sales@tahinspare.com",
+        subject,
+        emailBody,
+        result.resendId,
+        inReplyToId ?? "",
+      ]
     );
 
     return Response.json({ ok: true, id, resendId: result.resendId });

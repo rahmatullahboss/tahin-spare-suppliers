@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { Resend } from "resend";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { ensureSchema, getDb } from "../../lib/server/db";
 
@@ -9,7 +8,6 @@ export const POST: APIRoute = async (context) => {
     await ensureSchema(env);
     const formData = await context.request.formData();
 
-    // Check honeypot
     const gotcha = formData.get("_gotcha");
     if (gotcha) {
       return Response.json({ ok: true });
@@ -29,38 +27,62 @@ export const POST: APIRoute = async (context) => {
 
     const sql = getDb(env);
     const id = crypto.randomUUID();
-
-    // Save to database
     await sql.query(
       `INSERT INTO contact_messages (id, name, email, subject, message) VALUES ($1, $2, $3, $4, $5)`,
       [id, name, email, subject, message]
     );
 
-    // Send email via Resend (if API key is configured)
     if (env.RESEND_API_KEY) {
-      try {
-        const resend = new Resend(env.RESEND_API_KEY);
-        await resend.emails.send({
-          from: "Contact Form <contact@tahinspare.com>",
-          to: ["tahinship@gmail.com"],
-          subject: `New Contact: ${name} - ${subject || "(No subject)"}`,
+      const resendRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Tahin Spare Suppliers <onboarding@resend.dev>",
+          to: ["sales@tahinspare.com"],
+          subject: `New Contact from ${name}${subject ? ` — ${subject}` : ""}`,
           html: `
-            <h2>New Contact Form Submission</h2>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject || "N/A"}</p>
-            <p><strong>Message:</strong></p>
-            <p>${message.replace(/\n/g, "<br>")}</p>
-          `
-        });
-      } catch (emailError) {
-        console.error("Email send failed (continuing without email):", emailError);
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: #c0392b; padding: 20px; text-align: center;">
+                <h1 style="color: #fff; margin: 0; font-size: 22px;">New Website Contact</h1>
+              </div>
+              <div style="padding: 25px; background: #f9f9f9;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; color: #333; border-bottom: 1px solid #eee; width: 140px;">Name:</td>
+                    <td style="padding: 10px; color: #555; border-bottom: 1px solid #eee;">${name}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; color: #333; border-bottom: 1px solid #eee;">Email:</td>
+                    <td style="padding: 10px; color: #555; border-bottom: 1px solid #eee;"><a href="mailto:${email}">${email}</a></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; color: #333; border-bottom: #eee; vertical-align: top;">Subject:</td>
+                    <td style="padding: 10px; color: #555; border-bottom: 1px solid #eee;">${subject || "Not provided"}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; color: #333; vertical-align: top;">Message:</td>
+                    <td style="padding: 10px; color: #555; white-space: pre-wrap;">${message}</td>
+                  </tr>
+                </table>
+              </div>
+              <div style="padding: 15px; text-align: center; font-size: 12px; color: #999;">
+                Sent from Tahin Spare Suppliers website
+              </div>
+            </div>
+          `,
+        }),
+      });
+
+      if (!resendRes.ok) {
+        console.error("Resend API error:", await resendRes.text());
       }
     }
 
     return Response.json({ ok: true });
-  } catch (error) {
-    console.error("Contact error:", error);
+  } catch {
     return Response.json(
       { error: "Failed to submit message." },
       { status: 500 }

@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import type { GetReceivingEmailResponseSuccess, WebhookEventPayload } from "resend";
 import type { RuntimeEnv } from "./env";
 
 export interface EmailResult {
@@ -23,20 +24,57 @@ export async function sendEmail(
   env: RuntimeEnv,
   to: string,
   subject: string,
-  body: string
+  body: string,
+  headers?: Record<string, string>
 ): Promise<EmailResult> {
   const resend = getResendClient(env);
   const result = await resend.emails.send({
-    from: `Tahin Spare Suppliers <contact@tahinspare.com>`,
+    from: `Tahin Spare Suppliers <sales@tahinspare.com>`,
     to: [to],
     subject,
     html: body,
+    headers,
   });
 
   return {
     id: crypto.randomUUID(),
     resendId: result.data?.id ?? "",
   };
+}
+
+export function verifyResendWebhook(
+  env: RuntimeEnv,
+  payload: string,
+  requestHeaders: Headers
+): WebhookEventPayload {
+  if (!env.RESEND_WEBHOOK_SECRET) {
+    throw new Error("RESEND_WEBHOOK_SECRET is not configured");
+  }
+
+  const resend = getResendClient(env);
+  return resend.webhooks.verify({
+    payload,
+    headers: {
+      id: requestHeaders.get("svix-id") ?? "",
+      timestamp: requestHeaders.get("svix-timestamp") ?? "",
+      signature: requestHeaders.get("svix-signature") ?? "",
+    },
+    webhookSecret: env.RESEND_WEBHOOK_SECRET,
+  });
+}
+
+export async function getReceivedEmail(
+  env: RuntimeEnv,
+  emailId: string
+): Promise<GetReceivingEmailResponseSuccess> {
+  const resend = getResendClient(env);
+  const result = await resend.emails.receiving.get(emailId);
+
+  if (result.error || !result.data) {
+    throw new Error(result.error?.message ?? "Failed to retrieve received email");
+  }
+
+  return result.data;
 }
 
 export async function forwardInboundEmail(
@@ -48,7 +86,7 @@ export async function forwardInboundEmail(
 ): Promise<void> {
   const resend = getResendClient(env);
   await resend.emails.send({
-    from: `Tahin Spare Suppliers <contact@tahinspare.com>`,
+    from: `Tahin Spare Suppliers <sales@tahinspare.com>`,
     to: [toEmail],
     subject: `[Forwarded] ${originalSubject}`,
     html: `
@@ -63,10 +101,10 @@ export async function forwardInboundEmail(
           <div style="white-space: pre-wrap;">${escapeHtml(body)}</div>
         </div>
         <div style="padding: 15px; text-align: center; font-size: 12px; color: #999;">
-          Reply to this email at: contact@tahinspare.com
+          Reply to this email at: sales@tahinspare.com
         </div>
       </div>
     `,
-    replyTo: "contact@tahinspare.com",
+    replyTo: "sales@tahinspare.com",
   });
 }

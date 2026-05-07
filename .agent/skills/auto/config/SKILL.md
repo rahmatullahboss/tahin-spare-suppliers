@@ -1,6 +1,6 @@
 ---
 name: config
-description: "Config for tahin-spare-suppliers. 11 gotchas, 50 conventions, 26 fixes."
+description: "Config for tahin-spare-suppliers. 13 conventions."
 domain: config
 triggers:
   - glob: "**/*.yaml"
@@ -13,320 +13,160 @@ enabled: true
 
 # Config
 
-Auto-compiled from **577 real patterns** in **tahin-spare-suppliers**. This skill is auto-routed to agents when working on config files.
+Auto-compiled from **22 real patterns** in **tahin-spare-suppliers**. This skill is auto-routed to agents when working on config files.
 
-## ⚠️ Anti-Patterns & Gotchas
+## 📐 Conventions & Best Practices
 
-> **CRITICAL:** These are real gotchas from this project. Ignoring them WILL cause bugs.
+### Project Conventions
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "bd8eb04754737534",
++       "ts": "2026-04-21T04:04
+- 📐 **Strengthened types Loading** — -     "notSpecified": "—"
++     "notSpecified": "—",
+-   },
++     "loading": "Loading...",
+-   "brea
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "44bdea3e5ab26bcf",
++       "ts": "2026-04-19T22:25
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "efcdc34f6ce07467",
++       "ts": "2026-04-19T07:20
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "6d26a71c40025457",
++       "ts": "2026-04-18T16:19
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "b98899fed651afe3",
++       "ts": "2026-04-18T01:38
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "1edf3c9e81bf1c6b",
++       "ts": "2026-04-17T17:05
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "2055ac9367a58857",
++       "ts": "2026-04-17T15:30
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "9b5a5affff19d21a",
++       "ts": "2026-04-16T08:47
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "09d2bea7f552fc58",
++       "ts": "2026-04-13T05:14
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "52b9a37e81bc1982",
++       "ts": "2026-04-13T04:29
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "9a69731058807c07",
++       "ts": "2026-04-11T17:21
+- 📐 **convention in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "d06dbf90f07fd836",
++       "ts": "2026-04-11T16:22
 
-| ❌ Don't | Details |
-|----------|----------|
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "40f420835333b003", +       "ts": "2026-04-06T12:58 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "ec8e877379900158", +       "ts": "2026-04-06T10:58 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "d76a5e946293005c", +       "ts": "2026-04-06T10:57 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "fbbbfb3749101b3e", +       "ts": "2026-04-06T10:51 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "135ac6cf5c889254", +       "ts": "2026-04-06T10:41 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "0f0648f503a9f446", +       "ts": "2026-04-06T10:22 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "c5417a0c0feea279", +       "ts": "2026-04-06T10:12 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "d13787594d5c6489", +       "ts": "2026-04-06T09:18 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "e3501da128d42b82", +       "ts": "2026-04-06T07:57 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "c3b4aefc620ab18c", +       "ts": "2026-04-06T07:30 |
-| gotcha in shared-context.json | -     } +     }, -   ] +     { - } +       "id": "843bf135e01b1bf9", +       "ts": "2026-04-06T07:18 |
+## 🔵 Architecture
 
-## 🔧 Problem Playbooks
-
-### problem-fix in shared-context.json
+### how-it-works in shared-context.json
 -     }
 +     },
 -   ]
 +     {
 - }
-+       "id": "b3f68a960e0b19a7",
-+       "ts": "2026-04-06T13:48:53.169Z",
++       "id": "0a0cf8363a157d73",
++       "ts": "2026-04-21T15:09:41.869Z",
 +       "by": "rahmatullahzisan",
-+       "data": "W2yfr9rZ4rjqdLE4gtTRjOonUE3cntMiC9qA2mHncIzvBr2/k+ZGOBzv+gw8ObTP6xfixGPbT6y4EH8oi21E7i3JoYRAfWn/NsO6pzsPy9Og725ZlHHmLmfW6RUcjKsaEI5qA5xXF20fWdQkBkvXlCPcbUYMdM7aUJfrEuROsJa6ekGrov/gijHcjba8zOEqp0W/4V0unA94QRZuYPSJdQcpgoGtCBtqYGKZutZENRvwtC
++       "data": "X2+wo4++bxxudnKDb5ccbfzzmFtYpGqF6c+9IX
 
-**Actionable Steps:**
-1. Modified 1 files
-
-### Patched security issue XzwStvqT
+### how-it-works in shared-context.json
 -     }
 +     },
 -   ]
 +     {
 - }
-+       "id": "bf1820ce03814c15",
-+       "ts": "2026-04-06T13:35:00.862Z",
++       "id": "0f9c31fb52b3f3f3",
++       "ts": "2026-04-19T17:20:01.129Z",
 +       "by": "rahmatullahzisan",
-+       "data": "RkCo1q29FvIQK/8t1u2V1lkVbASxrbttpjoDAiDRWt+NlMbIvsR1KeZ3AK58y8J9GRlP0A6WL03fronvDNaQwjXsXxtqAmSE9VwEnU1ozdttwAHGAzW++3RnBELny3UDJEQjdE/XzwStvqT+1gv+357s3nnzOwOPF0O6lPYFpooFLoY4G6jQCGTbopnEJYuyicljcFLcR7iSgf9Ry2RAk9gMI4CF/MfBmNQFSrk/R2v/6D
++       "data": "QKb2XObIwPYkeSLv8EVbO/zlLMwxK+dLH0elxm
 
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: XzwStvqT
-3. identifier: MfBmNQFSrk
-4. identifier: IRFRzayckee
-5. identifier: ByWeK
-
-### problem-fix in shared-context.json
+### how-it-works in shared-context.json
 -     }
 +     },
 -   ]
 +     {
 - }
-+       "id": "478aa80ee0de91b9",
-+       "ts": "2026-04-06T13:25:59.091Z",
++       "id": "00d4b95fef311313",
++       "ts": "2026-04-19T07:23:58.140Z",
 +       "by": "rahmatullahzisan",
-+       "data": "4BSCM86JWP27oSpX/TAmO9oL1L1NO/6HHOHIh/tfenC5gw49VvCLvg25F+NtlcOW5x+EiP4RAghIXO3YXhuajo9a8MTDzT09VWxQgjQaRKbEDZSiCUq3mcIKcegg9IRZrMT38iH8mA41j4inhLr/7nIdpZQ/C0s+H6YqUSuhb92Z071WHL98N9jWKN0/CAAfXHIw4ezd1QUbOs5m+PfGCAG2rmO0OJ64r1icbIJTsR7gMQ
++       "data": "T9YO/bP9JNQMwq5tQqk6q5Vugmh8SYkyL4Afx0
 
-**Actionable Steps:**
-1. Modified 1 files
-
-### Patched security issue HmJQ
+### how-it-works in shared-context.json
 -     }
 +     },
 -   ]
 +     {
 - }
-+       "id": "0414bc4faf291972",
-+       "ts": "2026-04-06T13:25:11.023Z",
++       "id": "f2a09d77c21253fb",
++       "ts": "2026-04-17T21:46:59.063Z",
 +       "by": "rahmatullahzisan",
-+       "data": "NIqFI2YM6SiJS8krpEzEcKeiEOzIEZVKnpZQJc1T7whjgwhpq4HrzoOe+/2lzkla5hiAGsc+4G6Rc9UsIjs/OLvb6L61IROHPCmuZLAmcOEMPqb5yJwr3niZbVX0f3OzBpJIyg7rpTjfSi5p1292OWp5PW46DaP7UBj/HWd6UV01PKzZu0JpA2qwf95hPB08CKmZg7GU9byufrAKkPj8ui9d5r3Y8gjf9IUQmtys7MH5pR
++       "data": "8rN96vGbTesnVNe9wRq5A0sq5nMvfZEwEB59Aj
 
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Uwa
-3. identifier: HmJQ
-4. identifier: FzUcJQTMGV
-5. identifier: FnJenyTzN
+## 🔧 Tool Patterns
 
-### Patched security issue CGyH
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "4903ff4cab1317a2",
-+       "ts": "2026-04-06T13:25:00.960Z",
-+       "by": "rahmatullahzisan",
-+       "data": "sL3J5tJn0pD4qtDni72DRD2c6hyaWixnVFyUCfJzuYg49YbKn3LNYJjYncCkZpgaRBMrfXBO/6yeB0SUf5UrG3P9EncTowy8x30wwY/02IadTph7brDwpBXhz9a+GRFvPwf3RCnoxHw2qOk4Ap/f3HyXCBJ6AUVZ7l5W72+zZFLBZL0jbiHKxm4gKMh4f27+ytoH7ft8u1ycjThiceAYjKz1lEFItkWNOxhf/E60/M32ny
+### tool-pattern in package.json
+File updated (external): apps/ozzyl-lifestyle/package.json
 
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: CGyH
-3. identifier: VPh
-4. identifier: ZCX
-5. identifier: Rmure
+Content summary (61 lines):
+{
+  "name": "ozzyl-lifestyle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "
 
-### problem-fix in shared-context.json
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "eb55f77209dab98d",
-+       "ts": "2026-04-06T12:58:08.999Z",
-+       "by": "rahmatullahzisan",
-+       "data": "ZaJAasHvqVBEjwECEZ9B3zFgOsM6MkzJ9q8kcX2aPJ8FNsq6q1k40zciefJi+z3sIMRkVX/B9OwkbotCEMH/hd1HXXgNs/CEld+Jvtx4fvUAs97h1jDFe5z16QujtFP1JmaPHmclqRdLm0BGOHxvhVF9vXy998AbEIDHIQmDEWddkzMRI3oSaSE+RCG7gwfJ793D9IaKXYvKqeWMiEiTdrRVHLQV4sIt1oFj09NIXU2U3T
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### problem-fix in shared-context.json
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "ffa4bc3d93e02283",
-+       "ts": "2026-04-06T11:33:50.105Z",
-+       "by": "rahmatullahzisan",
-+       "data": "wPKtIpqZKSIz+kG8o05KTrr1xrN7xfgHvyolWqfOKZKflhH2J8cA6prpUWUssq8GARq2FRJChuBDftMLvo95nc0UrvTxAtfkRGNvi3Iwg2TvcRnlYXD0vFcLXKWhaH8MP391Lb8fMsRnfLiCmERHYF5l7xXvqXqQf2fKETbweeqppSJJzhtcQGnKrSJg3TMgyGdIqQg3EiG4XgHMfRjDB2aQw4fjo2u9JGdgu61Ap/NG2S
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### problem-fix in shared-context.json
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "ad745a2c873ff6c1",
-+       "ts": "2026-04-06T11:11:58.677Z",
-+       "by": "rahmatullahzisan",
-+       "data": "g7jZpPIP98oAijlbaA/ytsbgEBAEcjAzz0NerAg9j0N24DmP3yogTFUs7M/U2FB+SaIvbBLdYsRiO7/rkYlFghVvSszdiASTmBkT9VLGMHKOgsK3cvwKJ3ykmWgB9uyQ+kxw0unMQqoF+0eiecNrS2TNqFzbMVBysaQPC23x9MhpXW79w+cxKEaB/QAF5cibOnDsT5s6QDLshyn8UJk7nxPh/gzZphuurlpvJ24zwf0okG
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### Patched security issue IZCgkv
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "a3a86831359b4879",
-+       "ts": "2026-04-06T10:41:34.268Z",
-+       "by": "rahmatullahzisan",
-+       "data": "C6g4JRSEHhUmr9LfqH2eS3f2GXugd4WvBy7rAnI6tcMShpXF2dt3J8PiLp+7vS0wgYGn0/iA+fzp9qIYkoHwV8mwlFn/ZOkVUpGb1Wc4v9Ilaecwm5cDshI1q6jbj/98mwvKl1PvwLIhQiilXNZ8RLVMZyUTddVcPhzjG1ZyS8rBk/KbhpsOxJbAper46P2iVqnn7o8q4+Mu82zGFA7tfcL+2aVsN5ywZz7DErMg3yb9x9
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: IZCgkv
-3. identifier: QFZ
-4. identifier: WnlCO
-5. identifier: Nran
-
-### Patched security issue SgkEobmrGfBzIQOymUj — hardens HTTP security headers
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "b9e15b41b809e91c",
-+       "ts": "2026-04-06T10:41:23.648Z",
-+       "by": "rahmatullahzisan",
-+       "data": "RSOSw8vl04QDKo6xe6KjgJRLoK2cqwSKl7X0YSXoln1/wJ+lfe7qizKjHelK9lYw0NvdqYM77ky2DGfRt7euJ0a2+5qk2fjwXaczCMkKtu0PYhjieGkxyWvEyqsac8c4MW7PMCYon1Ao5kKtepRLszt3ida6QPmDyQc00UqsQ64C1jFTRJ4BeO/FR2d0YSFIWCbT1TJBDt6yZNhT6+Dq60CNDkiSwSUip+KRvNv4K6Lsl3
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: SgkEobmrGfBzIQOymUj
-3. identifier: UhhesI
-
-### problem-fix in shared-context.json
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "180096f4f2b500f6",
-+       "ts": "2026-04-06T10:41:13.988Z",
-+       "by": "rahmatullahzisan",
-+       "data": "6t4MeOZBXUW6m0lWCH9LHelPdEwwW+q6wb2dawhm5hcLVyMvms+05rOl8RBqQ16wAjU4Eezqo5OjjRPQZt0DidTvthdm2ZlmD+xjOZkDhA87z7GRBGHd+kpDSw23sONJoJxy1wSzjhIp5REBl4ihH1xAh3whRxq/1OWUnmwtbK6AuBwf6CUzlVYj0Jmnq25eVzvnqhRogow91haWleg9QzOlqukCsfOvKuGMulz+9kdeN6
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### Patched security issue YpGKySDUr
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "c3052d6f45cd00a9",
-+       "ts": "2026-04-06T10:17:06.099Z",
-+       "by": "rahmatullahzisan",
-+       "data": "j/80cclrjaWSU9RkDjCoiyRV1WFkD0LedPpmovBclH3k4y+YpGKySDUr/JLS7xVXsSCt1Qd8aY80o5PnTjaA1O6Ru8mYr128LzaccPPiyruaZXFqBZAlu9tYitvpoVa5e/qYO9HWPZt8ErpTSmtFB46rhF8LP/9XOgq6e+oapKskfZ0nxKjEthc3f95EvTYXhSogmLdMxwJSiceBhvTF0Qn4kBZMn62rPcFiWv4ZJ67MjT
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: YpGKySDUr
-3. identifier: CvZs
-
-### problem-fix in shared-context.json
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "a1551073bb8cfabe",
-+       "ts": "2026-04-06T09:59:49.045Z",
-+       "by": "rahmatullahzisan",
-+       "data": "plqNPRlRYBgcubZRCTz0kaV2Mv9YKWv3nGcUs9c+C0uy8i433eipJCR2XQBYP2wzTxkokYdSzbt2HP+dmJuExRWYmkxMw8g98aZOof/x2n6yA9nle1PKq/OgJ3cvlhIX8ei1iPpucDQeDJufYuGM+mBSyS0ZdkDDe7NuqhqGzb46vk3Kcy3itkAG8+aUhra/kwU51MUJn9S1Vf1v0uz6CTzODWDv9zJSrlUphLAyB/xH43
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### Patched security issue shared-context
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "1deaa36eec025cb5",
-+       "ts": "2026-04-06T09:59:46.606Z",
-+       "by": "rahmatullahzisan",
-+       "data": "nKPC6OALYnzoWbIrGXLgsf8wUwxexyiOKYHLAZgdrXkbjkC0qIkh91JcdWybrKW+Gqhq1CpPv5hDglNHD1bEPkkCohbfq/ovOuoWvGoRV1fSUY1B6vGLis9WirPQ6Z2aY//FNHXDy21mBW0eepGaqAExANrAuFpj4pqfyagFeng1vPo2tqE4GxGca4cbs4Grnd/HygdDCROZ1xOrRqJRZFRGIUPlPvfN5zNQgM6v1KTVFJ
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### Patched security issue Rmagu
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "5d37bcc10437e6dc",
-+       "ts": "2026-04-06T09:34:02.235Z",
-+       "by": "rahmatullahzisan",
-+       "data": "j3LlPFbqqVgsCUZ3dh9WnYrsPnSZ8Kk39WHUUbad4awnEetwegU5Mrp+xfjgK3WFMHm3bh0M+Rmagu/wFpVvvkjIDvN1nRCSfVRrm2jDvUacoDVBLhKFQYG0qx9lAhk6ca7iXcYFsY7TjlAQyaJi40ySbHWm8e9Qme79ERfP2eaOGk6qYAuWZY679P4d2Gl6d3gL0xHjV7LaDNiYYP0J6GeneWCz/UszSFSDtHbjpR1sC/
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Rmagu
-3. identifier: IIbT
-4. identifier: EEZ
-5. identifier: JyJkvh
-
-### problem-fix in shared-context.json
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "aa6e0745086e3d73",
-+       "ts": "2026-04-06T09:33:59.799Z",
-+       "by": "rahmatullahzisan",
-+       "data": "XlTLJIFis1cMPpU1nV85ynxVhQ/5XAN4FL5axUkgA2lcvuhnZ5yA5bOLjZqDOVS5Mk7+wIzbfv1gcslTEw2MAN4LxV/jD4yYECwY1ajrlydQMLNoqgNe5/TLDR4cqV14B2KMIZxOtPMGS3Ii69Q1o6Ft/jReQSLE+OgUoVM2fnr7XAFadPBsY1MnxLv4BvNToEllToWnAosmtE+enhaVjt50M/ElGe/Znhx9b2Ph7BWtPY
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### Patched security issue YhWJ
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "1c5e1b770100fd78",
-+       "ts": "2026-04-06T09:33:57.364Z",
-+       "by": "rahmatullahzisan",
-+       "data": "nt+cAg9ibP62MqbBlxlHXN/COsTg0eZpl+RZueElrsaBptR8X/Q3dBA5SPD40qiBpk7Ior3C6+E6sHnx4aNZo9rD3S469FOmu9uFXpAhgci9keK3Axa+b1CjvqasjKLzaBTKZ+qv61FmF5Dq/i+nemyLioJrkYxFO8VW0kPszjO0lAcR0qkq++7RLRM39hQK7zQPBlZL549DPepoUun6eKjyDPKVnoVPNBYL8RgDNJxssj
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: YhWJ
-3. identifier: JZaR
-
-### problem-fix in shared-context.json
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "2a9e06b2c061dff5",
-+       "ts": "2026-04-06T09:21:56.535Z",
-+       "by": "rahmatullahzisan",
-+       "data": "nl5VmLT/VyGipERhp1sIa5CBb7b7U1oWCVL4OOPawi7+uoyr3DHZIcE9DcWlB/DdCcstDXHi6bPJgS8UpYlbaIq2AuMCS3jXlgzMdWeUbzdbb7FaK6fywbZRqKzNL006unyYC78Rh1WzkE8O/8eX3aXJ/qiL9a83c+scGssl7P8FUNo6nIvP72bh1ffh4L60m+Kp1tDYX/TUOf+uSjKBR6OgDs3q2o8tkQshTeqYAt6AAH
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### Patched security issue DualTaCX
--     }
-+     },
--   ]
-+     {
-- }
-+       "id": "ec0ebb6305da4ee4",
-+       "ts": "2026-04-06T09:05:47.877Z",
-+       "by": "rahmatullahzisan",
-+       "data": "DualTaCX+g897HG06z9wDTVaVytAcT55fMLgijhIx0MSeHeVg5fhYdeOouFNxsPGOqnQDb7l/VpFZgk/zYdPx7i2IjNf3Q9oVnepuNU/XE/vo0mIErjlgqZOXnIM4CXlT+fu+4M913Hjod9+TZ3XCerZqJSzs6tjUAOB/BCTqX+HgmRU0hJbHpJ0ZerPXSSuDr0WD8UPCjzy2v+rdF51mgrJHLwe+YxaGvP/tarMTzAS1U
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: DualTaCX
-3.
-
-... [Truncated — see individual observations for full content]
+---
+*Auto-generated by BrainSync 🧠 | 22 patterns | 2026-05-05*

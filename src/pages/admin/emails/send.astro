@@ -9,7 +9,24 @@ const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
 if (!authenticated) {
   return Astro.redirect("/admin/login");
 }
+
+const replyTo = Astro.url.searchParams.get("replyTo") ?? "";
+const subjectPrefill = Astro.url.searchParams.get("subject") ?? "";
+const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
 ---
+
+<script define:vars={{ replyTo, subjectPrefill }}>
+  window.addEventListener("DOMContentLoaded", () => {
+    if (replyTo) {
+      const toInput = document.getElementById("to");
+      if (toInput) toInput.value = replyTo;
+    }
+    if (subjectPrefill) {
+      const subjectInput = document.getElementById("subject");
+      if (subjectInput) subjectInput.value = subjectPrefill;
+    }
+  });
+</script>
 
 <AdminLayout title="Compose Email" active="emails">
   <div class="page-header">
@@ -20,7 +37,7 @@ if (!authenticated) {
   </div>
 
   <div class="form-card">
-    <form id="send-form">
+    <form id="send-form" data-in-reply-to-id={inReplyToId}>
       <div class="field">
         <label for="to">To</label>
         <input
@@ -46,14 +63,25 @@ if (!authenticated) {
       </div>
 
       <div class="field">
-        <label for="body">Body</label>
-        <textarea
-          id="body"
-          name="body"
-          placeholder="Write your message here..."
-          required
-          rows="10"
-        ></textarea>
+        <label for="editor">Body</label>
+        <div class="editor-toolbar">
+          <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+          <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+          <button type="button" data-cmd="underline" title="Underline"><u>U</u></button>
+          <span class="sep"></span>
+          <button type="button" data-cmd="h2" title="Heading">H2</button>
+          <button type="button" data-cmd="ul" title="Bullet List">&bull; List</button>
+          <button type="button" data-cmd="ol" title="Numbered List">1. List</button>
+          <span class="sep"></span>
+          <button type="button" data-cmd="undo" title="Undo">&#8630;</button>
+          <button type="button" data-cmd="redo" title="Redo">&#8631;</button>
+        </div>
+        <div
+          id="editor"
+          class="editor"
+          contenteditable="true"
+          data-placeholder="Write your message here..."
+        ></div>
       </div>
 
       <div class="actions">
@@ -121,9 +149,89 @@ if (!authenticated) {
     border-color: #c78f40;
   }
 
-  .field textarea {
-    resize: vertical;
-    min-height: 150px;
+  .editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .editor-toolbar button {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    min-width: 32px;
+    transition: all 0.15s;
+  }
+
+  .editor-toolbar button:hover {
+    background: #eee;
+    border-color: #ccc;
+  }
+
+  .editor-toolbar button.active {
+    background: #c78f40;
+    color: #111;
+    border-color: #c78f40;
+  }
+
+  .sep {
+    width: 1px;
+    height: 24px;
+    background: #ddd;
+    margin: 0 4px;
+    align-self: center;
+  }
+
+  .editor {
+    border: 1px solid #ddd;
+    border-radius: 0 0 8px 8px;
+    padding: 16px;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    outline: none;
+  }
+
+  .editor:empty::before {
+    content: attr(data-placeholder);
+    color: #aaa;
+    pointer-events: none;
+  }
+
+  .editor:focus {
+    border-color: #c78f40;
+    box-shadow: inset 0 0 0 2px rgba(199, 143, 64, 0.2);
+  }
+
+  .editor h2 {
+    font-size: 20px;
+    margin: 16px 0 8px;
+    font-weight: 600;
+  }
+
+  .editor ul,
+  .editor ol {
+    padding-left: 24px;
+    margin: 8px 0;
+  }
+
+  .editor li {
+    margin: 4px 0;
+  }
+
+  .editor p {
+    margin: 8px 0;
   }
 
   .actions {
@@ -195,18 +303,63 @@ if (!authenticated) {
 
 <script>
   const form = document.getElementById("send-form") as HTMLFormElement;
-  const sendBtn = document.getElementById("send-btn") as HTMLButtonElement;
+  const editorEl = document.getElementById("editor") as HTMLDivElement;
   const statusEl = document.getElementById("status-message") as HTMLParagraphElement;
+  const sendBtn = document.getElementById("send-btn") as HTMLButtonElement;
+  const inReplyToId = form?.dataset.inReplyToId ?? "";
+
+  // Toolbar button handlers
+  document.querySelectorAll("[data-cmd]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const cmd = btn.getAttribute("data-cmd");
+      if (!cmd || !editorEl) return;
+
+      editorEl.focus();
+
+      switch (cmd) {
+        case "bold":
+          document.execCommand("bold", false);
+          break;
+        case "italic":
+          document.execCommand("italic", false);
+          break;
+        case "underline":
+          document.execCommand("underline", false);
+          break;
+        case "h2":
+          document.execCommand("formatBlock", false, "h2");
+          break;
+        case "ul":
+          document.execCommand("insertUnorderedList", false);
+          break;
+        case "ol":
+          document.execCommand("insertOrderedList", false);
+          break;
+        case "undo":
+          document.execCommand("undo", false);
+          break;
+        case "redo":
+          document.execCommand("redo", false);
+          break;
+      }
+    });
+  });
 
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const to = (document.getElementById("to") as HTMLInputElement).value.trim();
     const subject = (document.getElementById("subject") as HTMLInputElement).value.trim();
-    const body = (document.getElementById("body") as HTMLTextAreaElement).value.trim();
+    const body = editorEl?.innerHTML?.trim() || "";
 
-    if (!to || !subject || !body) {
-      statusEl.textContent = "All fields are required.";
+    if (!to || !subject) {
+      statusEl.textContent = "To and subject are required.";
+      statusEl.className = "status-message error";
+      return;
+    }
+
+    if (!body || body === "<br>" || body === "<p></p>") {
+      statusEl.textContent = "Message body is required.";
       statusEl.className = "status-message error";
       return;
     }
@@ -222,7 +375,7 @@ if (!authenticated) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ to, subject, body }),
+        body: JSON.stringify({ to, subject, body, inReplyToId }),
       });
 
       const data = await response.json();

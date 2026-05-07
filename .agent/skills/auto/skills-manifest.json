@@ -1,19 +1,19 @@
 {
   "project": {
     "enabled": true,
-    "lastGenerated": "2026-04-06T14:04:19.265Z",
-    "observationCount": 12227,
+    "lastGenerated": "2026-05-05T14:29:02.871Z",
+    "observationCount": 294,
     "skillCount": 0,
     "domain": "project",
     "triggerGlobs": [
       "**/*"
     ],
-    "description": "Project for tahin-spare-suppliers. 11194 gotchas, 173 conventions, 16 fixes."
+    "description": "Project for tahin-spare-suppliers. 25 gotchas, 249 conventions."
   },
   "config": {
     "enabled": true,
-    "lastGenerated": "2026-04-06T14:04:19.263Z",
-    "observationCount": 577,
+    "lastGenerated": "2026-05-05T14:29:02.871Z",
+    "observationCount": 22,
     "skillCount": 0,
     "domain": "config",
     "triggerGlobs": [
@@ -22,40 +22,29 @@
       "**/*.json",
       "**/*.toml"
     ],
-    "description": "Config for tahin-spare-suppliers. 11 gotchas, 50 conventions, 26 fixes."
+    "description": "Config for tahin-spare-suppliers. 13 conventions."
   },
   "typescript": {
     "enabled": true,
-    "lastGenerated": "2026-04-06T14:04:19.265Z",
-    "observationCount": 2,
+    "lastGenerated": "2026-05-05T14:29:02.871Z",
+    "observationCount": 8,
     "skillCount": 0,
     "domain": "typescript",
     "triggerGlobs": [
       "**/*.ts",
       "**/*.tsx"
     ],
-    "description": "Typescript for tahin-spare-suppliers. ."
+    "description": "Typescript for tahin-spare-suppliers. 7 conventions."
   },
-  "convention": {
+  "typescript-react": {
     "enabled": true,
-    "lastGenerated": "2026-04-06T14:04:19.266Z",
-    "observationCount": 0,
-    "skillCount": 69,
-    "domain": "convention",
+    "lastGenerated": "2026-05-05T14:29:02.871Z",
+    "observationCount": 7,
+    "skillCount": 0,
+    "domain": "typescript-react",
     "triggerGlobs": [
-      "**/*"
+      "**/*.tsx"
     ],
-    "description": "Convention for tahin-spare-suppliers. ."
-  },
-  "gotcha": {
-    "enabled": true,
-    "lastGenerated": "2026-04-06T14:04:19.266Z",
-    "observationCount": 0,
-    "skillCount": 58,
-    "domain": "gotcha",
-    "triggerGlobs": [
-      "**/*"
-    ],
-    "description": "Gotcha for tahin-spare-suppliers. ."
+    "description": "Typescript React for tahin-spare-suppliers. 7 conventions."
   }
 }

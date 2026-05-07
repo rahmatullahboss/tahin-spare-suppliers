@@ -1,0 +1,198 @@
+---
+interface Props {
+  id?: string;
+  placeholder?: string;
+  initialContent?: string;
+}
+
+const { id = "editor", placeholder = "Start typing...", initialContent = "" } = Astro.props;
+---
+
+<div class="tiptap-wrapper" data-tiptap-wrapper>
+  <div id={`${id}-toolbar`} class="tiptap-toolbar">
+    <button type="button" data-command="bold" title="Bold">
+      <strong>B</strong>
+    </button>
+    <button type="button" data-command="italic" title="Italic">
+      <em>I</em>
+    </button>
+    <button type="button" data-command="underline" title="Underline">
+      <u>U</u>
+    </button>
+    <span class="toolbar-separator"></span>
+    <button type="button" data-command="h2" title="Heading">H2</button>
+    <button type="button" data-command="bulletList" title="Bullet List">&bull;</button>
+    <button type="button" data-command="orderedList" title="Numbered List">1.</button>
+    <span class="toolbar-separator"></span>
+    <button type="button" data-command="undo" title="Undo">&#8630;</button>
+    <button type="button" data-command="redo" title="Redo">&#8631;</button>
+  </div>
+  <div
+    id={`${id}-content`}
+    class="tiptap-content"
+    contenteditable="true"
+    data-placeholder={placeholder}
+  >{initialContent}</div>
+</div>
+
+<style>
+  .tiptap-wrapper {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .tiptap-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+    background: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .tiptap-toolbar button {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    min-width: 32px;
+    transition: all 0.15s;
+  }
+
+  .tiptap-toolbar button:hover {
+    background: #eee;
+    border-color: #ccc;
+  }
+
+  .tiptap-toolbar button.active {
+    background: #c78f40;
+    color: #111;
+    border-color: #c78f40;
+  }
+
+  .toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background: #ddd;
+    margin: 0 4px;
+    align-self: center;
+  }
+
+  .tiptap-content {
+    padding: 16px;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    outline: none;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  .tiptap-content:empty::before {
+    content: attr(data-placeholder);
+    color: #aaa;
+    pointer-events: none;
+  }
+
+  .tiptap-content:focus {
+    box-shadow: inset 0 0 0 2px rgba(199, 143, 64, 0.3);
+  }
+
+  .tiptap-content h2 {
+    font-size: 20px;
+    margin: 16px 0 8px;
+    font-weight: 600;
+  }
+
+  .tiptap-content ul,
+  .tiptap-content ol {
+    padding-left: 24px;
+    margin: 8px 0;
+  }
+
+  .tiptap-content li {
+    margin: 4px 0;
+  }
+
+  .tiptap-content p {
+    margin: 8px 0;
+  }
+</style>
+
+<script>
+  import { Editor } from "@tiptap/core";
+  import StarterKit from "@tiptap/starter-kit";
+
+  document.querySelectorAll(".tiptap-wrapper").forEach((wrapper) => {
+    const toolbar = wrapper.querySelector(".tiptap-toolbar") as HTMLElement;
+    const contentEl = wrapper.querySelector(".tiptap-content") as HTMLElement;
+
+    const editor = new Editor({
+      element: contentEl,
+      extensions: [StarterKit],
+      content: contentEl.innerHTML || "",
+      autofocus: false,
+      editable: true,
+    });
+
+    // Toolbar buttons
+    toolbar.querySelectorAll("[data-command]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const command = btn.getAttribute("data-command");
+        if (!command) return;
+
+        switch (command) {
+          case "bold":
+            editor.chain().focus().toggleBold().run();
+            break;
+          case "italic":
+            editor.chain().focus().toggleItalic().run();
+            break;
+          case "underline":
+            editor.chain().focus().toggleStrike().run();
+            break;
+          case "h2":
+            editor.chain().focus().toggleHeading({ level: 2 }).run();
+            break;
+          case "bulletList":
+            editor.chain().focus().toggleBulletList().run();
+            break;
+          case "orderedList":
+            editor.chain().focus().toggleOrderedList().run();
+            break;
+          case "undo":
+            editor.chain().focus().undo().run();
+            break;
+          case "redo":
+            editor.chain().focus().redo().run();
+            break;
+        }
+      });
+    });
+
+    // Sync active state
+    editor.on("transaction", () => {
+      toolbar.querySelectorAll("[data-command]").forEach((btn) => {
+        const command = btn.getAttribute("data-command");
+        if (!command) return;
+
+        let isActive = false;
+        switch (command) {
+          case "bold": isActive = editor.isActive("bold"); break;
+          case "italic": isActive = editor.isActive("italic"); break;
+          case "underline": isActive = editor.isActive("strike"); break;
+          case "h2": isActive = editor.isActive("heading", { level: 2 }); break;
+          case "bulletList": isActive = editor.isActive("bulletList"); break;
+          case "orderedList": isActive = editor.isActive("orderedList"); break;
+        }
+
+        btn.classList.toggle("active", isActive);
+      });
+    });
+  });
+</script>

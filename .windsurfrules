@@ -1,7 +1,5 @@
 # tahin-spare-suppliers — Project Memory
-# Auto-synced | 12922 observations
-
-**Stack:** JavaScript
+# Auto-synced | 331 observations
 
 # 🏛️ CORE ARCHITECTURE
 
@@ -54,7 +52,4 @@ Example:
 > ℹ️ DO NOT call sys_core_14() or sys_core_08() at startup — context above IS your context.
 
 ---
-*Auto-synced | 2026-04-11*
-
-# BrainSync Intelligence (Auto-Synced)
-[BrainSync Rules](.brainsync/agent-rules.md)
+*Auto-synced | 2026-05-05*

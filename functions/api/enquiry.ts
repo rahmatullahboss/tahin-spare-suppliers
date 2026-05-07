@@ -49,7 +49,7 @@ export async function onRequestPost(context: EventContext): Promise<Response> {
       },
       body: JSON.stringify({
         from: 'Tahin Spare Suppliers <onboarding@resend.dev>',
-        to: ['rahmatullahzisan@gmail.com'],
+        to: ['sales@tahinspare.com'],
         subject: `New Enquiry from ${name} — ${equipment}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

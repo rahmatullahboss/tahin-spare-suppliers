@@ -1,6 +1,6 @@
 ---
-import { getRuntimeEnv } from "../../../lib/server/env";
-import { isAuthenticated } from "../../../lib/server/session";
+import { getRuntimeEnv } from "../../../../lib/server/env";
+import { isAuthenticated } from "../../../../lib/server/session";
 
 const env = getRuntimeEnv(Astro.locals);
 const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
@@ -11,5 +11,5 @@ if (!authenticated) {
 
 const { id } = Astro.params;
 
-return Astro.redirect(`/admin/emails/thread/sent/${id}`);
+return Astro.redirect(`/admin/emails/thread/inbound/${id}`);
 ---

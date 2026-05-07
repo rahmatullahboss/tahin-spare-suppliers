@@ -1,0 +1,449 @@
+---
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../../../lib/server/env";
+import { getDb } from "../../../../lib/server/db";
+import { isAuthenticated } from "../../../../lib/server/session";
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+
+if (!authenticated) {
+  return Astro.redirect("/admin/login");
+}
+
+const sql = getDb(env);
+const result = await sql.query(`SELECT COUNT(*) as total FROM inbound_emails`);
+const total = result[0]?.total ?? 0;
+const unreadResult = await sql.query(`SELECT COUNT(*) as total FROM inbound_emails WHERE is_read = false`);
+const unreadCount = unreadResult[0]?.total ?? 0;
+---
+
+<AdminLayout title="Inbound Emails" active="emails">
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Inbound Emails</h1>
+      <p class="subtitle" id="email-count">{unreadCount} unread / {total} total</p>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="unread">Unread</button>
+    <button class="filter-btn" data-filter="read">Read</button>
+    <input
+      type="text"
+      id="search-input"
+      placeholder="Search by sender or subject..."
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="table-container">
+    <table class="emails-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>From</th>
+          <th>Subject</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="emails-body">
+        <tr class="loading-row">
+          <td colspan="4">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+</AdminLayout>
+
+<style>
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 20px;
+  }
+  .header-left h1 {
+    font-size: 28px;
+    margin: 0 0 5px;
+  }
+  .subtitle {
+    color: #666;
+    margin: 0;
+  }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover {
+    background: #f0f0f0;
+  }
+  .filter-btn.active {
+    background: #c78f40;
+    color: #111;
+    border-color: #c78f40;
+  }
+  #search-input {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    width: 250px;
+  }
+  #search-input:focus {
+    border-color: #c78f40;
+  }
+
+  .table-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+
+  .emails-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .emails-table th {
+    background: #f8f8f8;
+    padding: 14px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .emails-table td {
+    padding: 16px 20px;
+    border-top: 1px solid #eee;
+    color: #333;
+  }
+  .emails-table tbody tr {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .emails-table tbody tr:hover {
+    background: #f9f9f9;
+  }
+  .emails-table .date-col {
+    color: #888;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .emails-table .from-col {
+    color: #c0392b;
+    font-size: 14px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .emails-table .subject-col {
+    font-weight: 500;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .emails-table .status-col {
+    text-align: center;
+  }
+  .emails-table .unread-badge {
+    background: #e74c3c;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .emails-table .read-badge {
+    background: #eee;
+    color: #888;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .loading-row td {
+    text-align: center;
+    color: #888;
+    padding: 40px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .empty-state h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #333;
+  }
+  .empty-state p {
+    margin: 0;
+    color: #888;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .pagination button {
+    padding: 8px 14px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+  .pagination button:hover:not(:disabled) {
+    background: #f0f0f0;
+    border-color: #ccc;
+  }
+  .pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .pagination .page-info {
+    padding: 8px 12px;
+    color: #666;
+    font-size: 14px;
+  }
+</style>
+
+<script>
+  const PAGE_SIZE = 20;
+  let currentPage = 1;
+  let searchQuery = "";
+  let filter = "all";
+  let totalPages = 1;
+
+  const tbody = document.getElementById("emails-body") as HTMLTableSectionElement;
+  const pagination = document.getElementById("pagination") as HTMLDivElement;
+  const countEl = document.getElementById("email-count") as HTMLParagraphElement;
+  const searchInput = document.getElementById("search-input") as HTMLInputElement;
+
+  let searchTimeout: ReturnType<typeof setTimeout>;
+
+  document.querySelectorAll(".filter-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      filter = btn.getAttribute("data-filter") || "all";
+      currentPage = 1;
+      loadEmails();
+    });
+  });
+
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      searchQuery = searchInput.value.trim();
+      currentPage = 1;
+      loadEmails();
+    }, 300);
+  });
+
+  async function loadEmails() {
+    try {
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(PAGE_SIZE),
+        filter,
+      });
+      if (searchQuery) params.set("search", searchQuery);
+
+      const res = await fetch(`/api/admin/emails/inbound?${params}`);
+      if (!res.ok) throw new Error("Failed to load");
+
+      const data = await res.json();
+      totalPages = data.totalPages || 1;
+
+      renderEmails(data.emails);
+      renderPagination();
+      countEl.textContent = `${data.unreadCount} unread / ${data.total} total`;
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = "";
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.setAttribute("colspan", "4");
+      td.textContent = "Failed to load emails";
+      td.style.textAlign = "center";
+      td.style.color = "#c0392b";
+      td.style.padding = "40px";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+  }
+
+  function renderEmails(emails: Array<{id: string; from_address: string; subject: string; is_read: boolean; created_at: string}>) {
+    if (emails.length === 0) {
+      tbody.textContent = "";
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.setAttribute("colspan", "4");
+
+      const container = document.createElement("div");
+      container.className = "empty-state";
+
+      const h2 = document.createElement("h2");
+      h2.textContent = "No emails found";
+      container.appendChild(h2);
+
+      const p = document.createElement("p");
+      p.textContent = searchQuery ? "Try a different search term" : "No inbound emails yet";
+      container.appendChild(p);
+
+      td.appendChild(container);
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    tbody.textContent = "";
+    emails.forEach((email) => {
+      const tr = document.createElement("tr");
+
+      const dateTd = document.createElement("td");
+      dateTd.className = "date-col";
+      dateTd.textContent = formatDate(email.created_at);
+
+      const fromTd = document.createElement("td");
+      fromTd.className = "from-col";
+      fromTd.textContent = email.from_address;
+      fromTd.title = email.from_address;
+
+      const subjectTd = document.createElement("td");
+      subjectTd.className = "subject-col";
+      subjectTd.textContent = email.subject;
+      subjectTd.title = email.subject;
+
+      const statusTd = document.createElement("td");
+      statusTd.className = "status-col";
+      if (email.is_read) {
+        const badge = document.createElement("span");
+        badge.className = "read-badge";
+        badge.textContent = "Read";
+        statusTd.appendChild(badge);
+      } else {
+        const badge = document.createElement("span");
+        badge.className = "unread-badge";
+        badge.textContent = "New";
+        statusTd.appendChild(badge);
+      }
+
+      tr.appendChild(dateTd);
+      tr.appendChild(fromTd);
+      tr.appendChild(subjectTd);
+      tr.appendChild(statusTd);
+      tr.addEventListener("click", () => { window.location.href = `/admin/emails/inbound/${email.id}`; });
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderPagination() {
+    if (totalPages <= 1) {
+      pagination.textContent = "";
+      return;
+    }
+
+    pagination.textContent = "";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "Prev";
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
+    pagination.appendChild(prevBtn);
+
+    const pages = getPageNumbers();
+    pages.forEach((p) => {
+      if (typeof p === "string") {
+        const info = document.createElement("span");
+        info.className = "page-info";
+        info.textContent = "…";
+        pagination.appendChild(info);
+      } else {
+        const btn = document.createElement("button");
+        btn.textContent = String(p);
+        if (p === currentPage) btn.style.fontWeight = "bold";
+        btn.addEventListener("click", () => goToPage(p));
+        pagination.appendChild(btn);
+      }
+    });
+
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+    pagination.appendChild(nextBtn);
+
+    const info = document.createElement("span");
+    info.className = "page-info";
+    info.textContent = `Page ${currentPage} of ${totalPages}`;
+    pagination.appendChild(info);
+  }
+
+  function getPageNumbers(): (number | string)[] {
+    const pages: (number | string)[] = [1];
+    if (totalPages <= 7) {
+      for (let i = 2; i <= totalPages; i++) pages.push(i);
+    } else {
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      if (start > 2) pages.push("...");
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages - 1) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  }
+
+  function goToPage(page: number) {
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    loadEmails();
+  }
+
+  function formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  loadEmails();
+</script>

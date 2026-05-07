@@ -81,6 +81,8 @@ CREATE TABLE IF NOT EXISTS sent_emails (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS in_reply_to_inbound_id TEXT NOT NULL DEFAULT '';
+
 CREATE TABLE IF NOT EXISTS inbound_emails (
   id TEXT PRIMARY KEY,
   from_address TEXT NOT NULL,
@@ -91,6 +93,14 @@ CREATE TABLE IF NOT EXISTS inbound_emails (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS resend_email_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS message_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS html_body TEXT NOT NULL DEFAULT '';
+ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS attachments_json TEXT NOT NULL DEFAULT '[]';
+
 CREATE INDEX IF NOT EXISTS idx_sent_emails_created ON sent_emails(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sent_emails_reply_to_inbound ON sent_emails(in_reply_to_inbound_id);
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_created ON inbound_emails(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_read ON inbound_emails(is_read);
+CREATE INDEX IF NOT EXISTS idx_inbound_emails_resend_id ON inbound_emails(resend_email_id);
+CREATE INDEX IF NOT EXISTS idx_inbound_emails_message_id ON inbound_emails(message_id);

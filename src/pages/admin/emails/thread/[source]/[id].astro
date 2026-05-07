@@ -1,0 +1,304 @@
+---
+import AdminLayout from "../../../../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../../../../lib/server/env";
+import { getDb } from "../../../../../lib/server/db";
+import { isAuthenticated } from "../../../../../lib/server/session";
+import {
+  extractEmailAddress,
+  makeReplySubject,
+  normalizeEmailSubject,
+} from "../../../../../lib/server/email-thread";
+
+type EmailSource = "inbound" | "sent";
+type DbRow = Record<string, unknown>;
+type ThreadMessage = {
+  id: string;
+  source: EmailSource;
+  from: string;
+  to: string;
+  subject: string;
+  body: string;
+  createdAt: string;
+  inReplyToInboundId: string;
+};
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+
+if (!authenticated) {
+  return Astro.redirect("/admin/login");
+}
+
+const source = Astro.params.source === "sent" ? "sent" : "inbound";
+const { id } = Astro.params;
+const sql = getDb(env);
+
+function asString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function toMessage(row: DbRow, messageSource: EmailSource): ThreadMessage {
+  return {
+    id: asString(row.id),
+    source: messageSource,
+    from: asString(row.from_address),
+    to: asString(row.to_address),
+    subject: asString(row.subject),
+    body: asString(row.body),
+    createdAt: asString(row.created_at),
+    inReplyToInboundId: asString(row.in_reply_to_inbound_id),
+  };
+}
+
+const anchorResult = source === "inbound"
+  ? await sql.query(
+      `SELECT id, from_address, to_address, subject, body, created_at, '' as in_reply_to_inbound_id
+       FROM inbound_emails WHERE id = $1`,
+      [id]
+    )
+  : await sql.query(
+      `SELECT id, from_address, to_address, subject, body, created_at, in_reply_to_inbound_id
+       FROM sent_emails WHERE id = $1`,
+      [id]
+    );
+
+if (anchorResult.length === 0) {
+  return Astro.redirect("/admin/emails");
+}
+
+const anchor = toMessage(anchorResult[0] as DbRow, source);
+const customerEmail = extractEmailAddress(source === "inbound" ? anchor.from : anchor.to);
+const subjectKey = normalizeEmailSubject(anchor.subject);
+
+const [inboundRows, sentRows] = await Promise.all([
+  sql.query(
+    `SELECT id, from_address, to_address, subject, body, created_at, '' as in_reply_to_inbound_id
+     FROM inbound_emails
+     ORDER BY created_at DESC
+     LIMIT 500`
+  ),
+  sql.query(
+    `SELECT id, from_address, to_address, subject, body, created_at, in_reply_to_inbound_id
+     FROM sent_emails
+     ORDER BY created_at DESC
+     LIMIT 500`
+  ),
+]);
+
+const inboundMessages = (inboundRows as DbRow[])
+  .map((row) => toMessage(row, "inbound"))
+  .filter((message) => {
+    return extractEmailAddress(message.from) === customerEmail
+      && normalizeEmailSubject(message.subject) === subjectKey;
+  });
+
+const inboundIds = new Set(inboundMessages.map((message) => message.id));
+
+const sentMessages = (sentRows as DbRow[])
+  .map((row) => toMessage(row, "sent"))
+  .filter((message) => {
+    const sameCustomer = extractEmailAddress(message.to) === customerEmail
+      && normalizeEmailSubject(message.subject) === subjectKey;
+    const linkedReply = message.inReplyToInboundId
+      ? inboundIds.has(message.inReplyToInboundId) || message.inReplyToInboundId === anchor.id
+      : false;
+    return sameCustomer || linkedReply;
+  });
+
+const thread = [...inboundMessages, ...sentMessages].sort((a, b) => {
+  return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+});
+
+const latestInbound = [...inboundMessages].sort((a, b) => {
+  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+})[0];
+
+if (inboundIds.size > 0) {
+  await Promise.all(
+    [...inboundIds].map((inboundId) => {
+      return sql.query(`UPDATE inbound_emails SET is_read = true WHERE id = $1`, [
+        inboundId,
+      ]);
+    })
+  );
+}
+
+const displaySubject = anchor.subject;
+const replySubject = makeReplySubject(anchor.subject);
+const replyTo = customerEmail;
+const inReplyToId = latestInbound?.id ?? "";
+---
+
+<AdminLayout title="Email Conversation" active="emails">
+  <div class="thread-shell">
+    <div class="thread-header">
+      <a href="/admin/emails" class="back-link">Back to Emails</a>
+      <div class="thread-title-row">
+        <div>
+          <h1>{displaySubject}</h1>
+          <p>{customerEmail}</p>
+        </div>
+        <a
+          class="reply-btn"
+          href={`/admin/emails/send?replyTo=${encodeURIComponent(replyTo)}&subject=${encodeURIComponent(replySubject)}&inReplyToId=${encodeURIComponent(inReplyToId)}`}
+        >
+          Reply
+        </a>
+      </div>
+    </div>
+
+    <div class="timeline">
+      {thread.map((message) => (
+        <article class:list={["message", message.source === "sent" ? "sent" : "inbound"]}>
+          <div class="message-head">
+            <div>
+              <span class="direction">{message.source === "sent" ? "You replied" : "Customer wrote"}</span>
+              <h2>{message.subject}</h2>
+            </div>
+            <time datetime={message.createdAt}>
+              {new Date(message.createdAt).toLocaleString()}
+            </time>
+          </div>
+          <div class="meta">
+            <span>From: {message.from}</span>
+            <span>To: {message.to}</span>
+          </div>
+          {message.source === "sent" ? (
+            <div class="body" set:html={message.body || "(Empty body)"} />
+          ) : (
+            <div class="body plain">{message.body || "(Empty body)"}</div>
+          )}
+        </article>
+      ))}
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  .thread-shell {
+    max-width: 900px;
+  }
+  .thread-header {
+    margin-bottom: 22px;
+  }
+  .back-link {
+    display: inline-block;
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .back-link:hover {
+    color: #c78f40;
+  }
+  .thread-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    line-height: 1.25;
+  }
+  .thread-title-row p {
+    margin: 0;
+    color: #666;
+    word-break: break-all;
+  }
+  .reply-btn {
+    background: #c78f40;
+    color: #111;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .reply-btn:hover {
+    background: #b07d35;
+  }
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .message {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .message.sent {
+    border-left: 4px solid #c78f40;
+  }
+  .message.inbound {
+    border-left: 4px solid #c0392b;
+  }
+  .message-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px 10px;
+  }
+  .direction {
+    display: inline-block;
+    color: #777;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .message h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.35;
+  }
+  time {
+    color: #777;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #666;
+    font-size: 13px;
+    padding: 0 20px 14px;
+    border-bottom: 1px solid #eee;
+    word-break: break-all;
+  }
+  .body {
+    padding: 20px;
+    color: #333;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+  .body.plain {
+    white-space: pre-wrap;
+  }
+  .body :global(p:first-child) {
+    margin-top: 0;
+  }
+  .body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  @media (max-width: 700px) {
+    .thread-title-row,
+    .message-head {
+      flex-direction: column;
+    }
+    .reply-btn {
+      text-align: center;
+    }
+    time {
+      white-space: normal;
+    }
+  }
+</style>

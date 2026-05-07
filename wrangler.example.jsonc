@@ -12,6 +12,8 @@
     "DATABASE_URL": "",
     "ADMIN_PASSWORD": "",
     "SESSION_SECRET": "",
-    "MEDIA_PUBLIC_URL": ""
+    "MEDIA_PUBLIC_URL": "",
+    "RESEND_API_KEY": "",
+    "RESEND_WEBHOOK_SECRET": ""
   }
 }

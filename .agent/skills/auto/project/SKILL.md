@@ -1,6 +1,6 @@
 ---
 name: project
-description: "Project for tahin-spare-suppliers. 11194 gotchas, 173 conventions, 16 fixes."
+description: "Project for tahin-spare-suppliers. 25 gotchas, 249 conventions."
 domain: project
 triggers:
   - glob: "**/*"
@@ -10,7 +10,7 @@ enabled: true
 
 # Project
 
-Auto-compiled from **12227 real patterns** in **tahin-spare-suppliers**. This skill is auto-routed to agents when working on project files.
+Auto-compiled from **294 real patterns** in **tahin-spare-suppliers**. This skill is auto-routed to agents when working on project files.
 
 ## ⚠️ Anti-Patterns & Gotchas
 
@@ -18,211 +18,172 @@ Auto-compiled from **12227 real patterns** in **tahin-spare-suppliers**. This sk
 
 | ❌ Don't | Details |
 |----------|----------|
-| gotcha in agent.md | - > 12795 notes - Updated: 4/6/2026 + > 12797 notes - Updated: 4/6/2026 - - 11203 warnings → see `.a |
-| gotcha in agent.md | - > 12793 notes - Updated: 4/6/2026 + > 12795 notes - Updated: 4/6/2026 - - 11202 warnings → see `.a |
-| gotcha in agent.md | - > 12789 notes - Updated: 4/6/2026 + > 12793 notes - Updated: 4/6/2026 - - 11200 warnings → see `.a |
-| gotcha in agent-rules.md | - - ⚠️ GOTCHA: Updated multiple database schema + - gotcha in agent.md  📌 IDE AST Context: Modified |
-| gotcha in agent.md | - > 12786 notes - Updated: 4/6/2026 + > 12789 notes - Updated: 4/6/2026 - - 11199 warnings → see `.a |
-| gotcha in agent.md | - > 12783 notes - Updated: 4/6/2026 + > 12786 notes - Updated: 4/6/2026 - - 11198 warnings → see `.a |
-| gotcha in agent.md | - > 12780 notes - Updated: 4/6/2026 + > 12783 notes - Updated: 4/6/2026 - - 11197 warnings → see `.a |
-| gotcha in agent.md | - > 12777 notes - Updated: 4/6/2026 + > 12780 notes - Updated: 4/6/2026 - - 11196 warnings → see `.a |
-| gotcha in agent.md | - > 12774 notes - Updated: 4/6/2026 + > 12777 notes - Updated: 4/6/2026 - - 11195 warnings → see `.a |
-| gotcha in agent.md | - > 12771 notes - Updated: 4/6/2026 + > 12774 notes - Updated: 4/6/2026 - - 11194 warnings → see `.a |
-| gotcha in agent.md | - > 12768 notes - Updated: 4/6/2026 + > 12771 notes - Updated: 4/6/2026 - - 11193 warnings → see `.a |
-| gotcha in agent.md | - > 12765 notes - Updated: 4/6/2026 + > 12768 notes - Updated: 4/6/2026 - - 11192 warnings → see `.a |
-| gotcha in agent.md | - > 12762 notes - Updated: 4/6/2026 + > 12765 notes - Updated: 4/6/2026 - - 11191 warnings → see `.a |
-| gotcha in agent.md | - > 12759 notes - Updated: 4/6/2026 + > 12762 notes - Updated: 4/6/2026 - - 11190 warnings → see `.a |
-| ⚠️ GOTCHA: Updated multiple database schema | - > 12752 notes - Updated: 4/6/2026 + > 12759 notes - Updated: 4/6/2026 - - 11188 warnings → see `.a |
-| ⚠️ GOTCHA: Added JWT tokens authentication — evolv | + # Project Memory — tahin-spare-suppliers + > 12755 notes - Score threshold: >40 +  + ## Safety — N |
-| gotcha in agent.md | - > 12749 notes - Updated: 4/6/2026 + > 12752 notes - Updated: 4/6/2026 - - 11187 warnings → see `.a |
-| gotcha in agent.md | - > 12746 notes - Updated: 4/6/2026 + > 12749 notes - Updated: 4/6/2026 - - 11186 warnings → see `.a |
-| gotcha in agent.md | - > 12743 notes - Updated: 4/6/2026 + > 12746 notes - Updated: 4/6/2026 - - 11185 warnings → see `.a |
-| gotcha in agent.md | - > 12740 notes - Updated: 4/6/2026 + > 12743 notes - Updated: 4/6/2026 - - 11184 warnings → see `.a |
-| gotcha in agent.md | - > 12737 notes - Updated: 4/6/2026 + > 12740 notes - Updated: 4/6/2026 - - 11183 warnings → see `.a |
-| gotcha in agent.md | - > 12734 notes - Updated: 4/6/2026 + > 12737 notes - Updated: 4/6/2026 - - 11182 warnings → see `.a |
-| gotcha in agent.md | - > 12731 notes - Updated: 4/6/2026 + > 12734 notes - Updated: 4/6/2026 - - 11181 warnings → see `.a |
-| gotcha in agent.md | - > 12728 notes - Updated: 4/6/2026 + > 12731 notes - Updated: 4/6/2026 - - 11180 warnings → see `.a |
-| gotcha in agent.md | - > 12722 notes - Updated: 4/6/2026 + > 12728 notes - Updated: 4/6/2026 - - 11178 warnings → see `.a |
-| ⚠️ GOTCHA: Added JWT tokens authentication — ensur | - - ⚠️ GOTCHA: Updated multiple database schema + - gotcha in agent.md - - ⚠️ GOTCHA: Added JWT toke |
-| gotcha in agent.md | - > 12719 notes - Updated: 4/6/2026 + > 12722 notes - Updated: 4/6/2026 - - 11177 warnings → see `.a |
-| gotcha in agent.md | - > 12716 notes - Updated: 4/6/2026 + > 12719 notes - Updated: 4/6/2026 - - 11176 warnings → see `.a |
-| gotcha in agent.md | - > 12713 notes - Updated: 4/6/2026 + > 12716 notes - Updated: 4/6/2026 - - 11175 warnings → see `.a |
-| gotcha in agent.md | - > 12710 notes - Updated: 4/6/2026 + > 12713 notes - Updated: 4/6/2026 - - 11174 warnings → see `.a |
-| gotcha in agent.md | - > 12707 notes - Updated: 4/6/2026 + > 12710 notes - Updated: 4/6/2026 - - 11173 warnings → see `.a |
-| ⚠️ GOTCHA: Updated multiple database schema | - > 12701 notes - Updated: 4/6/2026 + > 12707 notes - Updated: 4/6/2026 - - 11171 warnings → see `.a |
-| ⚠️ GOTCHA: Added JWT tokens authentication — evolv | + # Project Memory — tahin-spare-suppliers + > 12703 notes - Score threshold: >40 +  + ## Safety — N |
-| gotcha in agent.md | - > 12699 notes - Updated: 4/6/2026 + > 12701 notes - Updated: 4/6/2026 - - 11170 warnings → see `.a |
-| gotcha in agent.md | - > 12697 notes - Updated: 4/6/2026 + > 12699 notes - Updated: 4/6/2026 - - 11169 warnings → see `.a |
-| gotcha in agent.md | - > 12695 notes - Updated: 4/6/2026 + > 12697 notes - Updated: 4/6/2026 - - 11168 warnings → see `.a |
-| gotcha in agent.md | - > 12691 notes - Updated: 4/6/2026 + > 12695 notes - Updated: 4/6/2026 - - 11166 warnings → see `.a |
-| gotcha in agent-rules.md | - - ⚠️ GOTCHA: Updated multiple database schema + - gotcha in agent.md  📌 IDE AST Context: Modified |
-| gotcha in agent.md | - > 12688 notes - Updated: 4/6/2026 + > 12691 notes - Updated: 4/6/2026 - - 11165 warnings → see `.a |
-| gotcha in agent.md | - > 12685 notes - Updated: 4/6/2026 + > 12688 notes - Updated: 4/6/2026 - - 11164 warnings → see `.a |
-| gotcha in agent.md | - > 12682 notes - Updated: 4/6/2026 + > 12685 notes - Updated: 4/6/2026 - - 11163 warnings → see `.a |
-| gotcha in agent.md | - > 12679 notes - Updated: 4/6/2026 + > 12682 notes - Updated: 4/6/2026 - - 11162 warnings → see `.a |
-| gotcha in agent.md | - > 12676 notes - Updated: 4/6/2026 + > 12679 notes - Updated: 4/6/2026 - - 11161 warnings → see `.a |
-| gotcha in agent.md | - > 12673 notes - Updated: 4/6/2026 + > 12676 notes - Updated: 4/6/2026 - - 11160 warnings → see `.a |
-| gotcha in agent.md | - > 12670 notes - Updated: 4/6/2026 + > 12673 notes - Updated: 4/6/2026 - - 11159 warnings → see `.a |
-| gotcha in agent.md | - > 12667 notes - Updated: 4/6/2026 + > 12670 notes - Updated: 4/6/2026 - - 11158 warnings → see `.a |
-| gotcha in agent.md | - > 12664 notes - Updated: 4/6/2026 + > 12667 notes - Updated: 4/6/2026 - - 11157 warnings → see `.a |
-| gotcha in agent.md | - > 12661 notes - Updated: 4/6/2026 + > 12664 notes - Updated: 4/6/2026 - - 11156 warnings → see `.a |
-| ⚠️ GOTCHA: Updated multiple database schema | - > 12652 notes - Updated: 4/6/2026 + > 12661 notes - Updated: 4/6/2026 - - 11153 warnings → see `.a |
-| ⚠️ GOTCHA: Strengthened types GOTCHA — ensures ato | - - gotcha in agent.md + - ⚠️ GOTCHA: Added JWT tokens authentication — evolves the database schema  |
+| Low cohesion detected in Domain Cluster 2 | Cluster 2 (13 nodes) has a very low cohesion score (0.08). This suggests the community is a "spaghet |
+| gotcha in agent.md | File updated (external): agent.md  Content summary (130 lines): # Project Notes — tahin-spare-suppli |
+| Don't mix CommonJS (require) and ESM (import) in s | Don't mix CommonJS (require) and ESM (import) in same project |
+| Don't use "any" type in TypeScript — define proper | Don't use "any" type in TypeScript — define proper types/interfaces |
+| Handle Promise rejections — always .catch() or try | Handle Promise rejections — always .catch() or try/catch with await |
+| Use === not == — strict equality prevents type coe | Use === not == — strict equality prevents type coercion bugs |
+| Agent: follow existing project patterns — don't in | Agent: follow existing project patterns — don't introduce a different style |
+| Agent: don't generate code with "any" type — defin | Agent: don't generate code with "any" type — define proper TypeScript types |
+| Agent: always handle loading/error states — don't  | Agent: always handle loading/error states — don't just render data |
+| Agent: don't use deprecated APIs — check library v | Agent: don't use deprecated APIs — check library version, use current API |
+| Agent: check existing code before creating utility | Agent: check existing code before creating utility functions — avoid duplicates |
+| Don't expose database errors to clients — map to u | Don't expose database errors to clients — map to user-friendly messages |
+| Always validate data on the SERVER — client valida | Always validate data on the SERVER — client validation is for UX only |
+| Don't fetch data inside render loops or hot paths | Don't fetch data inside render loops or hot paths |
+| Don't swallow errors silently — empty catch blocks | Don't swallow errors silently — empty catch blocks hide bugs |
+| Never store session tokens in localStorage — use h | Never store session tokens in localStorage — use httpOnly cookies |
+| Use parameterized queries — never string concatena | Use parameterized queries — never string concatenation for SQL |
+| Don't store passwords in plain text — use bcrypt,  | Don't store passwords in plain text — use bcrypt, argon2, or scrypt |
+| Don't use innerHTML — use textContent or sanitized | Don't use innerHTML — use textContent or sanitized rendering |
+| Sanitize ALL user input before database queries —  | Sanitize ALL user input before database queries — prevent SQL injection |
+| Never use eval(), exec(), or Function() with user  | Never use eval(), exec(), or Function() with user input |
+| Don't hardcode API keys, passwords, database URLs, | Don't hardcode API keys, passwords, database URLs, or secrets anywhere |
+| Don't leave console.log, print(), debugger, or TOD | Don't leave console.log, print(), debugger, or TODO in production code |
+| Don't commit .env, secrets, API keys, or credentia | Don't commit .env, secrets, API keys, or credentials — add to .gitignore |
+| Never force push to main, master, or production br | Never force push to main, master, or production branches |
 
-## 🔧 Problem Playbooks
+## 📐 Conventions & Best Practices
 
-### problem-fix in agent-rules.md
-- - gotcha in agent-rules.md
-+ - gotcha in agent.md
-- - gotcha in agent.md
-+ - gotcha in agent-rules.md
-- - Patched security issue DZYmEy — hardens HTTP security headers
-+ - problem-fix in shared-context.json
-- - Patched security issue Rmagu
-+ - Patched security issue DZYmEy — hardens HTTP security headers
-- - problem-fix in shared-context.json
-+ - Patched security issue Rmagu
-- - Patched security
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### problem-fix in agent-rules.md
-- - problem-fix in shared-context.json
-+ - Patched security issue shared-context
-- - Fixed null crash in Tahin — prevents null/undefined runtime crashes
-+ - problem-fix in shared-context.json
-- - problem-fix in visual_plan.md
-+ - Fixed null crash in Tahin — prevents null/undefined runtime crashes
-- - Patched security issue ProductGrid
-+ - problem-fix in visual_plan.md
-
-📌 IDE AST Context: Modified
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### Fixed null crash in Tahin — prevents null/undefined runtime crashes
--         <h1 class="company-name"><span class="text-red">Tahin</span> Spare Suppliers</h1>
-+         <h1 class="company-name">Tahin Spare Suppliers</h1>
--     color: #1a1a1a;
-+     color: #b11623;
--   .company-name .text-red {
-+   .company-tagline {
--     color: #b11623;
-+     font-size: 11px;
--   }
-+     color: #444;
--   .company-tagline {
-+     margin: 3px 0 0;
--     font-size: 11px;
-+     font
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Tahin
-3. identifier: Spare
-4. identifier: Suppliers
-5. identifier: Inter
-
-### Fixed null crash in Tahin — prevents null/undefined runtime crashes
--         <h1 class="company-name">Tahin Spare Suppliers</h1>
-+         <h1 class="company-name"><span class="text-red">Tahin</span> Spare Suppliers</h1>
--     color: #b11623;
-+     color: #1a1a1a;
--   .company-tagline {
-+   .company-name .text-red {
--     font-size: 11px;
-+     color: #b11623;
--     color: #444;
-+   }
--     margin: 3px 0 0;
-+   .company-tagline {
--     font-family: var(--font-int
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Tahin
-3. identifier: Spare
-4. identifier: Suppliers
-5. identifier: Inter
-
-### Fixed null crash in Tahin — prevents null/undefined runtime crashes
--         <h1 class="company-name">Tahin Spare Suppliers</h1>
-+         <h1 class="company-name"><span class="text-red">Tahin</span> Spare Suppliers</h1>
--         <p class="company-tagline">Supply & Export All Kinds Of Marine Engine & Spare Parts</p>
-+         <p class="company-tagline">Exporters of Marine Engines & Spare Solutions</p>
--     letter-spacing: 0.5px;
-+     letter-spacing: -0.2px;
-- 
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Tahin
-3. identifier: Spare
-4. identifier: Suppliers
-5. identifier: Exporters
-
-### Fixed null crash in Close — prevents null/undefined runtime crashes
--     font-size: 28px;
-+     font-size: 34px;
--     font-size: 11px;
-+     font-size: 14px;
--     .company-name { font-size: 22px; }
-+     .company-name { font-size: 26px; }
--     .company-tagline { display: none; }
-+     .company-tagline { font-size: 11px; display: block; }
--     .header-container { padding: 0 15px; }
-+     .logo-image { width: 50px; height: 50px; }
--     .top-bar-content { justi
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Close
-3. identifier: Node
-4. identifier: Handle
-5. identifier: For
-
-### problem-fix in visual_plan.md
-- - [ ] Update `ProductGrid.astro` to group items into visually distinct sections per brand instead of a unified filter grid.
-+ - [x] Update `ProductGrid.astro` to group items into visually distinct sections per brand instead of a unified filter grid.
-- - [ ] Enhance `products/[slug].astro` layout:
-+ - [x] Enhance `products/[slug].astro` layout:
-- - [ ] Ensure `miniflare` error doesn't block the b
-
-**Actionable Steps:**
-1. Modified 1 files
-
-### Fixed null crash in Boolean — filters out falsy/null values explicitly
-- ---
-+ const uniqueBrands = [...new Set(products.map((p: any) => p.brand).filter(Boolean))];
-- 
-+ ---
-- <div class="products-grid">
+### Project Conventions
+- 📐 **Strengthened types Patched** — - - problem-fix in agent-rules.md
++ - Patched security issue XxuMd
+- - problem-fix in ice-servers.ts
+- 📐 **Strengthened types Optimized** — - 
++ - Optimized GOTCHA
+- ## Recent fixes
 + 
--   {products.map((product: any) => (
-+ {uniqueBrands.length > 0 && (
--     <a href={`${basePath}/${product.slug}`} class="product-card" data-brand={product.brand || ''}>
-+   <div class="brand-filters" data-grid-filter>
--       {product.imageUrl && (
-+     <button
-
-**Actionable Steps:**
-1. Modified 1 files
-2. identifier: Set
-3. identifier: Boolean
-4. identifier: All
-5. identifier: Brands
-
-### Patched security issue ProductGrid
-- import { getRuntimeEnv } from '../lib/server/env';
-+ import ProductGrid from '../components/ProductGrid.astro';
-- import { listContent } from '../lib/server/repository';
-+ import { getRuntimeEnv } from '../lib/server/env';
 - 
-+ import { listContent } from '../lib/server/repository';
-- const env = getRuntimeEnv(Astro.locals);
-+ 
-- const liveParts =
++ ## Recent fixes
+- - problem-fix in agent-rules.md
 
-... [Truncated — see individual observations for full content]
+- 📐 **Strengthened types Fixed** — - - Fixed null crash in CloudflareSFUClient — prevents null/undefined runtime cra...
++ - Fixed null 
+- 📐 **Strengthened types Fixed** — - - problem-fix in client_proposal.md
++ - Fixed null crash in CloudflareSFUClient — prevents null/un
+- 📐 **Strengthened types Optimized** — - 
++ - Optimized GOTCHA
+- ## Recent fixes
++ 
+- 
++ ## Recent fixes
+- - Patched security issue Vobr
++ 
+- 📐 **Strengthened types Fixed** — - - Patched security issue Nudr
++ - Fixed null crash in Audio — prevents null/undefined runtime cras
+- 📐 **Strengthened types Optimized** — - 
++ - Optimized GOTCHA
+- ## Recent fixes
++ 
+- 
++ ## Recent fixes
+- - Fixed null crash in LOCAL — av
+- 📐 **Strengthened types Optimized** — - 
++ - Optimized GOTCHA
+- ## Recent fixes
++ 
+- 
++ ## Recent fixes
+- - Patched security issue VgoIJut
+- 📐 **Strengthened types Recent** — - - Optimized Score — parallelizes async operations for speed
++ 
+- - Optimized Score — parallelizes 
+- 📐 **Strengthened types Optimized** — - 
++ - Optimized Optimized
+- ## Recent fixes
++ 
+- 
++ ## Recent fixes
+- - Fixed null crash in Radio —
+- 📐 **convention in .gitignore** — File updated (external): .gitignore
+
+Content summary (31 lines):
+.DS_Store
+.env
+/node_modules/
+*.tsb
+- 📐 **convention in task.md** — - ## Next Steps
++ - [x] Deployment to Production
+- - [ ] Localize Radiology module
++     - [x] Build
+- 📐 **Version your API from day 1 (/api/v1/)** — Version your API from day 1 (/api/v1/)
+- 📐 **Use consistent response format across all endpoints** — Use consistent response format across all endpoints
+- 📐 **Implement soft delete for important data — don't hard delete without confirmation** — Implement soft delete for important data — don't hard delete without confirmation
+- 📐 **Handle timezone correctly — store UTC, display in user's timezone** — Handle timezone correctly — store UTC, display in user's timezone
+- 📐 **Make layouts responsive from the start — mobile-first approach** — Make layouts responsive from the start — mobile-first approach
+- 📐 **Disable submit button during form submission — prevent double-submit** — Disable submit button during form submission — prevent double-submit
+- 📐 **Always add empty states ("No items yet" with call-to-action)** — Always add empty states ("No items yet" with call-to-action)
+- 📐 **Always add error states with retry button — not just blank screen** — Always add error states with retry button — not just blank screen
+- 📐 **Always add loading states for async operations (skeleton, spinner)** — Always add loading states for async operations (skeleton, spinner)
+- 📐 **Test edge cases: empty input, null, boundary values, error scenarios** — Test edge cases: empty input, null, boundary values, error scenarios
+- 📐 **Each test should be independent — no shared mutable state between tests** — Each test should be independent — no shared mutable state between tests
+- 📐 **Write tests for business logic — test behavior/output, not implementation details** — Write tests for business logic — test behavior/output, not implementation details
+- 📐 **Close resources (streams, connections, handles) when done** — Close resources (streams, connections, handles) when done
+- 📐 **Debounce user input handlers (search, resize, scroll)** — Debounce user input handlers (search, resize, scroll)
+- 📐 **Use pagination for lists over 100 items** — Use pagination for lists over 100 items
+- 📐 **Implement retry logic for transient failures with exponential backoff** — Implement retry logic for transient failures with exponential backoff
+- 📐 **Return proper HTTP status codes — not 500 for everything** — Return proper HTTP status codes — not 500 for everything
+- 📐 **Always wrap async/await in try/catch** — Always wrap async/await in try/catch
+- 📐 **Hash passwords with cost factor ≥12 (bcrypt) or memory ≥64MB (argon2)** — Hash passwords with cost factor ≥12 (bcrypt) or memory ≥64MB (argon2)
+- 📐 **Implement rate limiting on login endpoints to prevent brute force** — Implement rate limiting on login endpoints to prevent brute force
+- 📐 **Use constants for magic numbers and strings** — Use constants for magic numbers and strings
+- 📐 **Handle edge cases: empty arrays, empty strings, null, undefined, 0, NaN** — Handle edge cases: empty arrays, empty strings, null, undefined, 0, NaN
+- 📐 **Keep functions under 50 lines and single-responsibility** — Keep functions under 50 lines and single-responsibility
+- 📐 **Remove unused imports, variables, and dead code** — Remove unused imports, variables, and dead code
+- 📐 **Always pull before push to avoid conflicts** — Always pull before push to avoid conflicts
+- 📐 **Use meaningful commit messages in imperative mood: "Add feature" not "Added feature"** — Use meaningful commit messages in imperative mood: "Add feature" not "Added feature"
+- 📐 **Don't commit node_modules, __pycache__, build/, dist/ — add to .gitignore** — Don't commit node_modules, __pycache__, build/, dist/ — add to .gitignore
+- 📐 **convention in agents.md** — - ## Core system constraints
++ ## Deployment
+- - Keep request handlers thin.
++ 
+- - Move heavy work 
+- 📐 **convention in booking-realtime.md** — File updated (external): .agent-rules/booking-realtime.md
+
+Content summary (19 lines):
+# Booking and
+- 📐 **convention in data-storage.md** — File updated (external): .agent-rules/data-storage.md
+
+Content summary (1 lines):
+ 
+- 📐 **Strengthened types Patient** — - # E2E Testing: Patient Portal Journey
++ # Patient Portal Backend Integration
+- ## Goal
++ ## Core O
+- 📐 **Version your API from day 1 (/api/v1/)** — Version your API from day 1 (/api/v1/)
+- 📐 **Use consistent response format across all endpoints** — Use consistent response format across all endpoints
+- 📐 **Implement soft delete for important data — don't hard delete without confirmation** — Implement soft delete for important data — don't hard delete without confirmation
+- 📐 **Handle timezone correctly — store UTC, display in user's timezone** — Handle timezone correctly — store UTC, display in user's timezone
+- 📐 **Make layouts responsive from the start — mobile-first approach** — Make layouts responsive from the start — mobile-first approach
+- 📐 **Disable submit button during form submission — prevent double-submit** — Disable submit button during form submission — prevent double-submit
+- 📐 **Always add empty states ("No items yet" with call-to-action)** — Always add empty states ("No items yet" with call-to-action)
+
+## 🔵 Architecture
+
+### Architectural hotspots: 3 hub files detected
+These files are imported by many others and represent critical architectural nodes. Changes here have high blast radius:
+  • env.ts — imported by 14 files
+  • db.ts — imported by 10 files
+  • api.ts —
+
+### Architectural hotspots: 2 hub files detected
+These files are imported by many others and represent critical architectural nodes. Changes here have high blast radius:
+  • index.ts — imported by 10 files
+  • auth.ts — imported by 5 files
+
+Breaking
+
+### Architectural hotspots: 10 hub files detected
+These files are imported by many others and represent critical architectural nodes. Changes here have high blast radius:
+  • types.ts — imported by 34 files
+  • types.ts — imported by 30 files
+  • api
+
+### Architectural hotspots: 10 hub files detected
+These files are imported by many others and represent critical architectural nodes. Changes here have high blast radius:
+  • messagebox.service.ts — imported by 1029 files
+  • core.service.ts — import
+
+---
+*Auto-generated by BrainSync 🧠 | 294 patterns | 2026-05-05*

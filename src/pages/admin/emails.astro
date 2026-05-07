@@ -12,26 +12,44 @@ if (!authenticated) {
 }
 
 const sql = getDb(env);
-const result = await sql.query(
-  `SELECT COUNT(*) as total FROM sent_emails`
-);
-const total = result[0]?.total ?? 0;
+const [sentResult, inboundResult, unreadResult] = await Promise.all([
+  sql.query(`SELECT COUNT(*) as total FROM sent_emails`),
+  sql.query(`SELECT COUNT(*) as total FROM inbound_emails`),
+  sql.query(`SELECT COUNT(*) as total FROM inbound_emails WHERE is_read = false`),
+]);
+const sentTotal = sentResult[0]?.total ?? 0;
+const inboundTotal = inboundResult[0]?.total ?? 0;
+const unreadCount = unreadResult[0]?.total ?? 0;
 ---
 
-<AdminLayout title="Sent Emails" active="enquiries">
+<AdminLayout title="Emails" active="emails">
   <div class="page-header">
     <div class="header-left">
-      <h1>Sent Emails</h1>
-      <p class="subtitle" id="email-count">{total} email{total !== 1 ? 's' : ''}</p>
+      <h1>Emails</h1>
+      <p class="subtitle" id="email-count">{unreadCount} unread / {inboundTotal} inbox</p>
     </div>
     <a href="/admin/emails/send" class="compose-btn">Compose Email</a>
   </div>
 
-  <div class="search-bar">
+  <div class="mail-tabs" role="tablist" aria-label="Email folders">
+    <button class="tab-btn active" type="button" data-folder="inbox">
+      Inbox <span id="inbox-count">({inboundTotal})</span>
+    </button>
+    <button class="tab-btn" type="button" data-folder="sent">
+      Sent <span id="sent-count">({sentTotal})</span>
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="filters" id="inbox-filters">
+      <button class="filter-btn active" type="button" data-filter="all">All</button>
+      <button class="filter-btn" type="button" data-filter="unread">Unread</button>
+      <button class="filter-btn" type="button" data-filter="read">Read</button>
+    </div>
     <input
       type="text"
       id="search-input"
-      placeholder="Search by recipient or subject..."
+      placeholder="Search inbox..."
       autocomplete="off"
     />
   </div>
@@ -39,15 +57,16 @@ const total = result[0]?.total ?? 0;
   <div class="table-container">
     <table class="emails-table">
       <thead>
-        <tr>
+        <tr id="table-head-row">
           <th>Date</th>
-          <th>To</th>
+          <th>From</th>
           <th>Subject</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody id="emails-body">
         <tr class="loading-row">
-          <td colspan="3">Loading...</td>
+          <td colspan="4">Loading...</td>
         </tr>
       </tbody>
     </table>
@@ -61,7 +80,7 @@ const total = result[0]?.total ?? 0;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     gap: 20px;
   }
   .header-left h1 {
@@ -87,12 +106,55 @@ const total = result[0]?.total ?? 0;
     background: #b07d35;
   }
 
-  .search-bar {
-    margin-bottom: 20px;
+  .mail-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #ddd;
   }
-  .search-bar input {
-    width: 100%;
-    max-width: 400px;
+  .tab-btn {
+    border: none;
+    background: transparent;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 700;
+    color: #666;
+    border-bottom: 3px solid transparent;
+  }
+  .tab-btn.active {
+    color: #111;
+    border-bottom-color: #c78f40;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .filter-btn.active {
+    background: #c78f40;
+    color: #111;
+    border-color: #c78f40;
+  }
+  #search-input {
+    width: min(100%, 360px);
     padding: 10px 16px;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -100,7 +162,7 @@ const total = result[0]?.total ?? 0;
     outline: none;
     box-sizing: border-box;
   }
-  .search-bar input:focus {
+  #search-input:focus {
     border-color: #c78f40;
   }
 
@@ -137,17 +199,44 @@ const total = result[0]?.total ?? 0;
   .emails-table tbody tr:hover {
     background: #f9f9f9;
   }
-  .emails-table .date-col {
+  .date-col {
     color: #888;
     font-size: 13px;
     white-space: nowrap;
   }
-  .emails-table .to-col {
+  .address-col {
     color: #c0392b;
     font-size: 14px;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  .emails-table .subject-col {
+  .subject-col {
     font-weight: 500;
+    max-width: 360px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .status-col {
+    text-align: center;
+  }
+  .unread-badge,
+  .read-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .unread-badge {
+    background: #e74c3c;
+    color: #fff;
+  }
+  .read-badge {
+    background: #eee;
+    color: #888;
   }
 
   .loading-row td {
@@ -185,11 +274,6 @@ const total = result[0]?.total ?? 0;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.15s;
-  }
-  .pagination button:hover:not(:disabled) {
-    background: #f0f0f0;
-    border-color: #ccc;
   }
   .pagination button:disabled {
     opacity: 0.5;
@@ -200,20 +284,81 @@ const total = result[0]?.total ?? 0;
     color: #666;
     font-size: 14px;
   }
+
+  @media (max-width: 700px) {
+    .page-header,
+    .toolbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .compose-btn,
+    #search-input {
+      width: 100%;
+      text-align: center;
+    }
+    .emails-table th,
+    .emails-table td {
+      padding: 12px 10px;
+    }
+  }
 </style>
 
 <script>
   const PAGE_SIZE = 20;
   let currentPage = 1;
   let searchQuery = "";
+  let folder: "inbox" | "sent" = "inbox";
+  let filter = "all";
   let totalPages = 1;
+
+  type InboxEmail = {
+    id: string;
+    from_address: string;
+    subject: string;
+    is_read: boolean;
+    created_at: string;
+  };
+
+  type SentEmail = {
+    id: string;
+    to_address: string;
+    subject: string;
+    created_at: string;
+  };
 
   const tbody = document.getElementById("emails-body") as HTMLTableSectionElement;
   const pagination = document.getElementById("pagination") as HTMLDivElement;
   const countEl = document.getElementById("email-count") as HTMLParagraphElement;
   const searchInput = document.getElementById("search-input") as HTMLInputElement;
+  const filtersEl = document.getElementById("inbox-filters") as HTMLDivElement;
+  const headRow = document.getElementById("table-head-row") as HTMLTableRowElement;
+  const inboxCountEl = document.getElementById("inbox-count") as HTMLSpanElement;
+  const sentCountEl = document.getElementById("sent-count") as HTMLSpanElement;
 
   let searchTimeout: ReturnType<typeof setTimeout>;
+
+  document.querySelectorAll<HTMLButtonElement>(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      folder = btn.dataset.folder === "sent" ? "sent" : "inbox";
+      currentPage = 1;
+      searchQuery = "";
+      searchInput.value = "";
+      updateFolderUi();
+      loadEmails();
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>(".filter-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      filter = btn.dataset.filter ?? "all";
+      currentPage = 1;
+      loadEmails();
+    });
+  });
 
   searchInput.addEventListener("input", () => {
     clearTimeout(searchTimeout);
@@ -224,69 +369,151 @@ const total = result[0]?.total ?? 0;
     }, 300);
   });
 
+  function updateFolderUi() {
+    filtersEl.style.display = folder === "inbox" ? "flex" : "none";
+    searchInput.placeholder = folder === "inbox" ? "Search inbox..." : "Search sent emails...";
+    headRow.innerHTML = folder === "inbox"
+      ? "<th>Date</th><th>From</th><th>Subject</th><th>Status</th>"
+      : "<th>Date</th><th>To</th><th>Subject</th>";
+  }
+
   async function loadEmails() {
     try {
       const params = new URLSearchParams({
         page: String(currentPage),
         limit: String(PAGE_SIZE),
       });
-      if (searchQuery) {
-        params.set("search", searchQuery);
-      }
+      if (searchQuery) params.set("search", searchQuery);
 
-      const res = await fetch(`/api/admin/emails?${params}`);
+      const endpoint = folder === "inbox"
+        ? `/api/admin/emails/inbound?${new URLSearchParams({ ...Object.fromEntries(params), filter })}`
+        : `/api/admin/emails?${params}`;
+
+      const res = await fetch(endpoint);
       if (!res.ok) throw new Error("Failed to load");
 
       const data = await res.json();
       totalPages = data.totalPages || 1;
 
-      renderEmails(data.emails);
+      if (folder === "inbox") {
+        renderInboxEmails(data.emails);
+        countEl.textContent = `${data.unreadCount} unread / ${data.total} inbox`;
+        inboxCountEl.textContent = `(${data.total})`;
+      } else {
+        renderSentEmails(data.emails);
+        countEl.textContent = `${data.total} sent email${data.total !== 1 ? "s" : ""}`;
+        sentCountEl.textContent = `(${data.total})`;
+      }
       renderPagination();
-      countEl.textContent = `${data.total} email${data.total !== 1 ? 's' : ''}`;
     } catch (err) {
       console.error(err);
-      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#c0392b;padding:40px;">Failed to load emails</td></tr>`;
+      renderError();
     }
   }
 
-  function renderEmails(emails: Array<{id: string; to_address: string; subject: string; created_at: string}>) {
+  function renderError() {
+    tbody.innerHTML = "";
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.setAttribute("colspan", folder === "inbox" ? "4" : "3");
+    td.textContent = "Failed to load emails";
+    td.style.textAlign = "center";
+    td.style.color = "#c0392b";
+    td.style.padding = "40px";
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  function renderEmpty(message: string) {
+    tbody.textContent = "";
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.setAttribute("colspan", folder === "inbox" ? "4" : "3");
+
+    const container = document.createElement("div");
+    container.className = "empty-state";
+
+    const h2 = document.createElement("h2");
+    h2.textContent = "No emails found";
+    container.appendChild(h2);
+
+    const p = document.createElement("p");
+    p.textContent = searchQuery ? "Try a different search term" : message;
+    container.appendChild(p);
+
+    td.appendChild(container);
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  function renderInboxEmails(emails: InboxEmail[]) {
     if (emails.length === 0) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.setAttribute("colspan", "3");
-      td.appendChild(Object.assign(document.createElement("div"), {
-        className: "empty-state",
-        innerHTML: `<h2>No emails found</h2><p>${searchQuery ? 'Try a different search term' : 'No sent emails yet'}</p>`
-      }).cloneNode(true) as Node);
-      tr.appendChild(td);
-      tbody.textContent = "";
-      tbody.appendChild(tr);
+      renderEmpty("No inbound emails yet");
       return;
     }
 
     tbody.textContent = "";
-    emails.forEach(email => {
+    emails.forEach((email) => {
       const tr = document.createElement("tr");
-      tr.style.cursor = "pointer";
-      tr.addEventListener("click", () => { window.location.href = `/admin/emails/${email.id}`; });
+      tr.appendChild(createDateCell(email.created_at));
+      tr.appendChild(createAddressCell(email.from_address));
+      tr.appendChild(createSubjectCell(email.subject));
 
-      const dateTd = document.createElement("td");
-      dateTd.className = "date-col";
-      dateTd.textContent = formatDate(email.created_at);
+      const statusTd = document.createElement("td");
+      statusTd.className = "status-col";
+      const badge = document.createElement("span");
+      badge.className = email.is_read ? "read-badge" : "unread-badge";
+      badge.textContent = email.is_read ? "Read" : "New";
+      statusTd.appendChild(badge);
+      tr.appendChild(statusTd);
 
-      const toTd = document.createElement("td");
-      toTd.className = "to-col";
-      toTd.textContent = email.to_address;
-
-      const subjectTd = document.createElement("td");
-      subjectTd.className = "subject-col";
-      subjectTd.textContent = email.subject;
-
-      tr.appendChild(dateTd);
-      tr.appendChild(toTd);
-      tr.appendChild(subjectTd);
+      tr.addEventListener("click", () => {
+        window.location.href = `/admin/emails/thread/inbound/${email.id}`;
+      });
       tbody.appendChild(tr);
     });
+  }
+
+  function renderSentEmails(emails: SentEmail[]) {
+    if (emails.length === 0) {
+      renderEmpty("No sent emails yet");
+      return;
+    }
+
+    tbody.textContent = "";
+    emails.forEach((email) => {
+      const tr = document.createElement("tr");
+      tr.appendChild(createDateCell(email.created_at));
+      tr.appendChild(createAddressCell(email.to_address));
+      tr.appendChild(createSubjectCell(email.subject));
+      tr.addEventListener("click", () => {
+        window.location.href = `/admin/emails/thread/sent/${email.id}`;
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  function createDateCell(date: string) {
+    const td = document.createElement("td");
+    td.className = "date-col";
+    td.textContent = formatDate(date);
+    return td;
+  }
+
+  function createAddressCell(address: string) {
+    const td = document.createElement("td");
+    td.className = "address-col";
+    td.textContent = address;
+    td.title = address;
+    return td;
+  }
+
+  function createSubjectCell(subject: string) {
+    const td = document.createElement("td");
+    td.className = "subject-col";
+    td.textContent = subject;
+    td.title = subject;
+    return td;
   }
 
   function renderPagination() {
@@ -303,13 +530,11 @@ const total = result[0]?.total ?? 0;
     prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
     pagination.appendChild(prevBtn);
 
-    const pages = getPageNumbers();
-
-    pages.forEach(p => {
+    getPageNumbers().forEach((p) => {
       if (typeof p === "string") {
         const info = document.createElement("span");
         info.className = "page-info";
-        info.textContent = "…";
+        info.textContent = "...";
         pagination.appendChild(info);
       } else {
         const btn = document.createElement("button");
@@ -364,5 +589,6 @@ const total = result[0]?.total ?? 0;
     });
   }
 
+  updateFolderUi();
   loadEmails();
 </script>
