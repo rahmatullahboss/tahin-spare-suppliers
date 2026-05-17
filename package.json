@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "astro dev",
+    "test": "node --experimental-strip-types --test tests/**/*.test.ts",
     "build": "astro build",
     "preview": "astro preview"
   },
@@ -11,6 +12,8 @@
     "@astrojs/cloudflare": "^13.1.7",
     "@neondatabase/serverless": "^1.0.2",
     "@tiptap/core": "^3.22.5",
+    "@tiptap/extension-image": "^3.22.5",
+    "@tiptap/extension-placeholder": "^3.22.5",
     "@tiptap/pm": "^3.22.5",
     "@tiptap/react": "^3.22.5",
     "@tiptap/starter-kit": "^3.22.5",
