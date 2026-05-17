@@ -10,9 +10,10 @@ interface Props {
   titleLabel: string;
   excerptLabel: string;
   categories?: DisplayCategory[];
+  subcategories?: { id: string; name: string; parentId: string }[];
 }
 
-const { type, title, itemLabel, titleLabel, excerptLabel, categories = [] } = Astro.props;
+const { type, title, itemLabel, titleLabel, excerptLabel, categories = [], subcategories = [] } = Astro.props;
 const categoryOptions = categories.length > 0 ? categories : mergeCategories();
 ---
 <section class="editor-shell" data-content-editor data-type={type}>
@@ -79,6 +80,12 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
                 ))}
               </select>
             </div>
+            <div class="field" data-subcategory-field style="display: none;">
+              <label>Subcategory</label>
+              <select name="subcategory" data-subcategory>
+                <option value="">-- None --</option>
+              </select>
+            </div>
             <div class="field-row">
               <div class="field">
                 <label>Brand</label>
@@ -116,7 +123,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
   </div>
 </section>
 
-<script define:vars={{ type, itemLabel }}>
+<script define:vars={{ type, itemLabel, subcategories, categoryOptions }}>
   const editor = document.querySelector(`[data-content-editor][data-type="${type}"]`);
 
   if (editor) {
@@ -197,6 +204,13 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       imageKeyInput.value = "";
       if (imageInput) { imageInput.value = ""; }
       statusEl.textContent = "";
+      // Reset subcategory field
+      if (subcategoryField) subcategoryField.style.display = "none";
+      if (subcategorySelect) {
+        while (subcategorySelect.options.length > 1) {
+          subcategorySelect.remove(1);
+        }
+      }
       if (uploadStatus) uploadStatus.textContent = "";
       drawPreview("");
     };
@@ -208,6 +222,13 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       if (type === 'products') {
         const categoryEl = editor.querySelector("[data-category]");
         if (categoryEl) categoryEl.value = item.category || '';
+        updateSubcategoryDropdown();
+        setTimeout(() => {
+          const subcategoryEl = editor.querySelector("[data-subcategory]");
+          if (subcategoryEl && item.subcategory) {
+            subcategoryEl.value = item.subcategory;
+          }
+        }, 50);
         const brandEl = editor.querySelector("[data-brand]");
         if (brandEl) brandEl.value = item.brand || '';
         const modelEl = editor.querySelector("[data-model]");
@@ -395,6 +416,45 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       }, 250);
     });
 
+    // Subcategory dropdown logic
+    const categorySelect = editor.querySelector("[data-category]");
+    const subcategoryField = editor.querySelector("[data-subcategory-field]");
+    const subcategorySelect = editor.querySelector("[data-subcategory]");
+
+    const updateSubcategoryDropdown = () => {
+      if (!categorySelect || !subcategorySelect || !subcategoryField) return;
+      const selectedCategory = categorySelect.value;
+
+      // Find category ID from categoryOptions
+      const categoryOption = categoryOptions?.find(c => c.value === selectedCategory);
+      const categoryId = categoryOption?.id;
+
+      // Filter subcategories for this parent
+      const subs = categoryId ? subcategories.filter(s => s.parentId === categoryId) : [];
+
+      if (subs.length > 0) {
+        subcategoryField.style.display = "";
+        // Clear existing options
+        while (subcategorySelect.options.length > 1) {
+          subcategorySelect.remove(1);
+        }
+        // Add new options safely
+        subs.forEach(s => {
+          const option = document.createElement("option");
+          option.value = s.name;
+          option.textContent = s.name;
+          subcategorySelect.appendChild(option);
+        });
+      } else {
+        subcategoryField.style.display = "none";
+        while (subcategorySelect.options.length > 1) {
+          subcategorySelect.remove(1);
+        }
+      }
+    };
+
+    categorySelect?.addEventListener("change", updateSubcategoryDropdown);
+
     const compressImageToWebp = async (file) => {
       const bitmap = await createImageBitmap(file);
       const canvas = document.createElement("canvas");
@@ -486,6 +546,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
           imageKey: nextImageKey,
           ...(type === 'products' ? {
             category: form.querySelector("[data-category]")?.value || "",
+            subcategory: form.querySelector("[data-subcategory]")?.value || "",
             brand: form.querySelector("[data-brand]")?.value || "",
             model_number: form.querySelector("[data-model]")?.value || ""
           } : {})
