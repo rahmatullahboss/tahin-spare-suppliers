@@ -23,9 +23,7 @@ if (!post) {
   <section class="section">
     <div class="container blog-detail">
       {post.imageUrl && <img src={post.imageUrl} alt={post.title} class="cover-image" />}
-      <div class="content">
-        {post.content.split("\n").filter(Boolean).map((line) => <p>{line}</p>)}
-      </div>
+      <div class="content" set:html={post.content}></div>
     </div>
   </section>
 </MainLayout>
@@ -36,5 +34,18 @@ if (!post) {
   .page-hero-content { position: relative; z-index: 1; color: #fff; max-width: 900px; padding: 20px; }
   .blog-detail { max-width: 900px; }
   .cover-image { width: 100%; border-radius: 18px; display: block; margin-bottom: 24px; }
-  .content p { line-height: 1.9; color: #4f4f4f; margin-bottom: 18px; }
+  .content { line-height: 1.8; color: #334155; font-size: 1.05rem; }
+  .content p { margin-bottom: 1em; }
+  .content h2 { font-size: 1.6rem; margin: 2em 0 0.75em; font-weight: 700; color: #0f172a; }
+  .content h3 { font-size: 1.3rem; margin: 1.5em 0 0.5em; font-weight: 600; color: #0f172a; }
+  .content ul, .content ol { padding-left: 1.5rem; margin: 1em 0; }
+  .content li { margin: 0.35em 0; }
+  .content blockquote { border-left: 3px solid #d97706; padding-left: 1rem; margin: 1.5em 0; color: #64748b; font-style: italic; }
+  .content pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.9rem; margin: 1.5em 0; }
+  .content code { background: #f1f5f9; padding: 0.15em 0.35em; border-radius: 0.25rem; font-size: 0.9em; color: #dc2626; }
+  .content pre code { background: none; padding: 0; color: inherit; }
+  .content a { color: #d97706; text-decoration: underline; }
+  .content a:hover { color: #b45309; }
+  .content img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.5em 0; }
+  .content hr { border: none; border-top: 2px solid #e2e8f0; margin: 2em 0; }
 </style>
