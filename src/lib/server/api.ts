@@ -61,6 +61,7 @@ export function createListHandler(type: ContentType): APIRoute {
         imageKey?: string;
         slug?: string;
         category?: string;
+        subcategory?: string;
         brand?: string;
         model_number?: string;
       }>(context.request);
@@ -117,6 +118,7 @@ export function createDetailHandler(type: ContentType): APIRoute {
         imageKey?: string;
         slug?: string;
         category?: string;
+        subcategory?: string;
         brand?: string;
         model_number?: string;
       }>(context.request);
