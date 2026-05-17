@@ -1,0 +1,318 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { getRuntimeEnv } from '../../../lib/server/env';
+import { listContent } from '../../../lib/server/repository';
+import { findSubcategoryBySlug } from '../../../lib/server/categories';
+
+const { category, subcategory } = Astro.params;
+const env = getRuntimeEnv(Astro.locals);
+const result = await findSubcategoryBySlug(env, category ?? '', subcategory ?? '');
+
+if (!result) {
+  return Astro.redirect(`/category/${category}`);
+}
+
+const { parent, subcategory: currentSubcategory } = result;
+
+const liveProducts = await listContent(env, 'products');
+const filteredProducts = liveProducts.filter(
+  (p) => p.category === parent.value && p.subcategory === currentSubcategory.value
+);
+
+// Extract unique brands for this subcategory
+const uniqueBrands = [...new Set(filteredProducts.map(p => p.brand).filter(Boolean))];
+const fallbackBrands = ["Yanmar", "Caterpillar", "Cummins", "Mitsubishi", "Wartsila"];
+const displayBrands = uniqueBrands.length > 0 ? uniqueBrands : fallbackBrands;
+
+// Generate FAQ Schema for AI SEO
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": `Do you export ${currentSubcategory.value} globally?`,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": `Yes, Tahin Spare Suppliers exports reconditioned and used ${currentSubcategory.value} worldwide directly from the Chattogram Ship-Recycling Yards. We provide secure crating and complete export documentation.`
+      }
+    },
+    {
+      "@type": "Question",
+      "name": `What brands of ${currentSubcategory.value} do you supply?`,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": `We maintain a vast inventory of major brands including Yanmar, Caterpillar, Wartsila, Cummins, and MAN for ${currentSubcategory.value}.`
+      }
+    },
+    {
+      "@type": "Question",
+      "name": `What is the condition of the ${currentSubcategory.value}?`,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": `All our ${currentSubcategory.value} units are carefully salvaged and fully reconditioned. They undergo strict inspection by our marine technical team before being verified for stock.`
+      }
+    }
+  ]
+};
+---
+<MainLayout title={`Reconditioned ${currentSubcategory.value} Exporter | Tahin Spare`} description={`Browse genuine reconditioned ${currentSubcategory.value} sourced from ship recycling yards. Ready for global export.`} activeNav="products">
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <section class="page-hero">
+    <div class="page-hero-accent"></div>
+    <div class="page-hero-content">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/products">Products</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href={`/category/${parent.slug}`}>{parent.value}</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">{currentSubcategory.value}</span>
+      </nav>
+      <h1 class="reveal">{currentSubcategory.value}</h1>
+      <p class="hero-subtitle reveal">Browse our inventory of {currentSubcategory.value}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="mb-5">
+        <a href={`/category/${parent.slug}`} class="back-link">← Back to {parent.value}</a>
+      </div>
+
+      {filteredProducts.length === 0 ? (
+        <div class="empty-state">
+           <h3>No products available</h3>
+           <p>We currently have no products listed under {currentSubcategory.value}. Please check back later or send us an enquiry!</p>
+           <a href="/enquiry" class="btn btn-primary" style="margin-top:20px;">Send Enquiry</a>
+        </div>
+      ) : (
+        <div class="products-grid reveal-stagger">
+          {filteredProducts.map((product) => (
+            <a href={`/products/${product.slug}`} class="product-card" style="text-decoration: none;">
+              <div class="product-img">
+                <img src={product.imageUrl || '/images/marine-engine.webp'} alt={product.title} loading="lazy" />
+              </div>
+              <div class="product-content">
+                <h3>{product.title}</h3>
+                <p class="live-excerpt">{product.excerpt}</p>
+                <div class="product-meta">
+                  {product.brand && <span class="badge badge-brand">{product.brand}</span>}
+                  {product.model_number && <span class="badge badge-model">{product.model_number}</span>}
+                </div>
+                <span class="view-details">VIEW DETAILS</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <!-- Programmatic SEO Brand Links -->
+      <div class="brand-seo-links">
+        <h3>Browse {currentSubcategory.value} by Brand</h3>
+        <div class="tags-container">
+          {displayBrands.map((brand: any) => (
+            <a href={`/inventory/${String(brand).toLowerCase().replace(/\s+/g, '-')}-${parent.slug}`} class="brand-tag">
+              {brand} {currentSubcategory.value}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- FAQ Section for AI SEO -->
+      <div class="faq-section mt-5">
+        <h3 class="reveal">Frequently Asked Questions</h3>
+        <div class="faq-item reveal">
+          <h4>Do you export {currentSubcategory.value} globally?</h4>
+          <p>Yes, Tahin Spare Suppliers exports reconditioned and used {currentSubcategory.value} worldwide directly from the Chattogram Ship-Recycling Yards. We provide secure crating and complete export documentation.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h4>What brands of {currentSubcategory.value} do you supply?</h4>
+          <p>We maintain a vast inventory of major brands including Yanmar, Caterpillar, Wartsila, Cummins, and MAN for {currentSubcategory.value}. Browse our specific brand pages for available stock.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h4>What is the condition of the {currentSubcategory.value}?</h4>
+          <p>All our {currentSubcategory.value} units are carefully salvaged and fully reconditioned. They undergo strict inspection by our marine technical team before being verified for stock.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero {
+    position: relative;
+    height: 250px;
+    background-color: #fcfcfc;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  .page-hero-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: clamp(20px, 5vw, 100px);
+    height: 100%;
+    background: #b11623;
+    clip-path: polygon(0 0, 100% 0, 30% 100%, 0 100%);
+    z-index: 0;
+  }
+  .page-hero-content { position: relative; z-index: 1; color: #222; }
+  .page-hero-content h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; color: #b11623; }
+  .page-hero-content p { font-size: 15px; color: #555; }
+
+  .breadcrumb {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 12px;
+  }
+  .breadcrumb a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .breadcrumb a:hover { color: #b11623; }
+  .breadcrumb-sep { margin: 0 8px; color: #ccc; }
+  .breadcrumb-current { color: #b11623; font-weight: 600; }
+
+  .mb-5 { margin-bottom: 30px; }
+  .back-link {
+    display: inline-block;
+    color: #666;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+  .back-link:hover { color: #b11623; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    border: 1px dashed #ccc;
+  }
+  .empty-state h3 { font-size: 24px; color: #222; margin-bottom: 15px; }
+  .empty-state p { font-size: 15px; color: #666; max-width: 500px; margin: 0 auto; line-height: 1.6; }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .product-card {
+    position: relative;
+    border-radius: 0;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+  }
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+  }
+  .product-img {
+    width: 100%;
+    height: 240px;
+    position: relative;
+    overflow: hidden;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 92%);
+  }
+  .product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .product-card:hover .product-img img {
+    transform: scale(1.06);
+  }
+  .product-content {
+    padding: 24px 24px 30px;
+    background: #fff;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .product-content h3 {
+    font-size: 20px;
+    color: #111;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .live-excerpt {
+    margin: 0 0 16px;
+    color: #666;
+    line-height: 1.6;
+    flex-grow: 1;
+  }
+  .product-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge-brand { background: #eee; color: #333; }
+  .badge-model { background: #ffeaa7; color: #d35400; }
+
+  .view-details {
+    font-size: 13px;
+    color: #b11623;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.3s;
+    margin-top: auto;
+  }
+  .product-card:hover .view-details {
+    color: #c0392b;
+  }
+
+  .mt-5 { margin-top: 50px; }
+  .brand-seo-links { margin-top: 50px; padding-top: 30px; border-top: 1px solid #eee; }
+  .brand-seo-links h3 { font-size: 20px; color: #222; margin-bottom: 20px; }
+  .tags-container { display: flex; flex-wrap: wrap; gap: 10px; }
+  .brand-tag {
+    background: #fdfdfd;
+    border: 1px solid #ddd;
+    color: #444;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .brand-tag:hover { background: #b11623; color: #fff; border-color: #b11623; }
+
+  .faq-section { background: #fafafa; padding: 40px; border-radius: 8px; margin-bottom: 30px; }
+  .faq-section h3 { font-size: 24px; color: #222; margin-bottom: 30px; font-weight: 800; }
+  .faq-item { margin-bottom: 25px; }
+  .faq-item:last-child { margin-bottom: 0; }
+  .faq-item h4 { font-size: 18px; color: #b11623; margin-bottom: 10px; font-weight: 600; }
+  .faq-item p { font-size: 15px; color: #555; line-height: 1.6; margin: 0; }
+
+  @media (max-width: 768px) {
+    .products-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .products-grid { grid-template-columns: 1fr; }
+  }
+</style>
