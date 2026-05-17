@@ -28,6 +28,7 @@ export type ContentRecord = {
   createdAt: string;
   updatedAt: string;
   category?: string;
+  subcategory?: string;
   brand?: string;
   model_number?: string;
 };
@@ -40,6 +41,7 @@ export type ContentInput = {
   imageKey?: string;
   slug?: string;
   category?: string;
+  subcategory?: string;
   brand?: string;
   model_number?: string;
 };
@@ -57,8 +59,9 @@ function mapRecord(type: ContentType, row: Record<string, unknown>): ContentReco
     imageKey: String(row.image_key ?? ""),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
-    ...(type === 'products' ? { 
+    ...(type === 'products' ? {
       category: String(row.category ?? "Uncategorized"),
+      subcategory: String(row.subcategory ?? ""),
       brand: String(row.brand ?? ""),
       model_number: String(row.model_number ?? "")
     } : {})
@@ -131,6 +134,7 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
   const imageUrl = input.imageUrl ?? "";
   const imageKey = input.imageKey ?? "";
   const category = input.category ?? "Uncategorized";
+  const subcategory = input.subcategory ?? "";
   const brand = input.brand ?? "";
   const model_number = input.model_number ?? "";
 
@@ -140,10 +144,10 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
   let params: (string | number)[] = [id, slug, input.title, excerpt, content, imageUrl, imageKey];
 
   if (type === 'products') {
-    query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, category, brand, model_number, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+    query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, category, subcategory, brand, model_number, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
        RETURNING *`;
-    params = [id, slug, input.title, excerpt, content, imageUrl, imageKey, category, brand, model_number];
+    params = [id, slug, input.title, excerpt, content, imageUrl, imageKey, category, subcategory, brand, model_number];
   }
 
   const rows = await sql.query(query, params);
@@ -166,6 +170,7 @@ export async function updateContent(
   const imageUrl = input.imageUrl ?? "";
   const imageKey = input.imageKey ?? "";
   const category = input.category ?? "Uncategorized";
+  const subcategory = input.subcategory ?? "";
   const brand = input.brand ?? "";
   const model_number = input.model_number ?? "";
 
@@ -190,12 +195,13 @@ export async function updateContent(
            image_url = $5,
            image_key = $6,
            category = $7,
-           brand = $8,
-           model_number = $9,
+           subcategory = $8,
+           brand = $9,
+           model_number = $10,
            updated_at = NOW()
-       WHERE id = $10
+       WHERE id = $11
        RETURNING *`;
-    params = [slug, input.title, excerpt, content, imageUrl, imageKey, category, brand, model_number, id];
+    params = [slug, input.title, excerpt, content, imageUrl, imageKey, category, subcategory, brand, model_number, id];
   }
 
   const rows = await sql.query(query, params);
