@@ -68,8 +68,13 @@ CREATE TABLE IF NOT EXISTS categories (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   slug TEXT NOT NULL UNIQUE,
+  image_url TEXT NOT NULL DEFAULT '',
+  image_key TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_key TEXT NOT NULL DEFAULT '';
 
 CREATE TABLE IF NOT EXISTS sent_emails (
   id TEXT PRIMARY KEY,
@@ -104,3 +109,9 @@ CREATE INDEX IF NOT EXISTS idx_inbound_emails_created ON inbound_emails(created_
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_read ON inbound_emails(is_read);
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_resend_id ON inbound_emails(resend_email_id);
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_message_id ON inbound_emails(message_id);
+
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_id TEXT REFERENCES categories(id);
+CREATE INDEX IF NOT EXISTS idx_categories_parent ON categories(parent_id);
+
+ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory TEXT NOT NULL DEFAULT '';
+CREATE INDEX IF NOT EXISTS idx_products_subcategory ON products(subcategory);
