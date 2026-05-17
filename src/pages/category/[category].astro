@@ -2,16 +2,21 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listContent } from '../../lib/server/repository';
-import { EQUIPMENT_CATEGORIES, getCategoryBySlug } from '../../lib/categories';
+import { findCategoryBySlug, listSubcategories } from '../../lib/server/categories';
 
 const { category } = Astro.params;
-const currentCategory = getCategoryBySlug(category ?? '');
+const env = getRuntimeEnv(Astro.locals);
+const currentCategory = await findCategoryBySlug(env, category ?? '');
 
 if (!currentCategory) {
   return Astro.redirect('/products');
 }
 
-const env = getRuntimeEnv(Astro.locals);
+// Fetch subcategories if this is a custom category with an ID
+const subcategories = currentCategory.id
+  ? await listSubcategories(env, currentCategory.id)
+  : [];
+
 const liveProducts = await listContent(env, 'products');
 
 const categoryProducts = liveProducts.filter((p) => p.category === currentCategory.value);
@@ -62,6 +67,31 @@ const faqSchema = {
       <p class="hero-subtitle reveal">Browse our inventory of {currentCategory.value}</p>
     </div>
   </section>
+
+  {subcategories.length > 0 && (
+    <section class="section subcategories-section">
+      <div class="container">
+        <h2 class="section-title reveal">Browse by Type</h2>
+        <div class="subcategory-grid reveal-stagger">
+          {subcategories.map((sub) => (
+            <a href={`/category/${category}/${sub.slug}`} class="subcategory-card">
+              <div class="subcategory-card-img">
+                {sub.imageUrl ? (
+                  <img src={sub.imageUrl} alt={sub.name} loading="lazy" />
+                ) : (
+                  <img src={currentCategory.imageUrl} alt={sub.name} loading="lazy" />
+                )}
+              </div>
+              <div class="subcategory-card-content">
+                <h3>{sub.name}</h3>
+                <span class="subcategory-card-cta">VIEW DETAILS</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
   <section class="section">
     <div class="container">
@@ -175,6 +205,56 @@ const faqSchema = {
   .empty-state h3 { font-size: 24px; color: #222; margin-bottom: 15px; }
   .empty-state p { font-size: 15px; color: #666; max-width: 500px; margin: 0 auto; line-height: 1.6; }
 
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+  }
+
+  .subcategory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.25rem;
+  }
+  .subcategory-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .subcategory-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+  .subcategory-card-img {
+    aspect-ratio: 16/10;
+    overflow: hidden;
+  }
+  .subcategory-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .subcategory-card-content {
+    padding: 0.75rem 1rem;
+  }
+  .subcategory-card-content h3 {
+    font-size: 0.95rem;
+    margin: 0 0 0.25rem;
+    color: #0f172a;
+  }
+  .subcategory-card-cta {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #b11623;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
   .products-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -287,8 +367,10 @@ const faqSchema = {
 
   @media (max-width: 768px) {
     .products-grid { grid-template-columns: repeat(2, 1fr); }
+    .subcategory-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 480px) {
     .products-grid { grid-template-columns: 1fr; }
+    .subcategory-grid { grid-template-columns: 1fr; }
   }
 </style>
