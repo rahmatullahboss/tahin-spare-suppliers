@@ -1,6 +1,7 @@
 ---
 import ImageUploader from "./ImageUploader.astro";
-import { EQUIPMENT_CATEGORIES } from "../../lib/categories";
+import TiptapEditor from "../TiptapEditor.astro";
+import { mergeCategories, type DisplayCategory } from "../../lib/categories";
 
 interface Props {
   type: "products" | "blog";
@@ -8,9 +9,11 @@ interface Props {
   itemLabel: string;
   titleLabel: string;
   excerptLabel: string;
+  categories?: DisplayCategory[];
 }
 
-const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
+const { type, title, itemLabel, titleLabel, excerptLabel, categories = [] } = Astro.props;
+const categoryOptions = categories.length > 0 ? categories : mergeCategories();
 ---
 <section class="editor-shell" data-content-editor data-type={type}>
   <div class="editor-header">
@@ -71,7 +74,7 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
               <label>Category *</label>
               <select name="category" data-category required>
                 <option value="" disabled selected>-- Select --</option>
-                {EQUIPMENT_CATEGORIES.map((cat) => (
+                {categoryOptions.map((cat) => (
                   <option value={cat.value}>{cat.value}</option>
                 ))}
               </select>
@@ -95,7 +98,11 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         </div>
         <div class="field">
           <label>Details</label>
-          <textarea name="content" rows="8" data-content placeholder="Enter full details..."></textarea>
+          {type === 'blog' ? (
+            <TiptapEditor id="blog-editor" placeholder="Write your blog post..." />
+          ) : (
+            <textarea name="content" rows="8" data-content placeholder="Enter full details..."></textarea>
+          )}
         </div>
         <ImageUploader label="Featured Image" />
         <div class="preview" data-preview></div>
@@ -172,6 +179,15 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
 
     const resetForm = () => {
       form.reset();
+      if (type === 'blog') {
+        const tiptapWrapper = editor.querySelector("[data-tiptap-wrapper]");
+        const tiptapEditor = tiptapWrapper?.__tiptapEditor;
+        if (tiptapEditor) {
+          tiptapEditor.commands.clearContent();
+        }
+        const outputInput = editor.querySelector("[data-tiptap-output]") as HTMLInputElement;
+        if (outputInput) outputInput.value = "";
+      }
       form.querySelector("[data-id]").value = "";
       clearPreviewUrl();
       selectedFile = null;
@@ -198,7 +214,17 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         if (modelEl) modelEl.value = item.model_number || '';
       }
       form.querySelector("[data-excerpt]").value = item.excerpt;
-      form.querySelector("[data-content]").value = item.content;
+      if (type === 'blog') {
+        const tiptapWrapper = editor.querySelector("[data-tiptap-wrapper]");
+        const tiptapEditor = tiptapWrapper?.__tiptapEditor;
+        if (tiptapEditor) {
+          tiptapEditor.commands.setContent(item.content || "");
+        }
+        const outputInput = editor.querySelector("[data-tiptap-output]") as HTMLInputElement;
+        if (outputInput) outputInput.value = item.content || "";
+      } else {
+        form.querySelector("[data-content]").value = item.content;
+      }
       clearPreviewUrl();
       selectedFile = null;
       imageRemoved = false;
@@ -443,11 +469,19 @@ const { type, title, itemLabel, titleLabel, excerptLabel } = Astro.props;
         }
         if (imageRemoved) { nextImageUrl = ""; nextImageKey = ""; }
 
+        let contentValue = "";
+        if (type === 'blog') {
+          const outputInput = editor.querySelector("[data-tiptap-output]") as HTMLInputElement;
+          contentValue = outputInput?.value || "";
+        } else {
+          contentValue = (form.querySelector("[data-content]") as HTMLTextAreaElement)?.value || "";
+        }
+
         const payload = {
           title: form.querySelector("[data-title]").value,
           slug: form.querySelector("[data-slug]").value,
           excerpt: form.querySelector("[data-excerpt]").value,
-          content: form.querySelector("[data-content]").value,
+          content: contentValue,
           imageUrl: nextImageUrl,
           imageKey: nextImageKey,
           ...(type === 'products' ? {
