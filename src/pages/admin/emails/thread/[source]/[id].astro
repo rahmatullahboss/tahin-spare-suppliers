@@ -34,7 +34,10 @@ const { id } = Astro.params;
 const sql = getDb(env);
 
 function asString(value: unknown): string {
-  return typeof value === "string" ? value : "";
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (value instanceof Date) return value.toISOString();
+  return String(value);
 }
 
 function toMessage(row: DbRow, messageSource: EmailSource): ThreadMessage {
@@ -156,7 +159,7 @@ const inReplyToId = latestInbound?.id ?? "";
               <h2>{message.subject}</h2>
             </div>
             <time datetime={message.createdAt}>
-              {new Date(message.createdAt).toLocaleString()}
+              {message.createdAt ? new Date(message.createdAt).toLocaleString() : "Unknown date"}
             </time>
           </div>
           <div class="meta">
