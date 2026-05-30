@@ -1,6 +1,10 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
+import { getRuntimeEnv } from '../lib/server/env';
+import { listAllCategories } from '../lib/server/categories';
+
+const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
 ---
 <MainLayout title="Enquiry - Tahin Spare Suppliers" activeNav="enquiry" description="Request a quote for marine engines, generators, spare parts, and equipment from Tahin Spare Suppliers. Get a response within 24 hours.">
   <section class="page-hero">
@@ -74,13 +78,9 @@ import Icon from '../components/Icon.astro';
               <label for="equipment">Equipment Category</label>
               <select id="equipment" name="equipment">
                 <option value="">Select a category</option>
-                <option value="Marine Propulsion Engine">Marine Propulsion Engine</option>
-                <option value="Marine Gearbox">Marine Gearbox</option>
-                <option value="Auxiliary Engine">Auxiliary Engine</option>
-                <option value="Diesel & Gas Generator Set">Diesel & Gas Generator Set</option>
-                <option value="Spare Parts">Spare Parts</option>
-                <option value="Hydraulic Deck Crane Equipment">Hydraulic Deck Crane Equipment</option>
-                <option value="Anchor and Chain">Anchor and Chain</option>
+                {categories.map((cat) => (
+                  <option value={cat.value}>{cat.value}</option>
+                ))}
                 <option value="Other">Other</option>
               </select>
             </div>

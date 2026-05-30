@@ -1,6 +1,10 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
+import { getRuntimeEnv } from '../lib/server/env';
+import { listAllCategories } from '../lib/server/categories';
+
+const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
 
 const shipmentImages = [
   '/images/shipments/shipment-01.webp',
@@ -19,10 +23,10 @@ const shipmentImages = [
     <div class="hero-bg-accent"></div>
     <div class="hero-container container">
       <div class="hero-left">
-        <h2 class="hero-title">
+        <h1 class="hero-title">
           <span class="text-primary-red">YOUR TRUSTED SOURCE</span><br/>
           <span class="text-dark">FOR MARINE ENGINE &<br/>SPARE SOLUTIONS</span>
-        </h2>
+        </h1>
         <p class="hero-desc">Tahin spare suppliers is a leading stockist and global exporter of new reconditioned and used marine engine and spare parts.</p>
         <a href="/enquiry" class="btn btn-quote-solid">REQUEST A QUOTE</a>
       </div>
@@ -105,78 +109,17 @@ const shipmentImages = [
       <h2 class="stock-title reveal">Our Sell Equipments</h2>
       <p class="stock-subtitle reveal">Your one-stop solution for reconditioned marine engines & equipment</p>
       <div class="stock-grid reveal-stagger">
-        <a href="/category/marine-propulsion-engine" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/marine-propulsion-engine.jpg" alt="Marine Propulsion Engine" loading="lazy" />
-          </div>
-          <div class="stock-card-content">
-            <h3>Marine Propulsion Engine</h3>
-            <span class="stock-card-cta">VIEW DETAILS</span>
-          </div>
-        </a>
-        <a href="/category/marine-gearbox" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/marine-gearbox.jpg" alt="Marine Gearbox" loading="lazy" />
-          </div>
-          <div class="stock-card-content">
-            <h3>Marine Gearbox</h3>
-            <span class="stock-card-cta">VIEW DETAILS</span>
-          </div>
-        </a>
-        <a href="/category/auxiliary-engine" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/auxiliary-engine.jpg" alt="Auxiliary Engine" loading="lazy" />
-          </div>
-          <div class="stock-card-content">
-            <h3>Auxiliary Engine</h3>
-            <span class="stock-card-cta">VIEW DETAILS</span>
-          </div>
-        </a>
-        <a href="/category/diesel-generator-set" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/diesel-generator-set.jpg" alt="Diesel & Gas Generator Set" loading="lazy" />
-          </div>
-          <div class="stock-card-content">
-            <h3>Diesel & Gas Generator Set</h3>
-            <span class="stock-card-cta">VIEW DETAILS</span>
-          </div>
-        </a>
-        <a href="/category/spare-parts" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/spare-parts-new.jpg" alt="Spare Parts" loading="lazy" />
-          </div>
-          <div class="stock-card-content">
-            <h3>Spare Parts</h3>
-            <span class="stock-card-cta">VIEW DETAILS</span>
-          </div>
-        </a>
-        <a href="/category/hydraulic-deck-crane-equipment" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/hydraulic-crane-equipment.jpg" alt="Hydraulic Deck Crane Equipment" loading="lazy" />
-          </div>
-          <div class="stock-card-content">
-            <h3>Hydraulic Deck Crane Equipment</h3>
-            <span class="stock-card-cta">VIEW DETAILS</span>
-          </div>
-        </a>
-        <a href="/category/anchor-and-chain" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/anchor-chain.jpg" alt="Anchor and Chain" loading="lazy" />
-          </div>
-          <div class="stock-card-content">
-            <h3>Anchor and Chain</h3>
-            <span class="stock-card-cta">VIEW DETAILS</span>
-          </div>
-        </a>
-        <a href="/category/marine-pump" class="stock-card">
-          <div class="stock-card-img">
-            <img src="/images/marine-pump.jpg" alt="Marine Pump" loading="lazy" />
-          </div>
-          <div class="stock-card-content">
-            <h3>Marine Pump</h3>
-            <span class="stock-card-cta">VIEW DETAILS</span>
-          </div>
-        </a>
+        {categories.map((cat) => (
+          <a href={`/category/${cat.slug}`} class="stock-card">
+            <div class="stock-card-img">
+              <img src={cat.imageUrl} alt={cat.value} loading="lazy" />
+            </div>
+            <div class="stock-card-content">
+              <h3>{cat.value}</h3>
+              <span class="stock-card-cta">VIEW DETAILS</span>
+            </div>
+          </a>
+        ))}
       </div>
 
 
