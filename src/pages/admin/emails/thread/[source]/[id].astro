@@ -163,11 +163,7 @@ const inReplyToId = latestInbound?.id ?? "";
             <span>From: {message.from}</span>
             <span>To: {message.to}</span>
           </div>
-          {message.source === "sent" ? (
-            <div class="body" set:html={message.body || "(Empty body)"} />
-          ) : (
-            <div class="body plain">{message.body || "(Empty body)"}</div>
-          )}
+          <div class="body" set:html={message.body || "(Empty body)"} />
         </article>
       ))}
     </div>
@@ -279,9 +275,6 @@ const inReplyToId = latestInbound?.id ?? "";
     font-size: 15px;
     line-height: 1.7;
     overflow-wrap: anywhere;
-  }
-  .body.plain {
-    white-space: pre-wrap;
   }
   .body :global(p:first-child) {
     margin-top: 0;
