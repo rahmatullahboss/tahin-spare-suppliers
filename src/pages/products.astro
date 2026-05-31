@@ -1,18 +1,9 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import { EQUIPMENT_CATEGORIES } from '../lib/categories';
+import { getRuntimeEnv } from '../lib/server/env';
+import { listAllCategories } from '../lib/server/categories';
 
-// Map category slugs to their showcase images
-const CATEGORY_IMAGES: Record<string, string> = {
-  'marine-propulsion-engine': '/images/marine-propulsion-engine.jpg',
-  'marine-gearbox': '/images/marine-gearbox.jpg',
-  'auxiliary-engine': '/images/auxiliary-engine.jpg',
-  'diesel-generator-set': '/images/diesel-generator-set.jpg',
-  'spare-parts': '/images/spare-parts-new.jpg',
-  'hydraulic-deck-crane-equipment': '/images/hydraulic-crane-equipment.jpg',
-  'anchor-and-chain': '/images/anchor-chain.jpg',
-  'marine-pump': '/images/marine-pump.jpg',
-};
+const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
 ---
 <MainLayout title="Sell Equipments - Tahin Spare Suppliers" activeNav="products" description="Browse our complete catalog of marine propulsion engines, gearboxes, generators, spare parts, cranes, and pumps. Quality reconditioned marine equipment.">
   <section class="page-hero">
@@ -26,10 +17,10 @@ const CATEGORY_IMAGES: Record<string, string> = {
   <section class="section stock-spares">
     <div class="container">
       <div class="stock-grid reveal-stagger">
-        {EQUIPMENT_CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <a href={`/category/${cat.slug}`} class="stock-card">
             <div class="stock-card-img">
-              <img src={CATEGORY_IMAGES[cat.slug] ?? '/images/marine-propulsion-engine.jpg'} alt={cat.value} loading="lazy" />
+              <img src={cat.imageUrl} alt={cat.value} loading="lazy" />
             </div>
             <div class="stock-card-content">
               <h3>{cat.value}</h3>

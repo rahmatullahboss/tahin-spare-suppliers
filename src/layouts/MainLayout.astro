@@ -15,22 +15,79 @@ interface Props {
   noindex?: boolean;
 }
 
-const defaultTitle = 'Tahin Spare Suppliers - Supply & Export All Kinds Of Marine Engine & Spare Parts';
-const defaultDescription = 'Tahin Spare Suppliers - Leading exporter of reconditioned marine engines, generators, gearboxes, and spare parts from Bangladesh. Quality marine machinery since 1990.';
+const defaultTitle = 'Tahin Spare Suppliers - Marine Engine & Spare Parts Exporter';
+const defaultDescription = 'Tahin Spare Suppliers exports reconditioned marine engines, generators, gearboxes, hydraulic equipment, and spare parts from Chattogram, Bangladesh worldwide.';
 const siteUrl = 'https://tahinspare.com';
+const logoUrl = `${siteUrl}/images/logo-512.png`;
+const socialImageUrl = `${siteUrl}/images/tahin-spare-social.png`;
 
 const {
   title = defaultTitle,
   description = defaultDescription,
   activeNav = 'home',
   preloadImage,
-  ogImage = '/images/logo.svg',
+  ogImage = '/images/tahin-spare-social.png',
   canonicalUrl,
   noindex = false,
 } = Astro.props;
 
 const canonical = canonicalUrl ?? `${siteUrl}${Astro.url.pathname}`;
 const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      "url": siteUrl,
+      "name": "Tahin Spare Suppliers",
+      "publisher": {
+        "@id": `${siteUrl}/#organization`
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@type": ["Organization", "LocalBusiness"],
+      "@id": `${siteUrl}/#organization`,
+      "name": "Tahin Spare Suppliers",
+      "legalName": "Tahin Spare Suppliers",
+      "url": siteUrl,
+      "logo": {
+        "@type": "ImageObject",
+        "url": logoUrl,
+        "contentUrl": logoUrl,
+        "width": 512,
+        "height": 512
+      },
+      "image": socialImageUrl,
+      "description": defaultDescription,
+      "priceRange": "$$$",
+      "foundingDate": "1990",
+      "areaServed": "Worldwide",
+      "telephone": "+8801710917904",
+      "email": "sales@tahinspare.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Kadamrasul (Saleh Carpet), D.T. Road, Bhatiary",
+        "addressLocality": "Sitakunda",
+        "addressRegion": "Chattogram",
+        "addressCountry": "BD"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+8801710917904",
+        "contactType": "sales",
+        "email": "sales@tahinspare.com",
+        "areaServed": "Worldwide",
+        "availableLanguage": ["en", "bn"]
+      },
+      "sameAs": [
+        "https://www.facebook.com/profile.php?id=61581355746283",
+        "https://www.linkedin.com/in/tahin-spare-suppliers-a65b133a8/"
+      ]
+    }
+  ]
+};
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -38,8 +95,9 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {noindex ? <meta name="robots" content="noindex, nofollow" /> : <meta name="robots" content="index, follow, max-image-preview:large" />}
     <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#b11623" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -58,41 +116,16 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     <Font cssVariable="--font-inter" preload />
     <Font cssVariable="--font-playfair" preload />
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.svg" />
-    <link rel="apple-touch-icon" href="/images/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
     <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="manifest" href="/site.webmanifest" />
     {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
     <title>{title}</title>
 
-    <!-- JSON-LD LocalBusiness Schema -->
-    <script type="application/ld+json" set:html={JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "LocalBusiness",
-      "name": "Tahin Spare Suppliers",
-      "url": siteUrl,
-      "logo": `${siteUrl}/images/logo.svg`,
-      "image": fullOgImage,
-      "description": defaultDescription,
-      "priceRange": "$$$",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Kadamrasul (Saleh Carpet), D.T. Road, Bhatiary",
-        "addressLocality": "Sitakunda, Chattogram",
-        "addressCountry": "BD"
-      },
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+88-01710917904",
-        "contactType": "sales",
-        "email": "sales@tahinspare.com"
-      },
-      "foundingDate": "1990",
-      "areaServed": "Worldwide",
-      "sameAs": [
-        "https://www.facebook.com/profile.php?id=61581355746283",
-        "https://www.linkedin.com/in/tahin-spare-suppliers-a65b133a8/"
-      ]
-    })} />
+    <!-- JSON-LD Organization Schema -->
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
   </head>
   <body>
     <a href="#main-content" class="skip-nav">Skip to main content</a>

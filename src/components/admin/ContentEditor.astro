@@ -105,11 +105,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
         </div>
         <div class="field">
           <label>Details</label>
-          {type === 'blog' ? (
-            <TiptapEditor id="blog-editor" placeholder="Write your blog post..." />
-          ) : (
-            <textarea name="content" rows="8" data-content placeholder="Enter full details..."></textarea>
-          )}
+          <TiptapEditor id={type === 'blog' ? 'blog-editor' : 'product-editor'} placeholder={type === 'blog' ? 'Write your blog post...' : 'Enter full details...'} />
         </div>
         <ImageUploader label="Featured Image" />
         <div class="preview" data-preview></div>
@@ -186,15 +182,13 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
 
     const resetForm = () => {
       form.reset();
-      if (type === 'blog') {
-        const tiptapWrapper = editor.querySelector("[data-tiptap-wrapper]");
-        const tiptapEditor = tiptapWrapper?.__tiptapEditor;
-        if (tiptapEditor) {
-          tiptapEditor.commands.clearContent();
-        }
-        const outputInput = editor.querySelector("[data-tiptap-output]") as HTMLInputElement;
-        if (outputInput) outputInput.value = "";
+      const tiptapWrapper = editor.querySelector("[data-tiptap-wrapper]");
+      const tiptapEditor = tiptapWrapper?.__tiptapEditor;
+      if (tiptapEditor) {
+        tiptapEditor.commands.clearContent();
       }
+      const outputInput = editor.querySelector("[data-tiptap-output]");
+      if (outputInput) outputInput.value = "";
       form.querySelector("[data-id]").value = "";
       clearPreviewUrl();
       selectedFile = null;
@@ -235,17 +229,13 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
         if (modelEl) modelEl.value = item.model_number || '';
       }
       form.querySelector("[data-excerpt]").value = item.excerpt;
-      if (type === 'blog') {
-        const tiptapWrapper = editor.querySelector("[data-tiptap-wrapper]");
-        const tiptapEditor = tiptapWrapper?.__tiptapEditor;
-        if (tiptapEditor) {
-          tiptapEditor.commands.setContent(item.content || "");
-        }
-        const outputInput = editor.querySelector("[data-tiptap-output]") as HTMLInputElement;
-        if (outputInput) outputInput.value = item.content || "";
-      } else {
-        form.querySelector("[data-content]").value = item.content;
+      const tiptapWrapper = editor.querySelector("[data-tiptap-wrapper]");
+      const tiptapEditor = tiptapWrapper?.__tiptapEditor;
+      if (tiptapEditor) {
+        tiptapEditor.commands.setContent(item.content || "");
       }
+      const outputInput = editor.querySelector("[data-tiptap-output]");
+      if (outputInput) outputInput.value = item.content || "";
       clearPreviewUrl();
       selectedFile = null;
       imageRemoved = false;
@@ -376,22 +366,43 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
     }
 
     const loadItems = async () => {
-      const params = new URLSearchParams({ page: String(currentPage), limit: '500' });
-      const response = await fetch(`${endpoint}?${params}`);
-      const data = await response.json();
-      allItems = data.items || [];
-      totalPages = Math.ceil(allItems.length / PAGE_SIZE) || 1;
-      if (currentPage > totalPages) currentPage = totalPages;
-      renderCurrentPage();
-
-      if (countEl) countEl.textContent = String(data.total || allItems.length);
-
-      if (type === 'products') {
-        const brandList = document.getElementById("brand-list");
-        if (brandList) {
-          const uniqueBrands = [...new Set(allItems.map((i) => i.brand).filter(Boolean))].sort();
-          brandList.innerHTML = uniqueBrands.map((b) => `<option value="${esc(b)}">`).join("");
+      try {
+        const params = new URLSearchParams({ page: String(currentPage), limit: '500' });
+        const response = await fetch(`${endpoint}?${params}`);
+        if (!response.ok) {
+          const row = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 5;
+          td.className = "empty-row";
+          td.textContent = `Failed to load (HTTP ${response.status})`;
+          row.appendChild(td);
+          itemsEl.replaceChildren(row);
+          return;
         }
+        const data = await response.json();
+        allItems = data.items || [];
+        totalPages = Math.ceil(allItems.length / PAGE_SIZE) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        renderCurrentPage();
+
+        if (countEl) countEl.textContent = String(data.total || allItems.length);
+
+        if (type === 'products') {
+          const brandList = document.getElementById("brand-list");
+          if (brandList) {
+            const uniqueBrands = [...new Set(allItems.map((i) => i.brand).filter(Boolean))].sort();
+            brandList.innerHTML = uniqueBrands.map((b) => `<option value="${esc(b)}">`).join("");
+          }
+        }
+      } catch (err) {
+        console.error("loadItems failed:", err);
+        const row = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.className = "empty-row";
+        td.textContent = "Error loading items. Check console.";
+        row.appendChild(td);
+        itemsEl.replaceChildren(row);
       }
     };
 
@@ -530,12 +541,8 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
         if (imageRemoved) { nextImageUrl = ""; nextImageKey = ""; }
 
         let contentValue = "";
-        if (type === 'blog') {
-          const outputInput = editor.querySelector("[data-tiptap-output]") as HTMLInputElement;
-          contentValue = outputInput?.value || "";
-        } else {
-          contentValue = (form.querySelector("[data-content]") as HTMLTextAreaElement)?.value || "";
-        }
+        const outputInput = editor.querySelector("[data-tiptap-output]");
+        contentValue = outputInput?.value || "";
 
         const payload = {
           title: form.querySelector("[data-title]").value,

@@ -17,7 +17,7 @@ const subcategories = currentCategory.id
   ? await listSubcategories(env, currentCategory.id)
   : [];
 
-const liveProducts = await listContent(env, 'products');
+const liveProducts = await listContent(env, 'products', { limit: 100 });
 
 const categoryProducts = liveProducts.filter((p) => p.category === currentCategory.value);
 

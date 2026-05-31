@@ -2,12 +2,13 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listContent } from '../../lib/server/repository';
-import { getCategoryBySlug } from '../../lib/categories';
+import { findCategoryBySlug } from '../../lib/server/categories';
 
 const { brand, category } = Astro.params;
+const env = getRuntimeEnv(Astro.locals);
 
 // Validate category
-const currentCategory = getCategoryBySlug(category ?? '');
+const currentCategory = await findCategoryBySlug(env, category ?? '');
 if (!currentCategory) {
   return Astro.redirect('/products');
 }
@@ -15,8 +16,7 @@ if (!currentCategory) {
 // Ensure brand is present and format it nicely
 const formattedBrand = brand ? brand.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
 
-const env = getRuntimeEnv(Astro.locals);
-const liveProducts = await listContent(env, 'products');
+const liveProducts = await listContent(env, 'products', { limit: 100 });
 
 // Filter products matching BOTH category and brand (case insensitive)
 const categoryProducts = liveProducts.filter((p) => {

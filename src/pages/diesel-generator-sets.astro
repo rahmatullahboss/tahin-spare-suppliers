@@ -5,7 +5,7 @@ import { getRuntimeEnv } from '../lib/server/env';
 import { listContent } from '../lib/server/repository';
 
 const env = getRuntimeEnv(Astro.locals);
-const allProducts = await listContent(env, 'products');
+const allProducts = await listContent(env, 'products', { limit: 100 });
 const categoryProducts = allProducts.filter((p: any) => p.category === 'Diesel & Gas Generator Set');
 ---
 <MainLayout title="Diesel Generator Sets - Tahin Spare Suppliers" activeNav="products">

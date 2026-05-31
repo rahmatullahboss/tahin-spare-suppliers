@@ -8,6 +8,14 @@
       "env": {
         "BRAINSYNC_ENV_FILE": "/Users/rahmatullahzisan/.bsync_core/tahin-spare-suppliers-e2a457fb/mcp-secret-env.json"
       }
+    },
+    "MiniMax": {
+      "command": "/Users/rahmatullahzisan/.local/bin/uvx",
+      "args": ["minimax-coding-plan-mcp", "-y"],
+      "env": {
+        "MINIMAX_API_KEY": "sk-cp-yoIfddewqeXeMh7n1S1fJV7F_m362b5qRMPKjTGmqYiTPzmac8OpRnw35IDLHabaDQa1EAWkzW72RNUHa1up5M4y2kaZnFRCuNhwpB888ckSd6ZkxV3E53s",
+        "MINIMAX_API_HOST": "https://api.minimax.io"
+      }
     }
   }
 }
