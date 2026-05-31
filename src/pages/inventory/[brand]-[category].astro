@@ -16,7 +16,7 @@ if (!currentCategory) {
 // Ensure brand is present and format it nicely
 const formattedBrand = brand ? brand.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
 
-const liveProducts = await listContent(env, 'products', { limit: 100 });
+const liveProducts = await listContent(env, 'products', { limit: 1000 });
 
 // Filter products matching BOTH category and brand (case insensitive)
 const categoryProducts = liveProducts.filter((p) => {

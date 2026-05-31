@@ -13,8 +13,8 @@ if (!authenticated) {
 }
 
 const [products, blogPosts, categories] = await Promise.all([
-  listContent(env, "products", { limit: 100 }),
-  listContent(env, "blog", { limit: 100 }),
+  listContent(env, "products", { limit: 1000 }),
+  listContent(env, "blog", { limit: 1000 }),
   listAllCategories(env)
 ]);
 

@@ -12,7 +12,7 @@ if (!product) {
   return Astro.redirect("/products");
 }
 
-const allProducts = await listContent(env, "products", { limit: 100 });
+const allProducts = await listContent(env, "products", { limit: 1000 });
 const relatedProducts = allProducts.filter(
   (p: any) => p.category === product.category && p.brand === product.brand && p.id !== product.id && p.brand
 ).slice(0, 3); // show up to 3 other models in the same category with the same brand

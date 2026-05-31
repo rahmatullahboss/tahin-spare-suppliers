@@ -14,7 +14,7 @@ if (!result) {
 
 const { parent, subcategory: currentSubcategory } = result;
 
-const liveProducts = await listContent(env, 'products', { limit: 100 });
+const liveProducts = await listContent(env, 'products', { limit: 1000 });
 const filteredProducts = liveProducts.filter(
   (p) => p.category === parent.value && p.subcategory === currentSubcategory.value
 );
