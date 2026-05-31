@@ -3,7 +3,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { isAuthenticated } from "../../lib/server/session";
 import { listContent } from "../../lib/server/repository";
-import { EQUIPMENT_CATEGORIES } from "../../lib/categories";
+import { listAllCategories } from "../../lib/server/categories";
 
 const env = getRuntimeEnv(Astro.locals);
 const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
@@ -12,13 +12,14 @@ if (!authenticated) {
   return Astro.redirect("/admin/login");
 }
 
-const [products, blogPosts] = await Promise.all([
-  listContent(env, "products"),
-  listContent(env, "blog")
+const [products, blogPosts, categories] = await Promise.all([
+  listContent(env, "products", { limit: 100 }),
+  listContent(env, "blog", { limit: 100 }),
+  listAllCategories(env)
 ]);
 
 // Calculate category metrics
-const categoryCounts = EQUIPMENT_CATEGORIES.map(cat => ({
+const categoryCounts = categories.map(cat => ({
   name: cat.value,
   count: products.filter(p => p.category === cat.value).length
 })).sort((a, b) => b.count - a.count);
