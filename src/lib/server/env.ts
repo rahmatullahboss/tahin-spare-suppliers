@@ -8,6 +8,7 @@ export type RuntimeEnv = {
   MEDIA_BUCKET: R2Bucket;
   RESEND_API_KEY: string;
   RESEND_WEBHOOK_SECRET: string;
+  NOTIFICATION_EMAIL?: string;
 };
 
 export function getRuntimeEnv(locals?: unknown): RuntimeEnv {

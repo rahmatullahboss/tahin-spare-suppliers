@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { ensureSchema, getDb } from "../../lib/server/db";
+import { plainTextEmailToHtml, sanitizeEmailHeader } from "../../lib/server/email-content";
+import { sendEmail } from "../../lib/server/email-service";
 
 export const POST: APIRoute = async (context) => {
   try {
@@ -14,7 +16,7 @@ export const POST: APIRoute = async (context) => {
     }
 
     const name = formData.get("name")?.toString().trim() ?? "";
-    const email = formData.get("email")?.toString().trim() ?? "";
+    const email = formData.get("email")?.toString().trim().toLowerCase() ?? "";
     const subject = formData.get("subject")?.toString().trim() ?? "";
     const message = formData.get("message")?.toString().trim() ?? "";
 
@@ -25,6 +27,15 @@ export const POST: APIRoute = async (context) => {
       );
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return Response.json({ error: "Invalid email address." }, { status: 400 });
+    }
+
+    if (name.length > 120 || email.length > 254 || subject.length > 200 || message.length > 5000) {
+      return Response.json({ error: "Submitted message is too long." }, { status: 400 });
+    }
+
     const sql = getDb(env);
     const id = crypto.randomUUID();
     await sql.query(
@@ -32,57 +43,49 @@ export const POST: APIRoute = async (context) => {
       [id, name, email, subject, message]
     );
 
+    let notificationSent = false;
     if (env.RESEND_API_KEY) {
-      const resendRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${env.RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "Tahin Spare Suppliers <onboarding@resend.dev>",
-          to: ["sales@tahinspare.com"],
-          subject: `New Contact from ${name}${subject ? ` — ${subject}` : ""}`,
+      const safeName = plainTextEmailToHtml(name);
+      const safeEmail = plainTextEmailToHtml(email);
+      const safeSubject = plainTextEmailToHtml(subject || "Not provided");
+      const safeMessage = plainTextEmailToHtml(message);
+
+      try {
+        await sendEmail(env, {
+          to: env.NOTIFICATION_EMAIL || "tahinship@gmail.com",
+          subject: sanitizeEmailHeader(
+            `New Contact from ${name}${subject ? ` — ${subject}` : ""}`
+          ),
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <div style="background: #c0392b; padding: 20px; text-align: center;">
                 <h1 style="color: #fff; margin: 0; font-size: 22px;">New Website Contact</h1>
               </div>
               <div style="padding: 25px; background: #f9f9f9;">
-                <table style="width: 100%; border-collapse: collapse;">
-                  <tr>
-                    <td style="padding: 10px; font-weight: bold; color: #333; border-bottom: 1px solid #eee; width: 140px;">Name:</td>
-                    <td style="padding: 10px; color: #555; border-bottom: 1px solid #eee;">${name}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; font-weight: bold; color: #333; border-bottom: 1px solid #eee;">Email:</td>
-                    <td style="padding: 10px; color: #555; border-bottom: 1px solid #eee;"><a href="mailto:${email}">${email}</a></td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; font-weight: bold; color: #333; border-bottom: #eee; vertical-align: top;">Subject:</td>
-                    <td style="padding: 10px; color: #555; border-bottom: 1px solid #eee;">${subject || "Not provided"}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; font-weight: bold; color: #333; vertical-align: top;">Message:</td>
-                    <td style="padding: 10px; color: #555; white-space: pre-wrap;">${message}</td>
-                  </tr>
-                </table>
-              </div>
-              <div style="padding: 15px; text-align: center; font-size: 12px; color: #999;">
-                Sent from Tahin Spare Suppliers website
+                <p><strong>Name:</strong> ${safeName}</p>
+                <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
+                <p><strong>Subject:</strong> ${safeSubject}</p>
+                <p><strong>Message:</strong></p>
+                <div style="white-space: pre-wrap;">${safeMessage}</div>
               </div>
             </div>
           `,
-        }),
-      });
-
-      if (!resendRes.ok) {
-        console.error("Resend API error:", await resendRes.text());
+          text: `New website contact\nName: ${name}\nEmail: ${email}\nSubject: ${subject || "Not provided"}\n\n${message}`,
+          replyTo: email,
+          idempotencyKey: `contact/${id}`,
+        });
+        notificationSent = true;
+      } catch (error) {
+        console.error("Contact notification email failed:", {
+          contactId: id,
+          error: error instanceof Error ? error.message : "Unknown email error",
+        });
       }
     }
 
-    return Response.json({ ok: true });
-  } catch {
+    return Response.json({ ok: true, notificationSent });
+  } catch (error) {
+    console.error("Contact submission failed:", error);
     return Response.json(
       { error: "Failed to submit message." },
       { status: 500 }

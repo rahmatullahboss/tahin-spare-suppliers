@@ -263,6 +263,23 @@ const unreadCount = unreadResult[0]?.total ?? 0;
     color: #94a3b8;
   }
 
+  .admin-main .delivery-badge {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.35rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-main .delivery-success { background: #dcfce7; color: #166534; }
+  .admin-main .delivery-error { background: #fee2e2; color: #b91c1c; }
+  .admin-main .delivery-warning { background: #fef3c7; color: #92400e; }
+  .admin-main .delivery-pending { background: #e0f2fe; color: #075985; }
+
   .admin-main .loading-row td {
     text-align: center;
     color: #94a3b8;
@@ -352,6 +369,8 @@ const unreadCount = unreadResult[0]?.total ?? 0;
     id: string;
     to_address: string;
     subject: string;
+    delivery_status: string;
+    delivery_error: string;
     created_at: string;
   };
 
@@ -403,7 +422,7 @@ const unreadCount = unreadResult[0]?.total ?? 0;
     searchInput.placeholder = folder === "inbox" ? "Search inbox..." : "Search sent emails...";
     headRow.innerHTML = folder === "inbox"
       ? '<th class="date-col">Date</th><th class="address-col">From</th><th class="subject-col">Subject</th><th class="status-col">Status</th>'
-      : '<th class="date-col">Date</th><th class="address-col">To</th><th class="subject-col">Subject</th><th class="status-col"></th>';
+      : '<th class="date-col">Date</th><th class="address-col">To</th><th class="subject-col">Subject</th><th class="status-col">Delivery</th>';
   }
 
   async function loadEmails() {
@@ -515,7 +534,24 @@ const unreadCount = unreadResult[0]?.total ?? 0;
       tr.appendChild(createDateCell(email.created_at));
       tr.appendChild(createAddressCell(email.to_address));
       tr.appendChild(createSubjectCell(email.subject));
-      tr.appendChild(document.createElement("td")); // Empty for sent folder
+
+      const statusTd = document.createElement("td");
+      statusTd.className = "status-col";
+      const badge = document.createElement("span");
+      const status = email.delivery_status || "accepted";
+      const statusClass = ["delivered"].includes(status)
+        ? "delivery-success"
+        : ["failed", "bounced", "suppressed", "complained"].includes(status)
+          ? "delivery-error"
+          : ["delivery_delayed"].includes(status)
+            ? "delivery-warning"
+            : "delivery-pending";
+      badge.className = `delivery-badge ${statusClass}`;
+      badge.textContent = status.replace(/_/g, " ");
+      if (email.delivery_error) badge.title = email.delivery_error;
+      statusTd.appendChild(badge);
+      tr.appendChild(statusTd);
+
       tr.addEventListener("click", () => {
         window.location.href = `/admin/emails/thread/sent/${email.id}`;
       });

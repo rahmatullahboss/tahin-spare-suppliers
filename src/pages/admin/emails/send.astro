@@ -73,6 +73,17 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
           <button type="button" data-cmd="ul" title="Bullet List">&bull; List</button>
           <button type="button" data-cmd="ol" title="Numbered List">1. List</button>
           <span class="sep"></span>
+          <button type="button" data-cmd="image" title="Add Photo">Photo</button>
+          <button type="button" data-cmd="attachment" title="Attach File">Attach File</button>
+          <input
+            type="file"
+            id="email-image-input"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            multiple
+            hidden
+          />
+          <input type="file" id="email-file-input" multiple hidden />
+          <span class="sep"></span>
           <button type="button" data-cmd="undo" title="Undo">&#8630;</button>
           <button type="button" data-cmd="redo" title="Redo">&#8631;</button>
         </div>
@@ -82,6 +93,14 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
           contenteditable="true"
           data-placeholder="Write your message here..."
         ></div>
+        <p id="image-status" class="image-status"></p>
+      </div>
+
+      <div class="field attachments-field">
+        <label>Attachments</label>
+        <div id="attachment-list" class="attachment-list" aria-live="polite">
+          <p class="attachment-empty">No files attached</p>
+        </div>
       </div>
 
       <div class="actions">
@@ -234,6 +253,85 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
     margin: 8px 0;
   }
 
+  .editor img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 12px 0;
+    border: 1px solid #eee;
+    border-radius: 6px;
+  }
+
+  .image-status {
+    margin: 8px 0 0;
+    color: #666;
+    font-size: 13px;
+    min-height: 18px;
+  }
+
+  .image-status.error {
+    color: #721c24;
+  }
+
+  .attachments-field {
+    margin-top: -4px;
+  }
+
+  .attachment-list {
+    display: grid;
+    gap: 8px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fafafa;
+  }
+
+  .attachment-empty {
+    margin: 0;
+    color: #777;
+    font-size: 13px;
+  }
+
+  .attachment-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+
+  .attachment-name {
+    min-width: 0;
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .attachment-size {
+    color: #777;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .attachment-remove {
+    border: none;
+    background: #f0f0f0;
+    color: #333;
+    border-radius: 4px;
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .attachment-remove:hover {
+    background: #e0e0e0;
+  }
+
   .actions {
     display: flex;
     gap: 12px;
@@ -306,7 +404,160 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
   const editorEl = document.getElementById("editor") as HTMLDivElement;
   const statusEl = document.getElementById("status-message") as HTMLParagraphElement;
   const sendBtn = document.getElementById("send-btn") as HTMLButtonElement;
+  const imageInput = document.getElementById("email-image-input") as HTMLInputElement;
+  const fileInput = document.getElementById("email-file-input") as HTMLInputElement;
+  const imageStatusEl = document.getElementById("image-status") as HTMLParagraphElement;
+  const attachmentListEl = document.getElementById("attachment-list") as HTMLDivElement;
   const inReplyToId = form?.dataset.inReplyToId ?? "";
+  const sendRequestId = crypto.randomUUID();
+  const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+  const maxInlineImageSize = 8 * 1024 * 1024;
+  const maxInlineImages = 5;
+  const maxFileAttachmentSize = 20 * 1024 * 1024;
+  const maxFileAttachments = 10;
+  const maxTotalAttachmentSize = 30 * 1024 * 1024;
+  const inlineImages: {
+    id: string;
+    filename: string;
+    contentType: string;
+    contentBase64: string;
+    size: number;
+  }[] = [];
+  const fileAttachments: {
+    id: string;
+    filename: string;
+    contentType: string;
+    contentBase64: string;
+    size: number;
+  }[] = [];
+  let savedEditorRange: Range | null = null;
+
+  const setImageStatus = (message: string, isError = false) => {
+    imageStatusEl.textContent = message;
+    imageStatusEl.classList.toggle("error", isError);
+  };
+
+  const escapeAttribute = (value: string) => {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  };
+
+  const formatFileSize = (size: number) => {
+    if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    if (size >= 1024) return `${Math.ceil(size / 1024)} KB`;
+    return `${size} B`;
+  };
+
+  const getTotalAttachmentSize = () => {
+    const inlineSize = inlineImages.reduce((total, image) => total + image.size, 0);
+    const fileSize = fileAttachments.reduce((total, file) => total + file.size, 0);
+    return inlineSize + fileSize;
+  };
+
+  const renderAttachmentList = () => {
+    if (fileAttachments.length === 0) {
+      attachmentListEl.innerHTML = '<p class="attachment-empty">No files attached</p>';
+      return;
+    }
+
+    attachmentListEl.innerHTML = fileAttachments.map((file) => {
+      return `
+        <div class="attachment-item" data-attachment-id="${escapeAttribute(file.id)}">
+          <div>
+            <div class="attachment-name">${escapeAttribute(file.filename)}</div>
+            <div class="attachment-size">${formatFileSize(file.size)}</div>
+          </div>
+          <button type="button" class="attachment-remove" data-remove-attachment="${escapeAttribute(file.id)}">Remove</button>
+        </div>
+      `;
+    }).join("");
+  };
+
+  const saveEditorSelection = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (editorEl.contains(range.commonAncestorContainer)) {
+      savedEditorRange = range.cloneRange();
+    }
+  };
+
+  const restoreEditorSelection = () => {
+    if (!savedEditorRange) return;
+
+    const selection = window.getSelection();
+    if (!selection) return;
+
+    selection.removeAllRanges();
+    selection.addRange(savedEditorRange);
+  };
+
+  const fileToBase64 = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        const result = typeof reader.result === "string" ? reader.result : "";
+        resolve(result.split(",")[1] ?? "");
+      });
+      reader.addEventListener("error", () => reject(new Error("Could not read image.")));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const insertHtmlAtSelection = (html: string) => {
+    editorEl.focus();
+    restoreEditorSelection();
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      editorEl.insertAdjacentHTML("beforeend", html);
+      saveEditorSelection();
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const template = document.createElement("template");
+    template.innerHTML = html.trim();
+    const fragment = template.content;
+    const lastNode = fragment.lastChild;
+    range.insertNode(fragment);
+
+    if (lastNode) {
+      range.setStartAfter(lastNode);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    saveEditorSelection();
+  };
+
+  const buildEmailBodyHtml = () => {
+    const clone = editorEl.cloneNode(true) as HTMLDivElement;
+    clone.querySelectorAll("img[data-email-image-id]").forEach((image) => {
+      const contentId = image.getAttribute("data-email-image-id") ?? "";
+      if (!contentId) return;
+
+      image.setAttribute("src", `cid:${contentId}`);
+      image.setAttribute(
+        "style",
+        "max-width:100%;height:auto;display:block;margin:12px 0;border:0;"
+      );
+      image.removeAttribute("data-email-image-id");
+    });
+
+    return clone.innerHTML.trim();
+  };
+
+  editorEl?.addEventListener("keyup", saveEditorSelection);
+  editorEl?.addEventListener("mouseup", saveEditorSelection);
+  editorEl?.addEventListener("focus", saveEditorSelection);
 
   // Toolbar button handlers
   document.querySelectorAll("[data-cmd]").forEach((btn) => {
@@ -335,6 +586,13 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
         case "ol":
           document.execCommand("insertOrderedList", false);
           break;
+        case "image":
+          saveEditorSelection();
+          imageInput.click();
+          break;
+        case "attachment":
+          fileInput.click();
+          break;
         case "undo":
           document.execCommand("undo", false);
           break;
@@ -345,12 +603,113 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
     });
   });
 
+  attachmentListEl?.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    const attachmentId = target.dataset.removeAttachment;
+    if (!attachmentId) return;
+
+    const index = fileAttachments.findIndex((file) => file.id === attachmentId);
+    if (index >= 0) {
+      fileAttachments.splice(index, 1);
+      renderAttachmentList();
+      setImageStatus(`${fileAttachments.length} file${fileAttachments.length === 1 ? "" : "s"} attached.`);
+    }
+  });
+
+  imageInput?.addEventListener("change", async () => {
+    const files = Array.from(imageInput.files ?? []);
+    imageInput.value = "";
+
+    if (files.length === 0) return;
+    if (inlineImages.length + files.length > maxInlineImages) {
+      setImageStatus(`Maximum ${maxInlineImages} photos can be added to one email.`, true);
+      return;
+    }
+
+    try {
+      for (const file of files) {
+        if (!allowedImageTypes.has(file.type)) {
+          throw new Error("Only JPG, PNG, WebP and GIF photos are allowed.");
+        }
+
+        if (file.size > maxInlineImageSize) {
+          throw new Error("Each photo must be 8MB or smaller.");
+        }
+
+        if (getTotalAttachmentSize() + file.size > maxTotalAttachmentSize) {
+          throw new Error("Photos and attachments must be 30MB or smaller in total.");
+        }
+
+        const id = `email-image-${crypto.randomUUID()}`;
+        const objectUrl = URL.createObjectURL(file);
+        const contentBase64 = await fileToBase64(file);
+        inlineImages.push({
+          id,
+          filename: file.name || "email-photo.jpg",
+          contentType: file.type,
+          contentBase64,
+          size: file.size,
+        });
+
+        const safeName = escapeAttribute(file.name || "Email photo");
+        insertHtmlAtSelection(
+          `<p><img src="${objectUrl}" data-email-image-id="${id}" alt="${safeName}" style="max-width:100%;height:auto;display:block;margin:12px 0;border:1px solid #eee;border-radius:6px;" /></p><p><br></p>`
+        );
+      }
+
+      setImageStatus(`${inlineImages.length} photo${inlineImages.length === 1 ? "" : "s"} ready to send.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not add photo.";
+      setImageStatus(message, true);
+    }
+  });
+
+  fileInput?.addEventListener("change", async () => {
+    const files = Array.from(fileInput.files ?? []);
+    fileInput.value = "";
+
+    if (files.length === 0) return;
+    if (fileAttachments.length + files.length > maxFileAttachments) {
+      setImageStatus(`Maximum ${maxFileAttachments} files can be attached to one email.`, true);
+      return;
+    }
+
+    try {
+      for (const file of files) {
+        if (file.size > maxFileAttachmentSize) {
+          throw new Error("Each attachment must be 20MB or smaller.");
+        }
+
+        if (getTotalAttachmentSize() + file.size > maxTotalAttachmentSize) {
+          throw new Error("Photos and attachments must be 30MB or smaller in total.");
+        }
+
+        const contentBase64 = await fileToBase64(file);
+        fileAttachments.push({
+          id: `email-file-${crypto.randomUUID()}`,
+          filename: file.name || "attachment",
+          contentType: file.type || "application/octet-stream",
+          contentBase64,
+          size: file.size,
+        });
+      }
+
+      renderAttachmentList();
+      setImageStatus(`${fileAttachments.length} file${fileAttachments.length === 1 ? "" : "s"} attached.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not attach file.";
+      setImageStatus(message, true);
+    }
+  });
+
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const to = (document.getElementById("to") as HTMLInputElement).value.trim();
     const subject = (document.getElementById("subject") as HTMLInputElement).value.trim();
-    const body = editorEl?.innerHTML?.trim() || "";
+    const body = buildEmailBodyHtml();
 
     if (!to || !subject) {
       statusEl.textContent = "To and subject are required.";
@@ -375,7 +734,15 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ to, subject, body, inReplyToId }),
+        body: JSON.stringify({
+          to,
+          subject,
+          body,
+          inReplyToId,
+          requestId: sendRequestId,
+          inlineImages,
+          fileAttachments,
+        }),
       });
 
       const data = await response.json();

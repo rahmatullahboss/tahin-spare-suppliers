@@ -1,13 +1,30 @@
 import type { APIRoute } from "astro";
-import { getRuntimeEnv } from "../../../../lib/server/env";
+import { requireAdminRequest } from "../../../../lib/server/api";
 import { ensureSchema, getDb } from "../../../../lib/server/db";
-import { sendEmail } from "../../../../lib/server/email";
+import {
+  sendEmail,
+  type EmailFileAttachmentInput,
+  type InlineEmailImageInput
+} from "../../../../lib/server/email-service";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url, locals }) => {
+type SendEmailRequestBody = {
+  to?: unknown;
+  subject?: unknown;
+  body?: unknown;
+  inReplyToId?: unknown;
+  requestId?: unknown;
+  inlineImages?: unknown;
+  fileAttachments?: unknown;
+};
+
+export const GET: APIRoute = async (context) => {
   try {
-    const env = getRuntimeEnv(locals);
+    const env = await requireAdminRequest(context);
+    if (!env) return new Response("Unauthorized", { status: 401 });
+
+    const { url } = context;
     await ensureSchema(env);
     const sql = getDb(env);
 
@@ -16,7 +33,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
     const search = url.searchParams.get("search") ?? "";
     const offset = (page - 1) * limit;
 
-    let query = `SELECT id, to_address, subject, created_at FROM sent_emails`;
+    let query = `SELECT id, to_address, subject, delivery_status, delivery_error, created_at FROM sent_emails`;
     let countQuery = `SELECT COUNT(*) as total FROM sent_emails`;
     const params: (string | number)[] = [];
 
@@ -49,24 +66,52 @@ export const GET: APIRoute = async ({ url, locals }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async (context) => {
   try {
-    const env = getRuntimeEnv(locals);
+    const env = await requireAdminRequest(context);
+    if (!env) return new Response("Unauthorized", { status: 401 });
+
+    const { request } = context;
     await ensureSchema(env);
     const sql = getDb(env);
 
-    const body = await request.json();
-    const {
-      to,
-      subject,
-      body: emailBody,
-      inReplyToId,
-    }: {
-      to?: string;
-      subject?: string;
-      body?: string;
-      inReplyToId?: string;
-    } = body;
+    const requestBody = (await request.json()) as SendEmailRequestBody;
+    const rawInlineImages = Array.isArray(requestBody.inlineImages)
+      ? requestBody.inlineImages
+      : [];
+    const inlineImages: InlineEmailImageInput[] = rawInlineImages
+      .filter((image: unknown): image is Record<string, unknown> => {
+        return typeof image === "object" && image !== null;
+      })
+      .map((image) => ({
+        id: typeof image.id === "string" ? image.id : "",
+        filename: typeof image.filename === "string" ? image.filename : "email-image.jpg",
+        contentType: typeof image.contentType === "string" ? image.contentType : "",
+        contentBase64: typeof image.contentBase64 === "string" ? image.contentBase64 : "",
+        size: typeof image.size === "number" ? image.size : undefined,
+      }));
+    const rawFileAttachments = Array.isArray(requestBody.fileAttachments)
+      ? requestBody.fileAttachments
+      : [];
+    const fileAttachments: EmailFileAttachmentInput[] = rawFileAttachments
+      .filter((file: unknown): file is Record<string, unknown> => {
+        return typeof file === "object" && file !== null;
+      })
+      .map((file) => ({
+        filename: typeof file.filename === "string" ? file.filename : "attachment",
+        contentType: typeof file.contentType === "string" ? file.contentType : "",
+        contentBase64: typeof file.contentBase64 === "string" ? file.contentBase64 : "",
+        size: typeof file.size === "number" ? file.size : undefined,
+      }));
+    const to = typeof requestBody.to === "string" ? requestBody.to.trim() : "";
+    const subject = typeof requestBody.subject === "string" ? requestBody.subject.trim() : "";
+    const emailBody = typeof requestBody.body === "string" ? requestBody.body : "";
+    const inReplyToId = typeof requestBody.inReplyToId === "string"
+      ? requestBody.inReplyToId
+      : "";
+    const requestId = typeof requestBody.requestId === "string"
+      ? requestBody.requestId.trim()
+      : "";
 
     if (!to || !subject || !emailBody) {
       return Response.json(
@@ -79,6 +124,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!emailRegex.test(to)) {
       return Response.json(
         { error: "Invalid email address" },
+        { status: 400 }
+      );
+    }
+
+    if (requestId && !/^[a-zA-Z0-9._:-]{1,200}$/.test(requestId)) {
+      return Response.json(
+        { error: "Invalid email request id" },
         { status: 400 }
       );
     }
@@ -98,28 +150,40 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    const result = await sendEmail(env, to, subject, emailBody, replyHeaders);
-    const id = result.id;
+    const result = await sendEmail(env, {
+      to,
+      subject,
+      html: emailBody,
+      headers: replyHeaders,
+      inlineImages,
+      fileAttachments,
+      idempotencyKey: requestId ? `admin-email/${requestId}` : undefined,
+    });
 
-    await sql.query(
+    const savedRows = await sql.query(
       `INSERT INTO sent_emails (
          id, to_address, from_address, subject, body, resend_id, in_reply_to_inbound_id
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (resend_id) WHERE resend_id <> ''
+       DO UPDATE SET resend_id = EXCLUDED.resend_id
+       RETURNING id`,
       [
-        id,
+        result.id,
         to,
         "sales@tahinspare.com",
         subject,
         emailBody,
         result.resendId,
-        inReplyToId ?? "",
+        inReplyToId,
       ]
     );
+    const id = typeof savedRows[0]?.id === "string" ? savedRows[0].id : result.id;
 
     return Response.json({ ok: true, id, resendId: result.resendId });
   } catch (error) {
     console.error("Send email error:", error);
-    return Response.json({ error: "Failed to send email" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to send email";
+    return Response.json({ error: message }, { status: 502 });
   }
 };

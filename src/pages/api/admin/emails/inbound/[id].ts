@@ -1,12 +1,15 @@
 import type { APIRoute } from "astro";
-import { getRuntimeEnv } from "../../../../../lib/server/env";
+import { requireAdminRequest } from "../../../../../lib/server/api";
 import { ensureSchema, getDb } from "../../../../../lib/server/db";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ params, locals }) => {
+export const GET: APIRoute = async (context) => {
   try {
-    const env = getRuntimeEnv(locals);
+    const env = await requireAdminRequest(context);
+    if (!env) return new Response("Unauthorized", { status: 401 });
+
+    const { params } = context;
     await ensureSchema(env);
     const sql = getDb(env);
 

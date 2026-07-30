@@ -8,6 +8,13 @@ import {
   makeReplySubject,
   normalizeEmailSubject,
 } from "../../../../../lib/server/email-thread";
+import {
+  isSafeInlineImageContentType,
+  parseInboundAttachments,
+  plainTextEmailToHtml,
+  sanitizeEmailHtml,
+  type InboundEmailAttachment,
+} from "../../../../../lib/server/email-content";
 
 type EmailSource = "inbound" | "sent";
 type DbRow = Record<string, unknown>;
@@ -18,6 +25,8 @@ type ThreadMessage = {
   to: string;
   subject: string;
   body: string;
+  safeBody: string;
+  attachments: InboundEmailAttachment[];
   createdAt: string;
   inReplyToInboundId: string;
 };
@@ -41,13 +50,27 @@ function asString(value: unknown): string {
 }
 
 function toMessage(row: DbRow, messageSource: EmailSource): ThreadMessage {
+  const id = asString(row.id);
+  const body = asString(row.body);
+  const htmlBody = asString(row.html_body);
+  const attachments = messageSource === "inbound"
+    ? parseInboundAttachments(row.attachments_json)
+    : [];
+  const safeBody = messageSource === "inbound"
+    ? htmlBody
+      ? sanitizeEmailHtml(htmlBody, attachments, id)
+      : plainTextEmailToHtml(body)
+    : sanitizeEmailHtml(body, [], id);
+
   return {
-    id: asString(row.id),
+    id,
     source: messageSource,
     from: asString(row.from_address),
     to: asString(row.to_address),
     subject: asString(row.subject),
-    body: asString(row.body),
+    body,
+    safeBody,
+    attachments,
     createdAt: asString(row.created_at),
     inReplyToInboundId: asString(row.in_reply_to_inbound_id),
   };
@@ -55,12 +78,14 @@ function toMessage(row: DbRow, messageSource: EmailSource): ThreadMessage {
 
 const anchorResult = source === "inbound"
   ? await sql.query(
-      `SELECT id, from_address, to_address, subject, body, created_at, '' as in_reply_to_inbound_id
+      `SELECT id, from_address, to_address, subject, body, html_body, attachments_json,
+              created_at, '' as in_reply_to_inbound_id
        FROM inbound_emails WHERE id = $1`,
       [id]
     )
   : await sql.query(
-      `SELECT id, from_address, to_address, subject, body, created_at, in_reply_to_inbound_id
+      `SELECT id, from_address, to_address, subject, body, '' as html_body,
+              '[]' as attachments_json, created_at, in_reply_to_inbound_id
        FROM sent_emails WHERE id = $1`,
       [id]
     );
@@ -75,13 +100,15 @@ const subjectKey = normalizeEmailSubject(anchor.subject);
 
 const [inboundRows, sentRows] = await Promise.all([
   sql.query(
-    `SELECT id, from_address, to_address, subject, body, created_at, '' as in_reply_to_inbound_id
+    `SELECT id, from_address, to_address, subject, body, html_body, attachments_json,
+            created_at, '' as in_reply_to_inbound_id
      FROM inbound_emails
      ORDER BY created_at DESC
      LIMIT 500`
   ),
   sql.query(
-    `SELECT id, from_address, to_address, subject, body, created_at, in_reply_to_inbound_id
+    `SELECT id, from_address, to_address, subject, body, '' as html_body,
+            '[]' as attachments_json, created_at, in_reply_to_inbound_id
      FROM sent_emails
      ORDER BY created_at DESC
      LIMIT 500`
@@ -130,6 +157,10 @@ const displaySubject = anchor.subject;
 const replySubject = makeReplySubject(anchor.subject);
 const replyTo = customerEmail;
 const inReplyToId = latestInbound?.id ?? "";
+
+function getAttachmentUrl(messageId: string, attachmentId: string): string {
+  return `/api/admin/emails/inbound/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`;
+}
 ---
 
 <AdminLayout title="Email Conversation" active="emails">
@@ -166,7 +197,42 @@ const inReplyToId = latestInbound?.id ?? "";
             <span>From: {message.from}</span>
             <span>To: {message.to}</span>
           </div>
-          <div class="body" set:html={message.body || "(Empty body)"} />
+          <div class="body" set:html={message.safeBody || "(Empty body)"} />
+          {message.attachments.length > 0 && (
+            <div class="attachments">
+              <h3>Attachments</h3>
+              <div class="attachment-grid">
+                {message.attachments.map((attachment) => (
+                  <article class="attachment-item">
+                    {isSafeInlineImageContentType(attachment.contentType) && (
+                      <a
+                        class="attachment-preview"
+                        href={getAttachmentUrl(message.id, attachment.id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src={getAttachmentUrl(message.id, attachment.id)}
+                          alt={attachment.filename}
+                          loading="lazy"
+                        />
+                      </a>
+                    )}
+                    <div class="attachment-info">
+                      <span>{attachment.filename}</span>
+                      <a
+                        href={`${getAttachmentUrl(message.id, attachment.id)}?download=1`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Download
+                      </a>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
         </article>
       ))}
     </div>
@@ -285,6 +351,69 @@ const inReplyToId = latestInbound?.id ?? "";
   .body :global(p:last-child) {
     margin-bottom: 0;
   }
+  .body :global(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 12px 0;
+    cursor: zoom-in;
+  }
+  .body :global(table) {
+    max-width: 100%;
+    border-collapse: collapse;
+    overflow-x: auto;
+  }
+  .body :global(td),
+  .body :global(th) {
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+  }
+  .attachments {
+    padding: 0 20px 20px;
+  }
+  .attachments h3 {
+    margin: 0 0 10px;
+    font-size: 14px;
+  }
+  .attachment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .attachment-item {
+    min-width: 0;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fafafa;
+  }
+  .attachment-preview {
+    display: block;
+    aspect-ratio: 4 / 3;
+    background: #eee;
+  }
+  .attachment-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .attachment-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+  .attachment-info span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .attachment-info a {
+    color: #8d5f20;
+    font-weight: 700;
+    white-space: nowrap;
+  }
   @media (max-width: 700px) {
     .thread-title-row,
     .message-head {
@@ -298,3 +427,13 @@ const inReplyToId = latestInbound?.id ?? "";
     }
   }
 </style>
+
+<script>
+  document.querySelectorAll(".body img").forEach((image) => {
+    image.addEventListener("click", () => {
+      if (image instanceof HTMLImageElement && image.src) {
+        window.open(image.src, "_blank", "noopener,noreferrer");
+      }
+    });
+  });
+</script>
