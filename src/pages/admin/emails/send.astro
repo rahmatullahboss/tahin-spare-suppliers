@@ -550,29 +550,91 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
 
   @media (max-width: 700px) {
     .compose-shell {
-      padding-bottom: 20px;
+      width: 100%;
+      min-width: 0;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+
+    .compose-nav {
+      min-height: 44px;
+      margin-bottom: 8px;
+    }
+
+    .back-link {
+      min-height: 44px;
+    }
+
+    .compose-heading {
+      padding: 2px 2px 16px;
+    }
+
+    .composer-window {
+      width: 100%;
+      min-width: 0;
+      border-radius: 10px;
     }
 
     .address-field {
-      grid-template-columns: 58px minmax(0, 1fr);
-      padding: 0 13px;
+      min-height: 0;
+      grid-template-columns: 1fr;
+      align-items: stretch;
+      gap: 3px;
+      padding: 10px 13px 4px;
+    }
+
+    .address-field label {
+      font-size: 12px;
+    }
+
+    .address-field input {
+      min-height: 44px;
+      padding: 8px 0 10px;
+      font-size: 16px;
     }
 
     .editor-toolbar {
-      align-items: flex-start;
-      padding: 7px;
+      max-width: 100%;
+      align-items: center;
+      flex-wrap: nowrap;
+      padding: 6px 7px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+    }
+
+    .editor-toolbar button {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 10px;
     }
 
     .toolbar-spacer,
-    .history-tools,
     .sep {
       display: none;
     }
 
+    .history-tools {
+      display: flex;
+    }
+
     .editor {
+      min-width: 0;
       min-height: 290px;
       max-height: none;
-      padding: 19px 16px;
+      padding: 18px 14px;
+      font-size: 16px;
+      overflow-wrap: anywhere;
+    }
+
+    .editor img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .composer-feedback,
+    .attachments-field {
+      padding-left: 14px;
+      padding-right: 14px;
     }
 
     .attachments-title-row {
@@ -581,21 +643,49 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
       gap: 3px;
     }
 
+    .attachment-item {
+      min-width: 0;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .attachment-name {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .attachment-remove {
+      min-height: 44px;
+      padding: 0 12px;
+    }
+
     .composer-footer {
       align-items: stretch;
       flex-direction: column;
+      gap: 10px;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
     }
 
     .actions {
       width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
     }
 
     #send-btn {
-      flex: 1;
+      min-height: 44px;
+      width: 100%;
+    }
+
+    .cancel-btn {
+      min-height: 44px;
     }
 
     .status-message {
       max-width: none;
+      overflow-wrap: anywhere;
       text-align: left;
     }
   }

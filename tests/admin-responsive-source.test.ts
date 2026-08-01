@@ -12,6 +12,7 @@ const categoriesPage = readFileSync(new URL("../src/pages/admin/categories.astro
 const contactMessagesPage = readFileSync(new URL("../src/pages/admin/contact-messages.astro", import.meta.url), "utf8");
 const enquiriesPage = readFileSync(new URL("../src/pages/admin/enquiries.astro", import.meta.url), "utf8");
 const mailboxPage = readFileSync(new URL("../src/pages/admin/emails.astro", import.meta.url), "utf8");
+const composePage = readFileSync(new URL("../src/pages/admin/emails/send.astro", import.meta.url), "utf8");
 
 test("admin shell provides an accessible mobile drawer instead of horizontal navigation", () => {
   assert.match(layout, /data-admin-menu-toggle/);
@@ -68,4 +69,14 @@ test("mailbox stacks toolbar and conversation rows without hiding core metadata"
   assert.match(mailboxPage, /\.admin-main \.search-field\s*\{[^}]*width:\s*100%/s);
   assert.match(mailboxPage, /\.admin-main \.mail-pagination button\s*\{[^}]*min-height:\s*44px/s);
   assert.match(mailboxPage, /\.admin-main \.mail-file-mark,\s*\n\s*\.admin-main \.delivery-mark\s*\{[^}]*display:\s*inline-flex/s);
+});
+
+test("email composer is touch-safe and viewport-contained on phones", () => {
+  assert.match(composePage, /@media \(max-width: 700px\)/);
+  assert.match(composePage, /@media \(max-width: 700px\)[\s\S]*\.address-field input\s*\{[^}]*font-size:\s*16px/s);
+  assert.match(composePage, /@media \(max-width: 700px\)[\s\S]*\.editor\s*\{[^}]*font-size:\s*16px/s);
+  assert.match(composePage, /@media \(max-width: 700px\)[\s\S]*\.editor-toolbar button\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(composePage, /@media \(max-width: 700px\)[\s\S]*\.attachment-remove\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(composePage, /@media \(max-width: 700px\)[\s\S]*#send-btn\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(composePage, /@media \(max-width: 700px\)[\s\S]*\.editor img\s*\{[^}]*max-width:\s*100%/s);
 });
