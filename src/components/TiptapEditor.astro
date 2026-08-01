@@ -49,6 +49,8 @@ const { id = "editor", placeholder = "Start writing your blog post...", initialC
 
 <style>
   .tiptap-wrapper {
+    min-width: 0;
+    max-width: 100%;
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
     overflow: hidden;
@@ -206,6 +208,38 @@ const { id = "editor", placeholder = "Start writing your blog post...", initialC
     border: none;
     border-top: 2px solid #e2e8f0;
     margin: 1.5em 0;
+  }
+
+  @media (max-width: 600px) {
+    .tiptap-toolbar {
+      max-width: 100%;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+    }
+    .toolbar-group,
+    .toolbar-separator {
+      flex: 0 0 auto;
+    }
+    .tiptap-toolbar button {
+      min-width: 40px;
+      min-height: 40px;
+      padding: 7px 9px;
+    }
+    .tiptap-content {
+      min-height: 260px;
+      max-height: 60vh;
+      padding: 14px;
+      font-size: 16px;
+      overflow-wrap: anywhere;
+    }
+    .tiptap-content img,
+    .tiptap-content video,
+    .tiptap-content iframe {
+      max-width: 100%;
+      height: auto;
+    }
   }
 </style>
 

@@ -16,8 +16,13 @@ const { label = "Image" } = Astro.props;
 
 <style>
   .image-uploader {
+    min-width: 0;
     display: grid;
     gap: 10px;
+  }
+  .image-uploader input[type="file"] {
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .remove-btn {
     width: fit-content;
@@ -33,5 +38,20 @@ const { label = "Image" } = Astro.props;
     margin: 0;
     font-size: 13px;
     color: #666;
+  }
+
+  @media (max-width: 600px) {
+    .image-uploader input[type="file"] {
+      width: 100%;
+      min-height: 44px;
+      font-size: 16px;
+    }
+    .remove-btn {
+      width: 100%;
+      min-height: 44px;
+    }
+    .upload-status {
+      overflow-wrap: anywhere;
+    }
   }
 </style>
