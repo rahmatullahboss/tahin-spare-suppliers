@@ -64,6 +64,7 @@ const mobileTitle = title.replace(/^Admin\s*/i, "");
         const nextOpen = Boolean(open && mobileQuery.matches);
         document.documentElement.classList.toggle("admin-drawer-open", nextOpen);
         drawer?.classList.toggle("is-open", nextOpen);
+        drawer?.toggleAttribute("inert", mobileQuery.matches && !nextOpen);
         backdrop?.classList.toggle("is-open", nextOpen);
         toggle?.setAttribute("aria-expanded", String(nextOpen));
         toggle?.setAttribute("aria-label", nextOpen ? "Close admin navigation" : "Open admin navigation");
@@ -81,6 +82,7 @@ const mobileTitle = title.replace(/^Admin\s*/i, "");
         if (event.key === "Escape") setOpen(false);
       });
       mobileQuery.addEventListener("change", () => setOpen(false));
+      setOpen(false);
 
       logout?.addEventListener("click", async () => {
         await fetch("/api/auth/logout", { method: "POST" });

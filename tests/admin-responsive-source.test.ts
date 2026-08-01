@@ -95,3 +95,8 @@ test("admin shell clips accidental page-level horizontal overflow", () => {
   assert.match(layout, /\.admin-shell\s*\{[^}]*min-width:\s*0/s);
   assert.match(layout, /\.admin-main\s*\{[^}]*min-width:\s*0[^}]*overflow-x:\s*clip/s);
 });
+
+test("closed mobile drawer is removed from keyboard focus order", () => {
+  assert.match(layout, /drawer\?\.toggleAttribute\("inert",\s*mobileQuery\.matches\s*&&\s*!nextOpen\)/);
+  assert.match(layout, /setOpen\(false\);/);
+});
