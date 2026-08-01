@@ -108,8 +108,43 @@ const total = countResult[0]?.total ?? 0;
   .admin-main .pagination .page-info { padding: 0.35rem 0.4rem; color: #94a3b8; font-size: 0.8rem; }
 
   @media (max-width: 600px) {
-    .admin-main .enquiry-header { flex-direction: column; }
-    .admin-main .enquiry-message, .admin-main .enquiry-meta { margin-left: 0; }
+    .admin-main .page-header { margin-bottom: 16px; }
+    .admin-main .card-toolbar { padding: 12px; }
+    .admin-main .search-wrap { max-width: none; width: 100%; }
+    .admin-main #search-input { min-height: 44px; font-size: 16px; }
+    .admin-main .enquiry-card { padding: 14px; }
+    .admin-main .enquiry-header { flex-direction: column; gap: 8px; }
+    .admin-main .enquiry-from { min-width: 0; align-items: flex-start; }
+    .admin-main .enquiry-from > div:last-child { min-width: 0; }
+    .admin-main .contact-info { min-width: 0; }
+    .admin-main .contact-info a,
+    .admin-main .phone {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .admin-main .enquiry-date { white-space: normal; }
+    .admin-main .equipment-badge {
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .admin-main .enquiry-message,
+    .admin-main .enquiry-meta {
+      margin-left: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+    .admin-main .pagination {
+      justify-content: flex-start;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+    .admin-main .pagination button {
+      min-width: 44px;
+      min-height: 44px;
+      flex: 0 0 auto;
+    }
+    .admin-main .pagination .page-info { flex: 0 0 auto; }
   }
 </style>
 

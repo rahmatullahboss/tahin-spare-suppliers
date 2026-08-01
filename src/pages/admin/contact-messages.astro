@@ -100,8 +100,36 @@ const total = countResult[0]?.total ?? 0;
   .admin-main .pagination .page-info { padding: 0.35rem 0.4rem; color: #94a3b8; font-size: 0.8rem; }
 
   @media (max-width: 600px) {
-    .admin-main .message-header { flex-direction: column; }
-    .admin-main .message-subject, .admin-main .message-content { margin-left: 0; }
+    .admin-main .page-header { margin-bottom: 16px; }
+    .admin-main .card-toolbar { padding: 12px; }
+    .admin-main .search-wrap { max-width: none; width: 100%; }
+    .admin-main #search-input { min-height: 44px; font-size: 16px; }
+    .admin-main .message-card { padding: 14px; }
+    .admin-main .message-header { flex-direction: column; gap: 8px; }
+    .admin-main .message-from { min-width: 0; align-items: flex-start; }
+    .admin-main .message-from > div:last-child { min-width: 0; }
+    .admin-main .message-email {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .admin-main .message-date { white-space: normal; }
+    .admin-main .message-subject,
+    .admin-main .message-content {
+      max-width: 100%;
+      margin-left: 0;
+      overflow-wrap: anywhere;
+    }
+    .admin-main .pagination {
+      justify-content: flex-start;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+    .admin-main .pagination button {
+      min-width: 44px;
+      min-height: 44px;
+      flex: 0 0 auto;
+    }
+    .admin-main .pagination .page-info { flex: 0 0 auto; }
   }
 </style>
 
