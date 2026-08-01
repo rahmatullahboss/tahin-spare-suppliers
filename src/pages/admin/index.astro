@@ -257,4 +257,84 @@ const recentBlogs = blogPosts.slice(0, 5);
       gap: 15px;
     }
   }
+
+  @media (max-width: 600px) {
+    .dashboard-header {
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .dashboard-header h1 {
+      font-size: 24px;
+      line-height: 1.2;
+    }
+    .quick-actions {
+      width: 100%;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .quick-actions .btn {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .metric-card {
+      padding: 18px;
+      gap: 14px;
+    }
+    .metric-icon {
+      width: 56px;
+      height: 56px;
+      flex: 0 0 56px;
+      font-size: 30px;
+      border-radius: 14px;
+    }
+    .metric-content h2 {
+      font-size: 28px;
+    }
+    .dashboard-content-grid {
+      gap: 16px;
+    }
+    .category-breakdown,
+    .recent-items {
+      padding: 18px;
+      min-width: 0;
+    }
+    .dashboard-content-grid h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      font-size: 18px;
+    }
+    .category-item {
+      min-width: 0;
+    }
+    .category-name {
+      max-width: calc(100% - 44px);
+      overflow-wrap: anywhere;
+    }
+    .item-row {
+      min-height: 44px;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+    }
+    .item-info {
+      min-width: 0;
+    }
+    .item-info strong,
+    .item-info small {
+      overflow-wrap: anywhere;
+    }
+    .view-link {
+      flex-shrink: 0;
+    }
+  }
 </style>
