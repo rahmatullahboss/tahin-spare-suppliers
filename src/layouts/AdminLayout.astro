@@ -92,6 +92,7 @@ const mobileTitle = title.replace(/^Admin\s*/i, "");
 
 <style>
   .admin-shell {
+    min-width: 0;
     min-height: 100vh;
     display: grid;
     grid-template-columns: 250px minmax(0, 1fr);
@@ -106,6 +107,7 @@ const mobileTitle = title.replace(/^Admin\s*/i, "");
   .admin-main {
     min-width: 0;
     padding: 2rem 1.5rem;
+    overflow-x: clip;
     overflow-y: auto;
     max-height: 100vh;
   }

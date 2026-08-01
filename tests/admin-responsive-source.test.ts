@@ -90,3 +90,8 @@ test("email thread keeps messages, attachments, and reply actions usable on phon
   assert.match(threadPage, /@media \(max-width: 700px\)[\s\S]*\.reply-btn\s*\{[^}]*min-height:\s*44px/s);
   assert.match(threadPage, /@media \(max-width: 700px\)[\s\S]*\.top-reply-btn\s*\{[^}]*min-height:\s*44px/s);
 });
+
+test("admin shell clips accidental page-level horizontal overflow", () => {
+  assert.match(layout, /\.admin-shell\s*\{[^}]*min-width:\s*0/s);
+  assert.match(layout, /\.admin-main\s*\{[^}]*min-width:\s*0[^}]*overflow-x:\s*clip/s);
+});
