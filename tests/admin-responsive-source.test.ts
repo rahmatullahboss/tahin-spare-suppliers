@@ -13,6 +13,7 @@ const contactMessagesPage = readFileSync(new URL("../src/pages/admin/contact-mes
 const enquiriesPage = readFileSync(new URL("../src/pages/admin/enquiries.astro", import.meta.url), "utf8");
 const mailboxPage = readFileSync(new URL("../src/pages/admin/emails.astro", import.meta.url), "utf8");
 const composePage = readFileSync(new URL("../src/pages/admin/emails/send.astro", import.meta.url), "utf8");
+const threadPage = readFileSync(new URL("../src/pages/admin/emails/thread/[source]/[id].astro", import.meta.url), "utf8");
 
 test("admin shell provides an accessible mobile drawer instead of horizontal navigation", () => {
   assert.match(layout, /data-admin-menu-toggle/);
@@ -79,4 +80,13 @@ test("email composer is touch-safe and viewport-contained on phones", () => {
   assert.match(composePage, /@media \(max-width: 700px\)[\s\S]*\.attachment-remove\s*\{[^}]*min-height:\s*44px/s);
   assert.match(composePage, /@media \(max-width: 700px\)[\s\S]*#send-btn\s*\{[^}]*min-height:\s*44px/s);
   assert.match(composePage, /@media \(max-width: 700px\)[\s\S]*\.editor img\s*\{[^}]*max-width:\s*100%/s);
+});
+
+test("email thread keeps messages, attachments, and reply actions usable on phones", () => {
+  assert.match(threadPage, /@media \(max-width: 700px\)/);
+  assert.match(threadPage, /@media \(max-width: 700px\)[\s\S]*\.message-body\s*\{[^}]*min-width:\s*0[^}]*font-size:\s*16px/s);
+  assert.match(threadPage, /@media \(max-width: 700px\)[\s\S]*\.message-body :global\(img\)\s*\{[^}]*max-width:\s*100%/s);
+  assert.match(threadPage, /@media \(max-width: 700px\)[\s\S]*\.attachment-info span\s*\{[^}]*overflow-wrap:\s*anywhere/s);
+  assert.match(threadPage, /@media \(max-width: 700px\)[\s\S]*\.reply-btn\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(threadPage, /@media \(max-width: 700px\)[\s\S]*\.top-reply-btn\s*\{[^}]*min-height:\s*44px/s);
 });

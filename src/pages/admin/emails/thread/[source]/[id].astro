@@ -729,11 +729,33 @@ function formatTimestamp(value: string): string {
 
   @media (max-width: 700px) {
     .conversation-page {
-      padding-bottom: 20px;
+      width: 100%;
+      min-width: 0;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+
+    .conversation-toolbar {
+      min-width: 0;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .back-link,
+    .top-reply-btn {
+      min-height: 44px;
     }
 
     .conversation-heading {
-      padding-inline: 2px;
+      padding: 2px 2px 18px;
+    }
+
+    .conversation-heading p:last-child span {
+      overflow-wrap: anywhere;
+    }
+
+    .message-card {
+      min-width: 0;
+      border-radius: 10px;
     }
 
     .message-summary {
@@ -759,16 +781,72 @@ function formatTimestamp(value: string): string {
       gap: 4px;
     }
 
+    .sender-line strong {
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .message-details summary {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .message-details dl div {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+
     .message-body {
+      min-width: 0;
       padding: 18px 16px 20px;
+      font-size: 16px;
+      overflow-wrap: anywhere;
+    }
+
+    .message-body :global(img) {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .message-body :global(pre),
+    .message-body :global(code) {
+      max-width: 100%;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
 
     .attachments {
+      min-width: 0;
       padding: 0 16px 18px;
     }
 
     .attachment-grid {
       grid-template-columns: 1fr;
+    }
+
+    .attachment-item,
+    .attachment-info {
+      min-width: 0;
+    }
+
+    .attachment-info {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .attachment-info span {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .attachment-info a {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding-inline: 8px;
     }
 
     .reply-dock {
@@ -777,8 +855,16 @@ function formatTimestamp(value: string): string {
       padding: 14px;
     }
 
+    .reply-dock strong,
+    .reply-dock span {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
     .reply-btn {
       width: 100%;
+      min-height: 44px;
+      box-sizing: border-box;
     }
   }
 </style>
