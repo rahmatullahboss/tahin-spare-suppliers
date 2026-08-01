@@ -8,6 +8,7 @@ interface Props {
 }
 
 const { title, active } = Astro.props;
+const mobileTitle = title.replace(/^Admin\s*/i, "");
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -18,11 +19,74 @@ const { title, active } = Astro.props;
   </head>
   <body>
     <div class="admin-shell">
+      <header class="admin-mobile-bar">
+        <button
+          type="button"
+          class="admin-menu-toggle"
+          data-admin-menu-toggle
+          aria-controls="admin-navigation"
+          aria-expanded="false"
+          aria-label="Open admin navigation"
+        >
+          <span class="menu-icon" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+        <div class="admin-mobile-title">{mobileTitle}</div>
+      </header>
+
       <AdminSidebar active={active} />
+
+      <button
+        type="button"
+        class="admin-drawer-backdrop"
+        data-admin-drawer-backdrop
+        aria-label="Close admin navigation"
+        tabindex="-1"
+      ></button>
+
       <main class="admin-main">
         <slot />
       </main>
     </div>
+
+    <script>
+      const toggle = document.querySelector("[data-admin-menu-toggle]");
+      const drawer = document.querySelector("[data-admin-drawer]");
+      const backdrop = document.querySelector("[data-admin-drawer-backdrop]");
+      const closeButton = document.querySelector("[data-admin-menu-close]");
+      const logout = document.querySelector("[data-admin-shell-logout]");
+      const mobileQuery = window.matchMedia("(max-width: 900px)");
+
+      const setOpen = (open) => {
+        const nextOpen = Boolean(open && mobileQuery.matches);
+        document.documentElement.classList.toggle("admin-drawer-open", nextOpen);
+        drawer?.classList.toggle("is-open", nextOpen);
+        backdrop?.classList.toggle("is-open", nextOpen);
+        toggle?.setAttribute("aria-expanded", String(nextOpen));
+        toggle?.setAttribute("aria-label", nextOpen ? "Close admin navigation" : "Open admin navigation");
+      };
+
+      toggle?.addEventListener("click", () => {
+        setOpen(toggle.getAttribute("aria-expanded") !== "true");
+      });
+      closeButton?.addEventListener("click", () => setOpen(false));
+      backdrop?.addEventListener("click", () => setOpen(false));
+      drawer?.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => setOpen(false));
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setOpen(false);
+      });
+      mobileQuery.addEventListener("change", () => setOpen(false));
+
+      logout?.addEventListener("click", async () => {
+        await fetch("/api/auth/logout", { method: "POST" });
+        window.location.href = "/admin/login";
+      });
+    </script>
   </body>
 </html>
 
@@ -30,22 +94,129 @@ const { title, active } = Astro.props;
   .admin-shell {
     min-height: 100vh;
     display: grid;
-    grid-template-columns: 250px 1fr;
+    grid-template-columns: 250px minmax(0, 1fr);
     background: #f1f5f9;
   }
+
+  .admin-mobile-bar,
+  .admin-drawer-backdrop {
+    display: none;
+  }
+
   .admin-main {
+    min-width: 0;
     padding: 2rem 1.5rem;
     overflow-y: auto;
     max-height: 100vh;
   }
+
   @media (max-width: 900px) {
     .admin-shell {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto 1fr;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      min-width: 0;
     }
+
+    .admin-mobile-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: calc(8px + env(safe-area-inset-top)) 14px 8px;
+      border-bottom: 1px solid #e2e8f0;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(14px);
+    }
+
+    .admin-menu-toggle {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #fff;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .admin-menu-toggle:focus-visible {
+      outline: 3px solid rgba(217, 119, 6, 0.24);
+      outline-offset: 2px;
+      border-color: #d97706;
+    }
+
+    .menu-icon {
+      width: 19px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .menu-icon span {
+      display: block;
+      height: 2px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .admin-mobile-title {
+      min-width: 0;
+      overflow: hidden;
+      color: #0f172a;
+      font-size: 0.95rem;
+      font-weight: 750;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .admin-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: block;
+      padding: 0;
+      border: 0;
+      background: rgba(15, 23, 42, 0.42);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+
+    .admin-drawer-backdrop.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     .admin-main {
-      padding: 1rem;
+      min-width: 0;
       max-height: none;
+      padding: 1rem;
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+      overflow-y: visible;
+    }
+
+    :global(html.admin-drawer-open),
+    :global(html.admin-drawer-open body) {
+      overflow: hidden;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .admin-main {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .admin-drawer-backdrop {
+      transition: none;
     }
   }
 </style>
