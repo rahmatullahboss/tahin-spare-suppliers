@@ -642,19 +642,30 @@ const unreadCount = Number(unreadResult[0]?.total ?? 0);
     }
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 700px) {
     .admin-main .mailbox-header {
       align-items: stretch;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
     .admin-main .compose-btn {
       width: 100%;
+      min-height: 44px;
+      box-sizing: border-box;
     }
 
     .admin-main .mailbox-panel {
       border-radius: 10px;
+    }
+
+    .admin-main .mailbox-toolbar {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+      padding: 12px;
     }
 
     .admin-main .folder-tabs {
@@ -662,36 +673,61 @@ const unreadCount = Number(unreadResult[0]?.total ?? 0);
     }
 
     .admin-main .folder-tab {
+      min-height: 44px;
       flex: 1;
       justify-content: center;
     }
 
     .admin-main .mailbox-actions {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: stretch;
+      gap: 8px;
+    }
+
+    .admin-main .search-field {
+      width: 100%;
+      max-width: none;
+      min-width: 0;
+    }
+
+    .admin-main #search-input {
+      min-height: 44px;
+      font-size: 16px;
     }
 
     .admin-main .refresh-btn {
+      min-height: 44px;
       flex: 0 0 auto;
     }
 
     .admin-main .filter-strip {
       overflow-x: auto;
       padding: 9px 12px;
+      scrollbar-width: thin;
+    }
+
+    .admin-main .filter-btn {
+      min-height: 40px;
+      flex: 0 0 auto;
     }
 
     .admin-main .mail-row {
-      min-height: 88px;
-      grid-template-columns: 1fr auto;
-      grid-template-areas:
-        "person meta"
-        "copy copy";
-      gap: 5px 10px;
-      padding: 12px 14px;
+      min-height: 0;
+      grid-template-columns: 1fr;
+      gap: 5px;
+      padding: 13px 14px;
     }
 
-    .admin-main .mail-person-wrap { grid-area: person; }
-    .admin-main .mail-copy { grid-area: copy; }
-    .admin-main .mail-meta { grid-area: meta; }
+    .admin-main .mail-person-wrap {
+      min-width: 0;
+      padding-right: 76px;
+    }
+
+    .admin-main .mail-copy {
+      min-width: 0;
+    }
 
     .admin-main .mail-subject-line {
       display: block;
@@ -700,19 +736,56 @@ const unreadCount = Number(unreadResult[0]?.total ?? 0);
     .admin-main .mail-subject {
       display: block;
       margin-bottom: 3px;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .admin-main .mail-preview {
-      display: block;
+      display: -webkit-box;
+      overflow: hidden;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .admin-main .mail-meta {
+      min-width: 0;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 6px;
+      white-space: normal;
+    }
+
+    .admin-main .mail-date {
+      position: absolute;
+      top: 13px;
+      right: 14px;
+      white-space: nowrap;
     }
 
     .admin-main .mail-file-mark,
     .admin-main .delivery-mark {
-      display: none;
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
     }
 
     .admin-main .mail-pagination {
-      justify-content: center;
+      justify-content: flex-start;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .admin-main .mail-pagination button {
+      min-width: 44px;
+      min-height: 44px;
+      flex: 0 0 auto;
+    }
+
+    .admin-main .pagination-summary {
+      flex: 0 0 auto;
+      white-space: nowrap;
     }
   }
 

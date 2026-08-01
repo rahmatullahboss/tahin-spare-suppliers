@@ -11,6 +11,7 @@ const imageUploader = readFileSync(new URL("../src/components/admin/ImageUploade
 const categoriesPage = readFileSync(new URL("../src/pages/admin/categories.astro", import.meta.url), "utf8");
 const contactMessagesPage = readFileSync(new URL("../src/pages/admin/contact-messages.astro", import.meta.url), "utf8");
 const enquiriesPage = readFileSync(new URL("../src/pages/admin/enquiries.astro", import.meta.url), "utf8");
+const mailboxPage = readFileSync(new URL("../src/pages/admin/emails.astro", import.meta.url), "utf8");
 
 test("admin shell provides an accessible mobile drawer instead of horizontal navigation", () => {
   assert.match(layout, /data-admin-menu-toggle/);
@@ -58,4 +59,13 @@ test("contact and enquiry lists protect narrow screens", () => {
     assert.match(source, /\.admin-main \.pagination\s*\{[^}]*overflow-x:\s*auto/s);
     assert.match(source, /min-height:\s*44px/);
   }
+});
+
+test("mailbox stacks toolbar and conversation rows without hiding core metadata", () => {
+  assert.match(mailboxPage, /@media \(max-width: 700px\)/);
+  assert.match(mailboxPage, /\.admin-main \.mailbox-toolbar\s*\{[^}]*flex-direction:\s*column/s);
+  assert.match(mailboxPage, /\.admin-main \.mail-row\s*\{[^}]*grid-template-columns:\s*1fr/s);
+  assert.match(mailboxPage, /\.admin-main \.search-field\s*\{[^}]*width:\s*100%/s);
+  assert.match(mailboxPage, /\.admin-main \.mail-pagination button\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(mailboxPage, /\.admin-main \.mail-file-mark,\s*\n\s*\.admin-main \.delivery-mark\s*\{[^}]*display:\s*inline-flex/s);
 });
