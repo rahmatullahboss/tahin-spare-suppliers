@@ -2,10 +2,15 @@ import type { APIRoute } from "astro";
 import { requireAdminRequest } from "../../../../lib/server/api";
 import { ensureSchema, getDb } from "../../../../lib/server/db";
 import {
+  filterReferencedInlineImages,
   sendEmail,
   type EmailFileAttachmentInput,
   type InlineEmailImageInput
 } from "../../../../lib/server/email-service";
+import {
+  deleteStoredSentEmailAttachments,
+  storeSentEmailAttachments,
+} from "../../../../lib/server/sent-email-attachments";
 
 export const prerender = false;
 
@@ -33,7 +38,7 @@ export const GET: APIRoute = async (context) => {
     const search = url.searchParams.get("search") ?? "";
     const offset = (page - 1) * limit;
 
-    let query = `SELECT id, to_address, subject, delivery_status, delivery_error, created_at FROM sent_emails`;
+    let query = `SELECT id, to_address, subject, body, attachments_json, delivery_status, delivery_error, created_at FROM sent_emails`;
     let countQuery = `SELECT COUNT(*) as total FROM sent_emails`;
     const params: (string | number)[] = [];
 
@@ -98,6 +103,7 @@ export const POST: APIRoute = async (context) => {
         return typeof file === "object" && file !== null;
       })
       .map((file) => ({
+        id: typeof file.id === "string" ? file.id : `email-file-${crypto.randomUUID()}`,
         filename: typeof file.filename === "string" ? file.filename : "attachment",
         contentType: typeof file.contentType === "string" ? file.contentType : "",
         contentBase64: typeof file.contentBase64 === "string" ? file.contentBase64 : "",
@@ -112,6 +118,7 @@ export const POST: APIRoute = async (context) => {
     const requestId = typeof requestBody.requestId === "string"
       ? requestBody.requestId.trim()
       : "";
+    const referencedInlineImages = filterReferencedInlineImages(emailBody, inlineImages);
 
     if (!to || !subject || !emailBody) {
       return Response.json(
@@ -155,32 +162,59 @@ export const POST: APIRoute = async (context) => {
       subject,
       html: emailBody,
       headers: replyHeaders,
-      inlineImages,
+      inlineImages: referencedInlineImages,
       fileAttachments,
       idempotencyKey: requestId ? `admin-email/${requestId}` : undefined,
     });
 
-    const savedRows = await sql.query(
-      `INSERT INTO sent_emails (
-         id, to_address, from_address, subject, body, resend_id, in_reply_to_inbound_id
-       )
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       ON CONFLICT (resend_id) WHERE resend_id <> ''
-       DO UPDATE SET resend_id = EXCLUDED.resend_id
-       RETURNING id`,
-      [
-        result.id,
-        to,
-        "sales@tahinspare.com",
-        subject,
-        emailBody,
-        result.resendId,
-        inReplyToId,
-      ]
+    const existingRows = await sql.query(
+      `SELECT id FROM sent_emails WHERE resend_id = $1 LIMIT 1`,
+      [result.resendId]
     );
-    const id = typeof savedRows[0]?.id === "string" ? savedRows[0].id : result.id;
+    const existingId = typeof existingRows[0]?.id === "string" ? existingRows[0].id : "";
+    if (existingId) {
+      return Response.json({ ok: true, id: existingId, resendId: result.resendId });
+    }
 
-    return Response.json({ ok: true, id, resendId: result.resendId });
+    const storedAttachments = await storeSentEmailAttachments(
+      env.MEDIA_BUCKET,
+      result.id,
+      referencedInlineImages,
+      fileAttachments
+    );
+
+    try {
+      const savedRows = await sql.query(
+        `INSERT INTO sent_emails (
+           id, to_address, from_address, subject, body, attachments_json,
+           resend_id, in_reply_to_inbound_id
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT (resend_id) WHERE resend_id <> ''
+         DO UPDATE SET resend_id = EXCLUDED.resend_id
+         RETURNING id`,
+        [
+          result.id,
+          to,
+          "sales@tahinspare.com",
+          subject,
+          emailBody,
+          JSON.stringify(storedAttachments),
+          result.resendId,
+          inReplyToId,
+        ]
+      );
+      const id = typeof savedRows[0]?.id === "string" ? savedRows[0].id : result.id;
+
+      if (id !== result.id) {
+        await deleteStoredSentEmailAttachments(env.MEDIA_BUCKET, storedAttachments);
+      }
+
+      return Response.json({ ok: true, id, resendId: result.resendId });
+    } catch (error) {
+      await deleteStoredSentEmailAttachments(env.MEDIA_BUCKET, storedAttachments);
+      throw error;
+    }
   } catch (error) {
     console.error("Send email error:", error);
     const message = error instanceof Error ? error.message : "Failed to send email";

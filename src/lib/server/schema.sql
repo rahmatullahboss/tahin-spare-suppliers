@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS sent_emails (
 );
 
 ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS in_reply_to_inbound_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS attachments_json TEXT NOT NULL DEFAULT '[]';
 ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS delivery_status TEXT NOT NULL DEFAULT 'accepted';
 ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS delivery_error TEXT NOT NULL DEFAULT '';
 ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS last_event_at TIMESTAMPTZ;

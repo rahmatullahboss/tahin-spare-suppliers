@@ -106,70 +106,16 @@ h1, h2, h3, h4 {
 }
 
 /* ═══════════════════════════════════════════════
-   SCROLL REVEAL — Subtle, Minimal
+   CONTENT VISIBILITY — never depend on JavaScript
+   Legacy reveal classes remain as no-op hooks so all content is immediately visible.
    ═══════════════════════════════════════════════ */
-.reveal {
-  opacity: 0;
-  transform: translateY(25px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Staggered children */
+.reveal,
+.reveal-left,
+.reveal-right,
+.reveal-scale,
 .reveal-stagger > * {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.reveal-stagger.visible > *:nth-child(1) { transition-delay: 0.03s; }
-.reveal-stagger.visible > *:nth-child(2) { transition-delay: 0.06s; }
-.reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.09s; }
-.reveal-stagger.visible > *:nth-child(4) { transition-delay: 0.12s; }
-.reveal-stagger.visible > *:nth-child(5) { transition-delay: 0.15s; }
-.reveal-stagger.visible > *:nth-child(6) { transition-delay: 0.18s; }
-.reveal-stagger.visible > *:nth-child(7) { transition-delay: 0.21s; }
-.reveal-stagger.visible > *:nth-child(8) { transition-delay: 0.24s; }
-.reveal-stagger.visible > *:nth-child(9) { transition-delay: 0.27s; }
-.reveal-stagger.visible > *:nth-child(10) { transition-delay: 0.3s; }
-.reveal-stagger.visible > *:nth-child(11) { transition-delay: 0.33s; }
-.reveal-stagger.visible > *:nth-child(12) { transition-delay: 0.36s; }
-
-.reveal-stagger.visible > * {
   opacity: 1;
-  transform: translateY(0);
-}
-
-/* Slide from left/right */
-.reveal-left {
-  opacity: 0;
-  transform: translateX(-30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.reveal-right {
-  opacity: 0;
-  transform: translateX(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.reveal-left.visible,
-.reveal-right.visible {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* Scale up */
-.reveal-scale {
-  opacity: 0;
-  transform: scale(0.95);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-.reveal-scale.visible {
-  opacity: 1;
-  transform: scale(1);
+  transform: none;
 }
 
 /* ═══════════════════════════════════════════════
@@ -196,16 +142,12 @@ h1, h2, h3, h4 {
 .section-title::after {
   content: '';
   display: block;
-  width: 0;
+  width: 50px;
   height: 3px;
   background: #c0392b;
   margin: 10px auto 0;
-  transition: width 0.6s ease;
-}
-.section-title.visible::after,
-.reveal.visible .section-title::after,
-.visible .section-title::after {
-  width: 50px;
+  transform: scaleX(1);
+  transform-origin: center;
 }
 
 /* Smooth page entrance */

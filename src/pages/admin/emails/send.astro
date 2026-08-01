@@ -29,373 +29,575 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
 </script>
 
 <AdminLayout title="Compose Email" active="emails">
-  <div class="page-header">
-    <div class="header-left">
-      <h1>Compose Email</h1>
-      <p class="subtitle">Send an email to a recipient</p>
-    </div>
-  </div>
+  <main class="compose-shell">
+    <nav class="compose-nav" aria-label="Compose navigation">
+      <a href="/admin/emails" class="back-link">Back to inbox</a>
+    </nav>
 
-  <div class="form-card">
-    <form id="send-form" data-in-reply-to-id={inReplyToId}>
-      <div class="field">
-        <label for="to">To</label>
-        <input
-          type="email"
-          id="to"
-          name="to"
-          placeholder="recipient@example.com"
-          required
-          autocomplete="off"
-        />
-      </div>
+    <header class="compose-heading">
+      <p class="eyebrow">Sales mailbox</p>
+      <h1>{replyTo ? "Reply" : "New message"}</h1>
+      <p>{replyTo ? "Continue the customer conversation." : "Write and send from sales@tahinspare.com."}</p>
+    </header>
 
-      <div class="field">
-        <label for="subject">Subject</label>
-        <input
-          type="text"
-          id="subject"
-          name="subject"
-          placeholder="Email subject"
-          required
-          autocomplete="off"
-        />
-      </div>
-
-      <div class="field">
-        <label for="editor">Body</label>
-        <div class="editor-toolbar">
-          <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
-          <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
-          <button type="button" data-cmd="underline" title="Underline"><u>U</u></button>
-          <span class="sep"></span>
-          <button type="button" data-cmd="h2" title="Heading">H2</button>
-          <button type="button" data-cmd="ul" title="Bullet List">&bull; List</button>
-          <button type="button" data-cmd="ol" title="Numbered List">1. List</button>
-          <span class="sep"></span>
-          <button type="button" data-cmd="image" title="Add Photo">Photo</button>
-          <button type="button" data-cmd="attachment" title="Attach File">Attach File</button>
+    <section class="composer-window" aria-label="Email composer">
+      <form id="send-form" data-in-reply-to-id={inReplyToId}>
+        <div class="address-field">
+          <label for="to">To</label>
           <input
-            type="file"
-            id="email-image-input"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            multiple
-            hidden
+            type="email"
+            id="to"
+            name="to"
+            placeholder="recipient@example.com"
+            required
+            autocomplete="off"
           />
-          <input type="file" id="email-file-input" multiple hidden />
-          <span class="sep"></span>
-          <button type="button" data-cmd="undo" title="Undo">&#8630;</button>
-          <button type="button" data-cmd="redo" title="Redo">&#8631;</button>
         </div>
-        <div
-          id="editor"
-          class="editor"
-          contenteditable="true"
-          data-placeholder="Write your message here..."
-        ></div>
-        <p id="image-status" class="image-status"></p>
-      </div>
 
-      <div class="field attachments-field">
-        <label>Attachments</label>
-        <div id="attachment-list" class="attachment-list" aria-live="polite">
-          <p class="attachment-empty">No files attached</p>
+        <div class="address-field subject-field">
+          <label for="subject">Subject</label>
+          <input
+            type="text"
+            id="subject"
+            name="subject"
+            placeholder="Email subject"
+            required
+            autocomplete="off"
+          />
         </div>
-      </div>
 
-      <div class="actions">
-        <a href="/admin/emails" class="cancel-btn">Cancel</a>
-        <button type="submit" id="send-btn">Send Email</button>
-      </div>
+        <div class="editor-surface">
+          <div class="editor-toolbar" role="toolbar" aria-label="Message formatting">
+            <div class="toolbar-group" aria-label="Text formatting">
+              <button type="button" data-cmd="bold" title="Bold" aria-label="Bold"><b>B</b></button>
+              <button type="button" data-cmd="italic" title="Italic" aria-label="Italic"><i>I</i></button>
+              <button type="button" data-cmd="underline" title="Underline" aria-label="Underline"><u>U</u></button>
+              <button type="button" data-cmd="h2" title="Heading" aria-label="Heading">H2</button>
+            </div>
+            <span class="sep" aria-hidden="true"></span>
+            <div class="toolbar-group" aria-label="Lists">
+              <button type="button" data-cmd="ul" title="Bullet list">• List</button>
+              <button type="button" data-cmd="ol" title="Numbered list">1. List</button>
+            </div>
+            <span class="sep" aria-hidden="true"></span>
+            <div class="toolbar-group media-tools" aria-label="Insert media">
+              <button type="button" data-cmd="image" title="Add photo">Add photo</button>
+              <button type="button" data-cmd="attachment" title="Attach file">Attach file</button>
+            </div>
+            <input
+              type="file"
+              id="email-image-input"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              hidden
+            />
+            <input type="file" id="email-file-input" multiple hidden />
+            <span class="toolbar-spacer"></span>
+            <div class="toolbar-group history-tools" aria-label="Editing history">
+              <button type="button" data-cmd="undo" title="Undo" aria-label="Undo">Undo</button>
+              <button type="button" data-cmd="redo" title="Redo" aria-label="Redo">Redo</button>
+            </div>
+          </div>
 
-      <p id="status-message" class="status-message"></p>
-    </form>
-  </div>
+          <div
+            id="editor"
+            class="editor"
+            contenteditable="true"
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Message body"
+            data-placeholder="Write your message…"
+          ></div>
+        </div>
+
+        <div class="composer-feedback" aria-live="polite">
+          <p id="image-status" class="image-status"></p>
+        </div>
+
+        <section class="attachments-field" aria-labelledby="attachments-title">
+          <div class="attachments-title-row">
+            <h2 id="attachments-title">Attachments</h2>
+            <span>Files added here are included with the email.</span>
+          </div>
+          <div id="attachment-list" class="attachment-list" aria-live="polite">
+            <p class="attachment-empty">No files attached</p>
+          </div>
+        </section>
+
+        <footer class="composer-footer">
+          <div class="actions">
+            <button type="submit" id="send-btn">Send</button>
+            <a href="/admin/emails" class="cancel-btn">Cancel</a>
+          </div>
+          <p id="status-message" class="status-message" role="status"></p>
+        </footer>
+      </form>
+    </section>
+  </main>
 </AdminLayout>
 
 <style>
-  .page-header {
+  :global(.admin-main) {
+    background: #f6f7f9;
+  }
+
+  .compose-shell {
+    width: min(960px, 100%);
+    margin: 0 auto;
+    padding-bottom: 36px;
+  }
+
+  .compose-nav {
+    min-height: 42px;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
-    gap: 20px;
-  }
-  .header-left h1 {
-    font-size: 28px;
-    margin: 0 0 5px;
-  }
-  .subtitle {
-    color: #666;
-    margin: 0;
+    align-items: center;
+    margin-bottom: 12px;
   }
 
-  .form-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    padding: 32px;
-    max-width: 700px;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 20px;
-  }
-
-  .field label {
-    font-weight: 600;
-    font-size: 14px;
-    color: #333;
-  }
-
-  .field input,
-  .field textarea {
-    border: 1px solid #ddd;
+  .back-link {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 11px;
     border-radius: 8px;
-    padding: 12px 14px;
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.15s;
-    box-sizing: border-box;
+    color: #5f6b7d;
+    font-size: 12px;
+    font-weight: 750;
+    text-decoration: none;
   }
 
-  .field input:focus,
-  .field textarea:focus {
-    border-color: #c78f40;
+  .back-link:hover {
+    background: #eceff3;
+    color: #263247;
+  }
+
+  .compose-heading {
+    padding: 3px 4px 20px;
+  }
+
+  .eyebrow {
+    margin: 0 0 6px;
+    color: #a16207;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .compose-heading h1 {
+    margin: 0;
+    color: #182235;
+    font-size: clamp(25px, 3vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+
+  .compose-heading > p:last-child {
+    margin: 8px 0 0;
+    color: #768195;
+    font-size: 12.5px;
+  }
+
+  .composer-window {
+    overflow: hidden;
+    border: 1px solid #dce1e7;
+    border-radius: 13px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.045);
+  }
+
+  .address-field {
+    min-height: 54px;
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    align-items: center;
+    padding: 0 18px;
+    border-bottom: 1px solid #edf0f3;
+  }
+
+  .address-field label {
+    color: #7b8697;
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .address-field input {
+    width: 100%;
+    min-width: 0;
+    padding: 13px 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #263247;
+    font: inherit;
+    font-size: 13.5px;
+  }
+
+  .address-field input::placeholder {
+    color: #a1a8b3;
+  }
+
+  .address-field:focus-within {
+    background: #fffdfa;
+    box-shadow: inset 3px 0 0 #c89547;
+  }
+
+  .editor-surface {
+    background: #fff;
   }
 
   .editor-toolbar {
+    min-height: 49px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 8px;
-    background: #f8f8f8;
-    border: 1px solid #ddd;
-    border-bottom: none;
-    border-radius: 8px 8px 0 0;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border-bottom: 1px solid #e6e9ed;
+    background: #fafbfc;
+    overflow-x: auto;
+  }
+
+  .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex: 0 0 auto;
   }
 
   .editor-toolbar button {
-    padding: 6px 12px;
-    border: 1px solid #ddd;
-    background: #fff;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
+    min-height: 32px;
     min-width: 32px;
-    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 9px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: #556174;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
   }
 
-  .editor-toolbar button:hover {
-    background: #eee;
-    border-color: #ccc;
+  .editor-toolbar button:hover,
+  .editor-toolbar button:focus-visible {
+    border-color: #dde1e7;
+    background: #fff;
+    color: #273348;
   }
 
   .editor-toolbar button.active {
-    background: #c78f40;
-    color: #111;
-    border-color: #c78f40;
+    border-color: #e4c999;
+    background: #fff5e2;
+    color: #855810;
+  }
+
+  .media-tools button {
+    color: #855810;
   }
 
   .sep {
     width: 1px;
-    height: 24px;
-    background: #ddd;
-    margin: 0 4px;
-    align-self: center;
+    height: 23px;
+    flex: 0 0 auto;
+    background: #dfe3e8;
+  }
+
+  .toolbar-spacer {
+    min-width: 12px;
+    flex: 1;
   }
 
   .editor {
-    border: 1px solid #ddd;
-    border-radius: 0 0 8px 8px;
-    padding: 16px;
-    min-height: 200px;
-    max-height: 400px;
+    min-height: 330px;
+    max-height: 58vh;
     overflow-y: auto;
+    padding: 24px 28px;
+    outline: 0;
+    color: #303a4a;
     font-size: 14px;
-    line-height: 1.6;
-    color: #333;
-    outline: none;
+    line-height: 1.72;
   }
 
   .editor:empty::before {
     content: attr(data-placeholder);
-    color: #aaa;
+    color: #a3aab5;
     pointer-events: none;
   }
 
   .editor:focus {
-    border-color: #c78f40;
-    box-shadow: inset 0 0 0 2px rgba(199, 143, 64, 0.2);
+    box-shadow: inset 3px 0 0 #c89547;
   }
 
   .editor h2 {
+    margin: 20px 0 9px;
+    color: #222e42;
     font-size: 20px;
-    margin: 16px 0 8px;
-    font-weight: 600;
+    font-weight: 750;
   }
 
   .editor ul,
   .editor ol {
+    margin: 9px 0;
     padding-left: 24px;
-    margin: 8px 0;
   }
 
-  .editor li {
-    margin: 4px 0;
-  }
-
+  .editor li,
   .editor p {
-    margin: 8px 0;
+    margin: 7px 0;
   }
 
   .editor img {
-    max-width: 100%;
-    height: auto;
     display: block;
-    margin: 12px 0;
-    border: 1px solid #eee;
-    border-radius: 6px;
+    max-width: min(100%, 720px);
+    height: auto;
+    margin: 16px 0;
+    border: 1px solid #e1e5ea;
+    border-radius: 9px;
+    background: #f8f9fb;
+  }
+
+  .composer-feedback {
+    min-height: 0;
+    padding: 0 18px;
   }
 
   .image-status {
-    margin: 8px 0 0;
-    color: #666;
-    font-size: 13px;
-    min-height: 18px;
+    min-height: 0;
+    margin: 0;
+    color: #657184;
+    font-size: 11px;
+  }
+
+  .image-status:not(:empty) {
+    padding: 9px 0 3px;
   }
 
   .image-status.error {
-    color: #721c24;
+    color: #a23b3b;
   }
 
   .attachments-field {
-    margin-top: -4px;
+    padding: 14px 18px 16px;
+    border-top: 1px solid #edf0f3;
+    background: #fbfcfd;
+  }
+
+  .attachments-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 9px;
+  }
+
+  .attachments-title-row h2 {
+    margin: 0;
+    color: #455165;
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+
+  .attachments-title-row span {
+    color: #8a94a4;
+    font-size: 10.5px;
   }
 
   .attachment-list {
     display: grid;
-    gap: 8px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 10px;
-    background: #fafafa;
+    gap: 7px;
   }
 
   .attachment-empty {
     margin: 0;
-    color: #777;
-    font-size: 13px;
+    padding: 9px 11px;
+    border: 1px dashed #d5dae1;
+    border-radius: 7px;
+    color: #8a94a4;
+    font-size: 11px;
   }
 
   .attachment-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
     gap: 12px;
+    padding: 9px 10px;
+    border: 1px solid #e1e5ea;
+    border-radius: 8px;
     background: #fff;
-    border: 1px solid #e5e5e5;
-    border-radius: 6px;
-    padding: 8px 10px;
   }
 
   .attachment-name {
     min-width: 0;
-    color: #333;
-    font-size: 13px;
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
-
-  .attachment-size {
-    color: #777;
-    font-size: 12px;
+    overflow: hidden;
+    color: #374358;
+    font-size: 11.5px;
+    font-weight: 750;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
+  .attachment-size {
+    margin-top: 2px;
+    color: #8a94a4;
+    font-size: 10px;
+  }
+
   .attachment-remove {
-    border: none;
-    background: #f0f0f0;
-    color: #333;
-    border-radius: 4px;
-    padding: 6px 8px;
+    min-height: 30px;
+    padding: 0 9px;
+    border: 1px solid #e0e4e9;
+    border-radius: 6px;
+    background: #fafbfc;
+    color: #687386;
     cursor: pointer;
-    font-size: 12px;
-    font-weight: 700;
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 750;
   }
 
   .attachment-remove:hover {
-    background: #e0e0e0;
+    background: #f0f2f5;
+    color: #364154;
+  }
+
+  .composer-footer {
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 16px 12px 18px;
+    border-top: 1px solid #e3e6ea;
+    background: #fff;
   }
 
   .actions {
     display: flex;
-    gap: 12px;
-    margin-top: 8px;
+    align-items: center;
+    gap: 8px;
   }
 
+  #send-btn,
   .cancel-btn {
-    background: #f0f0f0;
-    color: #333;
-    padding: 12px 20px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
+    min-height: 40px;
     display: inline-flex;
     align-items: center;
-    transition: background 0.15s;
-  }
-
-  .cancel-btn:hover {
-    background: #e0e0e0;
+    justify-content: center;
+    padding: 0 16px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
   }
 
   #send-btn {
-    background: #c78f40;
-    color: #111;
-    padding: 12px 24px;
-    border-radius: 8px;
-    border: none;
-    font-weight: 700;
-    font-size: 14px;
+    min-width: 82px;
+    border: 0;
+    background: #b7791f;
+    color: #fff;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 140ms ease, transform 140ms ease;
   }
 
   #send-btn:hover:not(:disabled) {
-    background: #b07d35;
+    background: #996515;
+    transform: translateY(-1px);
   }
 
   #send-btn:disabled {
-    opacity: 0.6;
     cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .cancel-btn {
+    border: 1px solid #dce1e7;
+    background: #fff;
+    color: #657184;
+  }
+
+  .cancel-btn:hover {
+    background: #f5f7f9;
+    color: #364154;
   }
 
   .status-message {
-    margin: 16px 0 0;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 14px;
+    max-width: 480px;
+    margin: 0;
+    padding: 0;
+    color: #687386;
+    font-size: 11.5px;
+    text-align: right;
+  }
+
+  .status-message:empty {
     display: none;
   }
 
   .status-message.success {
-    display: block;
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    color: #2f6b42;
   }
 
   .status-message.error {
-    display: block;
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    color: #a23b3b;
+  }
+
+  @media (max-width: 700px) {
+    .compose-shell {
+      padding-bottom: 20px;
+    }
+
+    .address-field {
+      grid-template-columns: 58px minmax(0, 1fr);
+      padding: 0 13px;
+    }
+
+    .editor-toolbar {
+      align-items: flex-start;
+      padding: 7px;
+    }
+
+    .toolbar-spacer,
+    .history-tools,
+    .sep {
+      display: none;
+    }
+
+    .editor {
+      min-height: 290px;
+      max-height: none;
+      padding: 19px 16px;
+    }
+
+    .attachments-title-row {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .composer-footer {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .actions {
+      width: 100%;
+    }
+
+    #send-btn {
+      flex: 1;
+    }
+
+    .status-message {
+      max-width: none;
+      text-align: left;
+    }
   }
 </style>
 
@@ -709,6 +911,12 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
 
     const to = (document.getElementById("to") as HTMLInputElement).value.trim();
     const subject = (document.getElementById("subject") as HTMLInputElement).value.trim();
+    const liveInlineImageIds = new Set(
+      Array.from(editorEl.querySelectorAll<HTMLImageElement>("img[data-email-image-id]"))
+        .map((image) => image.dataset.emailImageId ?? "")
+        .filter(Boolean)
+    );
+    const activeInlineImages = inlineImages.filter((image) => liveInlineImageIds.has(image.id));
     const body = buildEmailBodyHtml();
 
     if (!to || !subject) {
@@ -740,7 +948,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
           body,
           inReplyToId,
           requestId: sendRequestId,
-          inlineImages,
+          inlineImages: activeInlineImages,
           fileAttachments,
         }),
       });
@@ -751,18 +959,18 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
         throw new Error(data.error || "Failed to send email");
       }
 
-      statusEl.textContent = "Email sent successfully! Redirecting...";
+      statusEl.textContent = "Email sent successfully.";
       statusEl.className = "status-message success";
-
-      setTimeout(() => {
-        window.location.href = "/admin/emails";
-      }, 1000);
+      const sentId = typeof data.id === "string" ? data.id : "";
+      window.location.href = sentId
+        ? `/admin/emails/thread/sent/${encodeURIComponent(sentId)}`
+        : "/admin/emails";
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to send email";
       statusEl.textContent = message;
       statusEl.className = "status-message error";
       sendBtn.disabled = false;
-      sendBtn.textContent = "Send Email";
+      sendBtn.textContent = "Send";
     }
   });
 </script>

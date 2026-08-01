@@ -17,350 +17,728 @@ const [sentResult, inboundResult, unreadResult] = await Promise.all([
   sql.query(`SELECT COUNT(*) as total FROM inbound_emails`),
   sql.query(`SELECT COUNT(*) as total FROM inbound_emails WHERE is_read = false`),
 ]);
-const sentTotal = sentResult[0]?.total ?? 0;
-const inboundTotal = inboundResult[0]?.total ?? 0;
-const unreadCount = unreadResult[0]?.total ?? 0;
+const sentTotal = Number(sentResult[0]?.total ?? 0);
+const inboundTotal = Number(inboundResult[0]?.total ?? 0);
+const unreadCount = Number(unreadResult[0]?.total ?? 0);
 ---
 
 <AdminLayout title="Emails" active="emails">
-  <div class="page-header">
-    <div class="header-left">
-      <h1>Emails</h1>
-      <p class="subtitle" id="email-count">{unreadCount} unread / {inboundTotal} inbox</p>
+  <section class="mailbox-shell" aria-labelledby="mailbox-title">
+    <header class="mailbox-header">
+      <div>
+        <p class="eyebrow">Sales mailbox</p>
+        <h1 id="mailbox-title">Email</h1>
+        <p class="mailbox-summary" id="email-count">
+          {unreadCount} unread · {inboundTotal} messages
+        </p>
+      </div>
+      <a href="/admin/emails/send" class="compose-btn">
+        <span aria-hidden="true" class="compose-plus">+</span>
+        Compose
+      </a>
+    </header>
+
+    <div class="mailbox-panel">
+      <div class="mailbox-toolbar">
+        <div class="folder-tabs" role="tablist" aria-label="Email folders">
+          <button
+            class="folder-tab active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="mail-list"
+            data-folder="inbox"
+          >
+            Inbox
+            <span class="folder-count" id="inbox-count">{inboundTotal}</span>
+          </button>
+          <button
+            class="folder-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="mail-list"
+            data-folder="sent"
+          >
+            Sent
+            <span class="folder-count" id="sent-count">{sentTotal}</span>
+          </button>
+        </div>
+
+        <div class="mailbox-actions">
+          <label class="search-field" for="search-input">
+            <span class="sr-only">Search email</span>
+            <span class="search-mark" aria-hidden="true"></span>
+            <input
+              type="search"
+              id="search-input"
+              placeholder="Search inbox"
+              autocomplete="off"
+            />
+          </label>
+          <button type="button" class="refresh-btn" id="refresh-btn" aria-label="Refresh mailbox">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-strip" id="inbox-filters" aria-label="Inbox filters">
+        <button class="filter-btn active" type="button" data-filter="all">All</button>
+        <button class="filter-btn" type="button" data-filter="unread">Unread</button>
+        <button class="filter-btn" type="button" data-filter="read">Read</button>
+      </div>
+
+      <div class="mail-list" id="mail-list" aria-live="polite" aria-busy="true">
+        <div class="loading-list" aria-label="Loading messages">
+          <div class="loading-line"></div>
+          <div class="loading-line"></div>
+          <div class="loading-line"></div>
+          <div class="loading-line"></div>
+        </div>
+      </div>
+
+      <nav class="mail-pagination" id="pagination" aria-label="Email pages"></nav>
     </div>
-    <a href="/admin/emails/send" class="compose-btn">Compose Email</a>
-  </div>
-
-  <div class="mail-tabs" role="tablist" aria-label="Email folders">
-    <button class="tab-btn active" type="button" data-folder="inbox">
-      Inbox <span id="inbox-count">({inboundTotal})</span>
-    </button>
-    <button class="tab-btn" type="button" data-folder="sent">
-      Sent <span id="sent-count">({sentTotal})</span>
-    </button>
-  </div>
-
-  <div class="toolbar">
-    <div class="filters" id="inbox-filters">
-      <button class="filter-btn active" type="button" data-filter="all">All</button>
-      <button class="filter-btn" type="button" data-filter="unread">Unread</button>
-      <button class="filter-btn" type="button" data-filter="read">Read</button>
-    </div>
-    <input
-      type="text"
-      id="search-input"
-      placeholder="Search inbox..."
-      autocomplete="off"
-    />
-  </div>
-
-  <div class="table-container">
-    <table class="emails-table">
-      <thead>
-        <tr id="table-head-row">
-          <th>Date</th>
-          <th>From</th>
-          <th>Subject</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="emails-body">
-        <tr class="loading-row">
-          <td colspan="4">Loading...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="pagination" id="pagination"></div>
+  </section>
 </AdminLayout>
 
 <style is:global>
-  .admin-main .page-header {
+  .admin-main {
+    background: #f6f7f9;
+  }
+
+  .admin-main .mailbox-shell {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+  }
+
+  .admin-main .mailbox-header {
     display: flex;
+    align-items: flex-end;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
+    gap: 24px;
+    margin-bottom: 22px;
   }
-  .admin-main .header-left h1 {
-    font-size: 1.5rem;
-    margin: 0 0 0.25rem;
-    color: #0f172a;
+
+  .admin-main .eyebrow {
+    margin: 0 0 5px;
+    color: #a16207;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
-  .admin-main .subtitle {
-    color: #64748b;
+
+  .admin-main .mailbox-header h1 {
     margin: 0;
-    font-size: 0.9rem;
+    color: #172033;
+    font-size: clamp(26px, 3vw, 34px);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+  }
+
+  .admin-main .mailbox-summary {
+    margin: 7px 0 0;
+    color: #687386;
+    font-size: 13px;
   }
 
   .admin-main .compose-btn {
-    background: #d97706;
-    color: #fff;
-    padding: 0.6rem 1.25rem;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    transition: background 0.15s;
-  }
-  .admin-main .compose-btn:hover {
-    background: #b45309;
-  }
-
-  .admin-main .mail-tabs {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  .admin-main .tab-btn {
-    border: none;
-    background: transparent;
-    padding: 0.75rem 1.25rem;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #64748b;
-    border-bottom: 2px solid transparent;
-    transition: all 0.15s;
-  }
-  .admin-main .tab-btn span {
-    font-weight: 400;
-    font-size: 0.8rem;
-    margin-left: 0.25rem;
-    opacity: 0.7;
-  }
-  .admin-main .tab-btn.active {
-    color: #d97706;
-    border-bottom-color: #d97706;
-  }
-  .admin-main .tab-btn:hover:not(.active) {
-    color: #0f172a;
-    background: #f8fafc;
-  }
-
-  .admin-main .toolbar {
-    display: flex;
-    justify-content: space-between;
+    min-height: 44px;
+    display: inline-flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    border-radius: 10px;
+    background: #b7791f;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 750;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+    transition: background 150ms ease, box-shadow 150ms ease, transform 150ms ease;
   }
-  .admin-main .filters {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+
+  .admin-main .compose-btn:hover {
+    background: #996515;
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.12);
+    transform: translateY(-1px);
   }
-  .admin-main .filter-btn {
-    padding: 0.45rem 1rem;
-    border: 1px solid #e2e8f0;
+
+  .admin-main .compose-plus {
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1;
+    margin-top: -2px;
+  }
+
+  .admin-main .mailbox-panel {
+    overflow: hidden;
+    border: 1px solid #dfe3e8;
+    border-radius: 14px;
     background: #fff;
-    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  }
+
+  .admin-main .mailbox-toolbar {
+    min-height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 10px 14px 10px 18px;
+    border-bottom: 1px solid #e7e9ed;
+  }
+
+  .admin-main .folder-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .admin-main .folder-tab {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #647084;
     cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #475569;
-    transition: all 0.15s;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    transition: background 140ms ease, color 140ms ease;
   }
-  .admin-main .filter-btn.active {
-    background: #fef3c7;
-    color: #92400e;
-    border-color: #fcd34d;
+
+  .admin-main .folder-tab:hover {
+    background: #f4f5f7;
+    color: #263247;
   }
-  .admin-main .filter-btn:hover:not(.active) {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+
+  .admin-main .folder-tab.active {
+    background: #fff7e8;
+    color: #8a5a12;
+  }
+
+  .admin-main .folder-count {
+    min-width: 22px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    color: inherit;
+    font-size: 11px;
+    font-weight: 750;
+    text-align: center;
+  }
+
+  .admin-main .mailbox-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .admin-main .search-field {
+    position: relative;
+    width: min(360px, 100%);
+  }
+
+  .admin-main .search-mark {
+    position: absolute;
+    top: 50%;
+    left: 13px;
+    width: 14px;
+    height: 14px;
+    border: 1.8px solid #8a94a4;
+    border-radius: 50%;
+    transform: translateY(-58%);
+    pointer-events: none;
+  }
+
+  .admin-main .search-mark::after {
+    content: "";
+    position: absolute;
+    right: -5px;
+    bottom: -3px;
+    width: 6px;
+    height: 1.8px;
+    border-radius: 2px;
+    background: #8a94a4;
+    transform: rotate(45deg);
   }
 
   .admin-main #search-input {
     width: 100%;
-    max-width: 360px;
-    padding: 0.55rem 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    font-size: 0.85rem;
-    outline: none;
-    box-sizing: border-box;
-    background: #fff;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    min-height: 40px;
+    padding: 0 14px 0 38px;
+    border: 1px solid #d9dde4;
+    border-radius: 9px;
+    outline: 0;
+    background: #f8f9fb;
+    color: #1f2937;
+    font: inherit;
+    font-size: 13px;
+    transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
   }
+
   .admin-main #search-input:focus {
-    border-color: #d97706;
-    box-shadow: 0 0 0 3px rgba(217,119,6,0.08);
-  }
-
-  .admin-main .table-container {
+    border-color: #c9994d;
     background: #fff;
-    border-radius: 0.75rem;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-    overflow: hidden;
+    box-shadow: 0 0 0 3px rgba(183, 121, 31, 0.1);
   }
 
-  .admin-main .emails-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
-  .admin-main .emails-table th {
-    background: #f8fafc;
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-weight: 700;
-    font-size: 0.75rem;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  .admin-main .emails-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
-    vertical-align: middle;
-  }
-  .admin-main .emails-table tbody tr {
+  .admin-main .refresh-btn {
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid #d9dde4;
+    border-radius: 9px;
+    background: #fff;
+    color: #536074;
     cursor: pointer;
-    transition: background 0.12s;
-  }
-  .admin-main .emails-table tbody tr:hover {
-    background: #f8fafc;
-  }
-  .admin-main .emails-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  .admin-main .date-col { width: 180px; font-size: 0.8rem; color: #94a3b8; }
-  .admin-main .address-col { width: 250px; font-weight: 600; color: #0f172a; font-size: 0.85rem; }
-  .admin-main .subject-col { width: auto; font-size: 0.85rem; color: #475569; }
-  .admin-main .status-col { width: 100px; text-align: right; }
-
-  .admin-main .emails-table .truncate {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .admin-main .unread-badge,
-  .admin-main .read-badge {
-    display: inline-block;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.35rem;
-    font-size: 0.7rem;
+    font: inherit;
+    font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-  .admin-main .unread-badge {
-    background: #fee2e2;
-    color: #dc2626;
-  }
-  .admin-main .read-badge {
-    background: #f1f5f9;
-    color: #94a3b8;
   }
 
-  .admin-main .delivery-badge {
-    display: inline-block;
-    max-width: 100%;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.35rem;
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .admin-main .delivery-success { background: #dcfce7; color: #166534; }
-  .admin-main .delivery-error { background: #fee2e2; color: #b91c1c; }
-  .admin-main .delivery-warning { background: #fef3c7; color: #92400e; }
-  .admin-main .delivery-pending { background: #e0f2fe; color: #075985; }
-
-  .admin-main .loading-row td {
-    text-align: center;
-    color: #94a3b8;
-    padding: 4rem 1rem;
-    font-size: 0.9rem;
+  .admin-main .refresh-btn:hover {
+    border-color: #c4cad3;
+    background: #f8f9fb;
+    color: #263247;
   }
 
-  .admin-main .empty-state {
-    text-align: center;
-    padding: 4rem 1rem;
-  }
-  .admin-main .empty-state h2 {
-    margin: 0 0 0.25rem;
-    font-size: 1.1rem;
-    color: #0f172a;
-  }
-  .admin-main .empty-state p {
-    margin: 0;
-    color: #94a3b8;
-    font-size: 0.9rem;
-  }
-
-  .admin-main .pagination {
+  .admin-main .filter-strip {
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 0.3rem;
-    margin-top: 1.5rem;
-    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 18px;
+    border-bottom: 1px solid #edf0f3;
+    background: #fbfcfd;
   }
-  .admin-main .pagination button {
-    padding: 0.4rem 0.8rem;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    border-radius: 0.5rem;
+
+  .admin-main .filter-btn {
+    min-height: 30px;
+    padding: 0 11px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: #697589;
     cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 500;
-    transition: all 0.15s;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
   }
-  .admin-main .pagination button:hover:not(:disabled) {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+
+  .admin-main .filter-btn:hover {
+    background: #f0f2f5;
+    color: #2d3748;
   }
-  .admin-main .pagination button:disabled {
-    opacity: 0.4;
+
+  .admin-main .filter-btn.active {
+    border-color: #e7cfaa;
+    background: #fff8ec;
+    color: #855810;
+  }
+
+  .admin-main .mail-list {
+    min-height: 300px;
+  }
+
+  .admin-main .mail-row {
+    position: relative;
+    min-height: 72px;
+    display: grid;
+    grid-template-columns: minmax(150px, 230px) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 18px;
+    border-bottom: 1px solid #edf0f3;
+    color: #334155;
+    text-decoration: none;
+    transition: background 120ms ease, box-shadow 120ms ease;
+  }
+
+  .admin-main .mail-row:last-child {
+    border-bottom: 0;
+  }
+
+  .admin-main .mail-row:hover,
+  .admin-main .mail-row:focus-visible {
+    z-index: 1;
+    background: #fafbfc;
+    box-shadow: inset 3px 0 0 #c89547;
+  }
+
+  .admin-main .mail-row.unread {
+    background: #fffdfa;
+  }
+
+  .admin-main .mail-row.unread .mail-person,
+  .admin-main .mail-row.unread .mail-subject {
+    color: #111827;
+    font-weight: 800;
+  }
+
+  .admin-main .mail-person-wrap {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .admin-main .unread-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: #b7791f;
+    box-shadow: 0 0 0 3px #fff1d7;
+  }
+
+  .admin-main .mail-person {
+    overflow: hidden;
+    color: #293548;
+    font-size: 13px;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-main .mail-copy {
+    min-width: 0;
+  }
+
+  .admin-main .mail-subject-line {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .admin-main .mail-subject {
+    overflow: hidden;
+    color: #243044;
+    font-size: 13px;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-main .mail-preview {
+    min-width: 0;
+    overflow: hidden;
+    color: #7a8494;
+    font-size: 12.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-main .mail-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    color: #7a8494;
+    font-size: 11.5px;
+    white-space: nowrap;
+  }
+
+  .admin-main .mail-file-mark,
+  .admin-main .delivery-mark {
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #f0f2f5;
+    color: #687386;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.01em;
+  }
+
+  .admin-main .delivery-mark.success {
+    background: #edf8f0;
+    color: #2f6b42;
+  }
+
+  .admin-main .delivery-mark.error {
+    background: #fff0f0;
+    color: #a23b3b;
+  }
+
+  .admin-main .delivery-mark.pending {
+    background: #eef5fb;
+    color: #3f6f93;
+  }
+
+  .admin-main .mail-empty,
+  .admin-main .mail-error {
+    min-height: 320px;
+    display: grid;
+    place-items: center;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .admin-main .state-inner {
+    max-width: 370px;
+  }
+
+  .admin-main .state-icon {
+    width: 42px;
+    height: 32px;
+    margin: 0 auto 16px;
+    border: 2px solid #c7ccd4;
+    border-radius: 6px;
+    position: relative;
+  }
+
+  .admin-main .state-icon::before,
+  .admin-main .state-icon::after {
+    content: "";
+    position: absolute;
+    top: 7px;
+    width: 24px;
+    height: 2px;
+    background: #c7ccd4;
+  }
+
+  .admin-main .state-icon::before {
+    left: 0;
+    transform: rotate(32deg);
+  }
+
+  .admin-main .state-icon::after {
+    right: 0;
+    transform: rotate(-32deg);
+  }
+
+  .admin-main .mail-empty h2,
+  .admin-main .mail-error h2 {
+    margin: 0 0 7px;
+    color: #263247;
+    font-size: 17px;
+  }
+
+  .admin-main .mail-empty p,
+  .admin-main .mail-error p {
+    margin: 0;
+    color: #7a8494;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .admin-main .retry-btn {
+    min-height: 38px;
+    margin-top: 16px;
+    padding: 0 14px;
+    border: 1px solid #d3d7de;
+    border-radius: 8px;
+    background: #fff;
+    color: #364154;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .admin-main .loading-list {
+    padding: 4px 0;
+  }
+
+  .admin-main .loading-line {
+    height: 72px;
+    margin: 0 18px;
+    border-bottom: 1px solid #edf0f3;
+    background: linear-gradient(90deg, transparent, rgba(15, 23, 42, 0.035), transparent);
+    background-size: 220% 100%;
+    animation: mailbox-loading 1.2s linear infinite;
+  }
+
+  @keyframes mailbox-loading {
+    from { background-position: 100% 0; }
+    to { background-position: -100% 0; }
+  }
+
+  .admin-main .mail-pagination {
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    padding: 8px 14px;
+    border-top: 1px solid #edf0f3;
+    background: #fbfcfd;
+  }
+
+  .admin-main .mail-pagination:empty {
+    display: none;
+  }
+
+  .admin-main .mail-pagination button {
+    min-width: 34px;
+    min-height: 34px;
+    border: 1px solid #d9dde4;
+    border-radius: 8px;
+    background: #fff;
+    color: #536074;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .admin-main .mail-pagination button:hover:not(:disabled) {
+    background: #f3f5f7;
+  }
+
+  .admin-main .mail-pagination button:disabled {
     cursor: not-allowed;
-  }
-  .admin-main .pagination .page-info {
-    padding: 0.4rem 0.6rem;
-    color: #94a3b8;
-    font-size: 0.8rem;
+    opacity: 0.42;
   }
 
-  @media (max-width: 900px) {
-    .admin-main .date-col { width: 140px; }
-    .admin-main .address-col { width: 200px; }
+  .admin-main .mail-pagination button[aria-current="page"] {
+    border-color: #d9b67d;
+    background: #fff6e7;
+    color: #855810;
   }
 
-  @media (max-width: 700px) {
-    .admin-main .page-header { flex-direction: column; gap: 1rem; }
-    .admin-main .compose-btn { width: 100%; text-align: center; }
-    .admin-main .toolbar { flex-direction: column; align-items: stretch; }
-    .admin-main #search-input { max-width: none; }
-    .admin-main .date-col, .admin-main .status-col { display: none; }
-    .admin-main .emails-table th, .admin-main .emails-table td { padding: 0.75rem; }
+  .admin-main .pagination-summary {
+    margin: 0 7px;
+    color: #7a8494;
+    font-size: 11px;
+  }
+
+  .admin-main .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 860px) {
+    .admin-main .mailbox-toolbar {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .admin-main .mailbox-actions,
+    .admin-main .search-field {
+      width: 100%;
+      max-width: none;
+    }
+
+    .admin-main .mail-row {
+      grid-template-columns: minmax(125px, 190px) minmax(0, 1fr) auto;
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .admin-main .mailbox-header {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .admin-main .compose-btn {
+      width: 100%;
+    }
+
+    .admin-main .mailbox-panel {
+      border-radius: 10px;
+    }
+
+    .admin-main .folder-tabs {
+      width: 100%;
+    }
+
+    .admin-main .folder-tab {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .admin-main .mailbox-actions {
+      align-items: stretch;
+    }
+
+    .admin-main .refresh-btn {
+      flex: 0 0 auto;
+    }
+
+    .admin-main .filter-strip {
+      overflow-x: auto;
+      padding: 9px 12px;
+    }
+
+    .admin-main .mail-row {
+      min-height: 88px;
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        "person meta"
+        "copy copy";
+      gap: 5px 10px;
+      padding: 12px 14px;
+    }
+
+    .admin-main .mail-person-wrap { grid-area: person; }
+    .admin-main .mail-copy { grid-area: copy; }
+    .admin-main .mail-meta { grid-area: meta; }
+
+    .admin-main .mail-subject-line {
+      display: block;
+    }
+
+    .admin-main .mail-subject {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .admin-main .mail-preview {
+      display: block;
+    }
+
+    .admin-main .mail-file-mark,
+    .admin-main .delivery-mark {
+      display: none;
+    }
+
+    .admin-main .mail-pagination {
+      justify-content: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .admin-main .loading-line {
+      animation: none;
+    }
   }
 </style>
 
 <script>
   const PAGE_SIZE = 20;
   let currentPage = 1;
+  let totalPages = 1;
   let searchQuery = "";
   let folder: "inbox" | "sent" = "inbox";
-  let filter = "all";
-  let totalPages = 1;
+  let filter: "all" | "unread" | "read" = "all";
+  let requestController: AbortController | null = null;
 
   type InboxEmail = {
     id: string;
     from_address: string;
+    to_address: string;
     subject: string;
+    body: string;
+    attachments_json: string;
     is_read: boolean;
     created_at: string;
   };
@@ -369,27 +747,328 @@ const unreadCount = unreadResult[0]?.total ?? 0;
     id: string;
     to_address: string;
     subject: string;
+    body: string;
+    attachments_json: string;
     delivery_status: string;
     delivery_error: string;
     created_at: string;
   };
 
-  const tbody = document.getElementById("emails-body") as HTMLTableSectionElement;
-  const pagination = document.getElementById("pagination") as HTMLDivElement;
+  const listEl = document.getElementById("mail-list") as HTMLDivElement;
+  const paginationEl = document.getElementById("pagination") as HTMLElement;
   const countEl = document.getElementById("email-count") as HTMLParagraphElement;
   const searchInput = document.getElementById("search-input") as HTMLInputElement;
   const filtersEl = document.getElementById("inbox-filters") as HTMLDivElement;
-  const headRow = document.getElementById("table-head-row") as HTMLTableRowElement;
+  const refreshBtn = document.getElementById("refresh-btn") as HTMLButtonElement;
   const inboxCountEl = document.getElementById("inbox-count") as HTMLSpanElement;
   const sentCountEl = document.getElementById("sent-count") as HTMLSpanElement;
+  let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
-  let searchTimeout: ReturnType<typeof setTimeout>;
+  const getAddressDisplay = (address: string) => {
+    const match = address.match(/^\s*"?([^"<]+?)"?\s*<([^>]+)>\s*$/);
+    if (match) return match[1].trim() || match[2].trim();
+    return address.trim() || "Unknown sender";
+  };
 
-  document.querySelectorAll<HTMLButtonElement>(".tab-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      folder = btn.dataset.folder === "sent" ? "sent" : "inbox";
+  const getPreview = (value: string) => {
+    if (!value) return "No message preview";
+    const parsed = new DOMParser().parseFromString(value, "text/html");
+    return (parsed.body.textContent || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 220) || "No message preview";
+  };
+
+  const hasAttachments = (value: string) => {
+    if (!value) return false;
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) && parsed.length > 0;
+    } catch {
+      return false;
+    }
+  };
+
+  const formatDate = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    const now = new Date();
+    const sameDay = date.toDateString() === now.toDateString();
+    if (sameDay) {
+      return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    }
+    if (date.getFullYear() === now.getFullYear()) {
+      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+    }
+    return date.toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" });
+  };
+
+  const createText = (tag: string, className: string, text: string) => {
+    const element = document.createElement(tag);
+    element.className = className;
+    element.textContent = text;
+    return element;
+  };
+
+  const createMetaMark = (className: string, text: string, title?: string) => {
+    const mark = createText("span", className, text);
+    if (title) mark.title = title;
+    return mark;
+  };
+
+  const deliveryClass = (status: string) => {
+    if (["delivered"].includes(status)) return "success";
+    if (["failed", "bounced", "suppressed", "complained"].includes(status)) return "error";
+    return "pending";
+  };
+
+  const buildInboxRow = (email: InboxEmail) => {
+    const row = document.createElement("a");
+    row.href = `/admin/emails/thread/inbound/${encodeURIComponent(email.id)}`;
+    row.className = `mail-row${email.is_read ? "" : " unread"}`;
+    if (!email.is_read) row.setAttribute("aria-label", `Unread: ${email.subject || "No subject"}`);
+
+    const personWrap = document.createElement("div");
+    personWrap.className = "mail-person-wrap";
+    if (!email.is_read) {
+      const dot = document.createElement("span");
+      dot.className = "unread-dot";
+      dot.setAttribute("aria-hidden", "true");
+      personWrap.appendChild(dot);
+    }
+    personWrap.appendChild(createText("span", "mail-person", getAddressDisplay(email.from_address)));
+
+    const copy = document.createElement("div");
+    copy.className = "mail-copy";
+    const subjectLine = document.createElement("div");
+    subjectLine.className = "mail-subject-line";
+    subjectLine.appendChild(createText("span", "mail-subject", email.subject || "(No subject)"));
+    subjectLine.appendChild(createText("span", "mail-preview", `— ${getPreview(email.body)}`));
+    copy.appendChild(subjectLine);
+
+    const meta = document.createElement("div");
+    meta.className = "mail-meta";
+    if (hasAttachments(email.attachments_json)) {
+      meta.appendChild(createMetaMark("mail-file-mark", "File"));
+    }
+    meta.appendChild(createText("time", "mail-date", formatDate(email.created_at)));
+
+    row.append(personWrap, copy, meta);
+    return row;
+  };
+
+  const buildSentRow = (email: SentEmail) => {
+    const row = document.createElement("a");
+    row.href = `/admin/emails/thread/sent/${encodeURIComponent(email.id)}`;
+    row.className = "mail-row";
+
+    const personWrap = document.createElement("div");
+    personWrap.className = "mail-person-wrap";
+    personWrap.appendChild(createText("span", "mail-person", `To: ${getAddressDisplay(email.to_address)}`));
+
+    const copy = document.createElement("div");
+    copy.className = "mail-copy";
+    const subjectLine = document.createElement("div");
+    subjectLine.className = "mail-subject-line";
+    subjectLine.appendChild(createText("span", "mail-subject", email.subject || "(No subject)"));
+    subjectLine.appendChild(createText("span", "mail-preview", `— ${getPreview(email.body)}`));
+    copy.appendChild(subjectLine);
+
+    const meta = document.createElement("div");
+    meta.className = "mail-meta";
+    if (hasAttachments(email.attachments_json)) {
+      meta.appendChild(createMetaMark("mail-file-mark", "File"));
+    }
+    const status = (email.delivery_status || "accepted").toLowerCase();
+    meta.appendChild(
+      createMetaMark(
+        `delivery-mark ${deliveryClass(status)}`,
+        status.replace(/_/g, " "),
+        email.delivery_error || undefined
+      )
+    );
+    meta.appendChild(createText("time", "mail-date", formatDate(email.created_at)));
+
+    row.append(personWrap, copy, meta);
+    return row;
+  };
+
+  const renderLoading = () => {
+    listEl.setAttribute("aria-busy", "true");
+    listEl.innerHTML = `
+      <div class="loading-list" aria-label="Loading messages">
+        <div class="loading-line"></div>
+        <div class="loading-line"></div>
+        <div class="loading-line"></div>
+        <div class="loading-line"></div>
+      </div>
+    `;
+  };
+
+  const renderState = (kind: "empty" | "error", title: string, message: string) => {
+    listEl.setAttribute("aria-busy", "false");
+    listEl.textContent = "";
+    const state = document.createElement("div");
+    state.className = kind === "error" ? "mail-error" : "mail-empty";
+    const inner = document.createElement("div");
+    inner.className = "state-inner";
+    const icon = document.createElement("div");
+    icon.className = "state-icon";
+    icon.setAttribute("aria-hidden", "true");
+    inner.append(icon, createText("h2", "", title), createText("p", "", message));
+    if (kind === "error") {
+      const retry = createText("button", "retry-btn", "Try again") as HTMLButtonElement;
+      retry.type = "button";
+      retry.addEventListener("click", () => loadEmails());
+      inner.appendChild(retry);
+    }
+    state.appendChild(inner);
+    listEl.appendChild(state);
+  };
+
+  const renderInbox = (emails: InboxEmail[]) => {
+    listEl.textContent = "";
+    listEl.setAttribute("aria-busy", "false");
+    if (emails.length === 0) {
+      renderState(
+        "empty",
+        searchQuery ? "No matching email" : filter === "unread" ? "Inbox is caught up" : "Inbox is empty",
+        searchQuery ? "Try another sender or subject." : "New customer messages will appear here."
+      );
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    emails.forEach((email) => fragment.appendChild(buildInboxRow(email)));
+    listEl.appendChild(fragment);
+  };
+
+  const renderSent = (emails: SentEmail[]) => {
+    listEl.textContent = "";
+    listEl.setAttribute("aria-busy", "false");
+    if (emails.length === 0) {
+      renderState(
+        "empty",
+        searchQuery ? "No matching sent email" : "Nothing sent yet",
+        searchQuery ? "Try another recipient or subject." : "Messages you send will stay available here."
+      );
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    emails.forEach((email) => fragment.appendChild(buildSentRow(email)));
+    listEl.appendChild(fragment);
+  };
+
+  const getPageNumbers = (): (number | "ellipsis")[] => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
+    const values: (number | "ellipsis")[] = [1];
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    if (start > 2) values.push("ellipsis");
+    for (let page = start; page <= end; page += 1) values.push(page);
+    if (end < totalPages - 1) values.push("ellipsis");
+    values.push(totalPages);
+    return values;
+  };
+
+  const renderPagination = () => {
+    paginationEl.textContent = "";
+    if (totalPages <= 1) return;
+
+    const prev = createText("button", "", "Previous") as HTMLButtonElement;
+    prev.type = "button";
+    prev.disabled = currentPage === 1;
+    prev.addEventListener("click", () => goToPage(currentPage - 1));
+    paginationEl.appendChild(prev);
+
+    getPageNumbers().forEach((value) => {
+      if (value === "ellipsis") {
+        paginationEl.appendChild(createText("span", "pagination-summary", "…"));
+        return;
+      }
+      const button = createText("button", "", String(value)) as HTMLButtonElement;
+      button.type = "button";
+      button.setAttribute("aria-label", `Go to page ${value}`);
+      if (value === currentPage) button.setAttribute("aria-current", "page");
+      button.addEventListener("click", () => goToPage(value));
+      paginationEl.appendChild(button);
+    });
+
+    paginationEl.appendChild(
+      createText("span", "pagination-summary", `${currentPage} of ${totalPages}`)
+    );
+
+    const next = createText("button", "", "Next") as HTMLButtonElement;
+    next.type = "button";
+    next.disabled = currentPage === totalPages;
+    next.addEventListener("click", () => goToPage(currentPage + 1));
+    paginationEl.appendChild(next);
+  };
+
+  const updateFolderUi = () => {
+    document.querySelectorAll<HTMLButtonElement>(".folder-tab").forEach((button) => {
+      const active = button.dataset.folder === folder;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    filtersEl.hidden = folder !== "inbox";
+    searchInput.placeholder = folder === "inbox" ? "Search inbox" : "Search sent email";
+  };
+
+  async function loadEmails() {
+    requestController?.abort();
+    requestController = new AbortController();
+    renderLoading();
+    refreshBtn.disabled = true;
+
+    try {
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(PAGE_SIZE),
+      });
+      if (searchQuery) params.set("search", searchQuery);
+      if (folder === "inbox") params.set("filter", filter);
+
+      const endpoint = folder === "inbox"
+        ? `/api/admin/emails/inbound?${params}`
+        : `/api/admin/emails?${params}`;
+      const response = await fetch(endpoint, { signal: requestController.signal });
+      if (!response.ok) throw new Error(`Mailbox request failed: ${response.status}`);
+      const data = await response.json();
+      totalPages = Math.max(1, Number(data.totalPages || 1));
+
+      if (folder === "inbox") {
+        renderInbox(data.emails ?? []);
+        const unread = Number(data.unreadCount ?? 0);
+        const total = Number(data.total ?? 0);
+        countEl.textContent = `${unread} unread · ${total} messages`;
+        inboxCountEl.textContent = String(total);
+      } else {
+        renderSent(data.emails ?? []);
+        const total = Number(data.total ?? 0);
+        countEl.textContent = `${total} sent message${total === 1 ? "" : "s"}`;
+        sentCountEl.textContent = String(total);
+      }
+      renderPagination();
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      console.error(error);
+      paginationEl.textContent = "";
+      renderState("error", "Mailbox could not load", "Check the connection and try again.");
+    } finally {
+      refreshBtn.disabled = false;
+    }
+  }
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    currentPage = page;
+    loadEmails();
+    document.querySelector(".mailbox-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  document.querySelectorAll<HTMLButtonElement>(".folder-tab").forEach((button) => {
+    button.addEventListener("click", () => {
+      folder = button.dataset.folder === "sent" ? "sent" : "inbox";
       currentPage = 1;
       searchQuery = "";
       searchInput.value = "";
@@ -398,268 +1077,27 @@ const unreadCount = unreadResult[0]?.total ?? 0;
     });
   });
 
-  document.querySelectorAll<HTMLButtonElement>(".filter-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      filter = btn.dataset.filter ?? "all";
+  document.querySelectorAll<HTMLButtonElement>(".filter-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+      const nextFilter = button.dataset.filter;
+      filter = nextFilter === "unread" || nextFilter === "read" ? nextFilter : "all";
       currentPage = 1;
       loadEmails();
     });
   });
 
   searchInput.addEventListener("input", () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
+    window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(() => {
       searchQuery = searchInput.value.trim();
       currentPage = 1;
       loadEmails();
-    }, 300);
+    }, 280);
   });
 
-  function updateFolderUi() {
-    filtersEl.style.display = folder === "inbox" ? "flex" : "none";
-    searchInput.placeholder = folder === "inbox" ? "Search inbox..." : "Search sent emails...";
-    headRow.innerHTML = folder === "inbox"
-      ? '<th class="date-col">Date</th><th class="address-col">From</th><th class="subject-col">Subject</th><th class="status-col">Status</th>'
-      : '<th class="date-col">Date</th><th class="address-col">To</th><th class="subject-col">Subject</th><th class="status-col">Delivery</th>';
-  }
-
-  async function loadEmails() {
-    try {
-      const params = new URLSearchParams({
-        page: String(currentPage),
-        limit: String(PAGE_SIZE),
-      });
-      if (searchQuery) params.set("search", searchQuery);
-
-      const endpoint = folder === "inbox"
-        ? `/api/admin/emails/inbound?${new URLSearchParams({ ...Object.fromEntries(params), filter })}`
-        : `/api/admin/emails?${params}`;
-
-      const res = await fetch(endpoint);
-      if (!res.ok) throw new Error("Failed to load");
-
-      const data = await res.json();
-      totalPages = data.totalPages || 1;
-
-      if (folder === "inbox") {
-        renderInboxEmails(data.emails);
-        countEl.textContent = `${data.unreadCount} unread / ${data.total} inbox`;
-        inboxCountEl.textContent = `(${data.total})`;
-      } else {
-        renderSentEmails(data.emails);
-        countEl.textContent = `${data.total} sent email${data.total !== 1 ? "s" : ""}`;
-        sentCountEl.textContent = `(${data.total})`;
-      }
-      renderPagination();
-    } catch (err) {
-      console.error(err);
-      renderError();
-    }
-  }
-
-  function renderError() {
-    tbody.innerHTML = "";
-    const tr = document.createElement("tr");
-    const td = document.createElement("td");
-    td.setAttribute("colspan", folder === "inbox" ? "4" : "3");
-    td.textContent = "Failed to load emails";
-    td.style.textAlign = "center";
-    td.style.color = "#c0392b";
-    td.style.padding = "40px";
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-  }
-
-  function renderEmpty(message: string) {
-    tbody.textContent = "";
-    const tr = document.createElement("tr");
-    const td = document.createElement("td");
-    td.setAttribute("colspan", folder === "inbox" ? "4" : "3");
-
-    const container = document.createElement("div");
-    container.className = "empty-state";
-
-    const h2 = document.createElement("h2");
-    h2.textContent = "No emails found";
-    container.appendChild(h2);
-
-    const p = document.createElement("p");
-    p.textContent = searchQuery ? "Try a different search term" : message;
-    container.appendChild(p);
-
-    td.appendChild(container);
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-  }
-
-  function renderInboxEmails(emails: InboxEmail[]) {
-    if (emails.length === 0) {
-      renderEmpty("No inbound emails yet");
-      return;
-    }
-
-    tbody.textContent = "";
-    emails.forEach((email) => {
-      const tr = document.createElement("tr");
-      tr.appendChild(createDateCell(email.created_at));
-      tr.appendChild(createAddressCell(email.from_address));
-      tr.appendChild(createSubjectCell(email.subject));
-
-      const statusTd = document.createElement("td");
-      statusTd.className = "status-col";
-      const badge = document.createElement("span");
-      badge.className = email.is_read ? "read-badge" : "unread-badge";
-      badge.textContent = email.is_read ? "Read" : "New";
-      statusTd.appendChild(badge);
-      tr.appendChild(statusTd);
-
-      tr.addEventListener("click", () => {
-        window.location.href = `/admin/emails/thread/inbound/${email.id}`;
-      });
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderSentEmails(emails: SentEmail[]) {
-    if (emails.length === 0) {
-      renderEmpty("No sent emails yet");
-      return;
-    }
-
-    tbody.textContent = "";
-    emails.forEach((email) => {
-      const tr = document.createElement("tr");
-      tr.appendChild(createDateCell(email.created_at));
-      tr.appendChild(createAddressCell(email.to_address));
-      tr.appendChild(createSubjectCell(email.subject));
-
-      const statusTd = document.createElement("td");
-      statusTd.className = "status-col";
-      const badge = document.createElement("span");
-      const status = email.delivery_status || "accepted";
-      const statusClass = ["delivered"].includes(status)
-        ? "delivery-success"
-        : ["failed", "bounced", "suppressed", "complained"].includes(status)
-          ? "delivery-error"
-          : ["delivery_delayed"].includes(status)
-            ? "delivery-warning"
-            : "delivery-pending";
-      badge.className = `delivery-badge ${statusClass}`;
-      badge.textContent = status.replace(/_/g, " ");
-      if (email.delivery_error) badge.title = email.delivery_error;
-      statusTd.appendChild(badge);
-      tr.appendChild(statusTd);
-
-      tr.addEventListener("click", () => {
-        window.location.href = `/admin/emails/thread/sent/${email.id}`;
-      });
-      tbody.appendChild(tr);
-    });
-  }
-
-  function createDateCell(date: string) {
-    const td = document.createElement("td");
-    td.className = "date-col";
-    td.textContent = formatDate(date);
-    return td;
-  }
-
-  function createAddressCell(address: string) {
-    const td = document.createElement("td");
-    td.className = "address-col";
-    const span = document.createElement("span");
-    span.className = "truncate";
-    span.textContent = address;
-    span.title = address;
-    td.appendChild(span);
-    return td;
-  }
-
-  function createSubjectCell(subject: string) {
-    const td = document.createElement("td");
-    td.className = "subject-col";
-    const span = document.createElement("span");
-    span.className = "truncate";
-    span.textContent = subject || "(No Subject)";
-    span.title = subject || "(No Subject)";
-    td.appendChild(span);
-    return td;
-  }
-
-  function renderPagination() {
-    if (totalPages <= 1) {
-      pagination.textContent = "";
-      return;
-    }
-
-    pagination.textContent = "";
-
-    const prevBtn = document.createElement("button");
-    prevBtn.textContent = "Prev";
-    prevBtn.disabled = currentPage === 1;
-    prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
-    pagination.appendChild(prevBtn);
-
-    getPageNumbers().forEach((p) => {
-      if (typeof p === "string") {
-        const info = document.createElement("span");
-        info.className = "page-info";
-        info.textContent = "...";
-        pagination.appendChild(info);
-      } else {
-        const btn = document.createElement("button");
-        btn.textContent = String(p);
-        if (p === currentPage) btn.style.fontWeight = "bold";
-        btn.addEventListener("click", () => goToPage(p));
-        pagination.appendChild(btn);
-      }
-    });
-
-    const nextBtn = document.createElement("button");
-    nextBtn.textContent = "Next";
-    nextBtn.disabled = currentPage === totalPages;
-    nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
-    pagination.appendChild(nextBtn);
-
-    const info = document.createElement("span");
-    info.className = "page-info";
-    info.textContent = `Page ${currentPage} of ${totalPages}`;
-    pagination.appendChild(info);
-  }
-
-  function getPageNumbers(): (number | string)[] {
-    const pages: (number | string)[] = [1];
-    if (totalPages <= 7) {
-      for (let i = 2; i <= totalPages; i++) pages.push(i);
-    } else {
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-      if (start > 2) pages.push("...");
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (end < totalPages - 1) pages.push("...");
-      pages.push(totalPages);
-    }
-    return pages;
-  }
-
-  function goToPage(page: number) {
-    if (page < 1 || page > totalPages) return;
-    currentPage = page;
-    loadEmails();
-  }
-
-  function formatDate(dateStr: string): string {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
+  refreshBtn.addEventListener("click", () => loadEmails());
 
   updateFolderUi();
   loadEmails();

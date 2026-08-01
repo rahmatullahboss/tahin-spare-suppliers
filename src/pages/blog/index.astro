@@ -5,6 +5,8 @@ import { listContent } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
 const posts = await listContent(env, "blog");
+const PAGE_SIZE = 9;
+const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
 ---
 <MainLayout title="Blog - Tahin Spare Suppliers" activeNav="blog">
   <section class="page-hero">
@@ -16,25 +18,110 @@ const posts = await listContent(env, "blog");
   </section>
 
   <section class="section">
-    <div class="container blog-grid">
+    <div class="container">
       {posts.length === 0 ? (
         <div class="empty-state">
           <h2>No Blog Posts Yet</h2>
           <p>Check back soon for articles about marine engines, industry updates, and more.</p>
           <a href="/products" class="btn btn-primary">Browse Our Products</a>
         </div>
-      ) : posts.map((post) => (
-        <a href={`/blog/${post.slug}`} class="blog-card">
-          {post.imageUrl && <img src={post.imageUrl} alt={post.title} />}
-          <div class="blog-card-body">
-            <h2>{post.title}</h2>
-            <p>{post.excerpt}</p>
+      ) : (
+        <>
+          <div class="blog-grid" data-paginated data-page-size={PAGE_SIZE} data-current-page="1">
+            {posts.map((post) => (
+              <a href={`/blog/${post.slug}`} class="blog-card">
+                {post.imageUrl && <img src={post.imageUrl} alt={post.title} />}
+                <div class="blog-card-body">
+                  <h2>{post.title}</h2>
+                  <p>{post.excerpt}</p>
+                </div>
+              </a>
+            ))}
           </div>
-        </a>
-      ))}
+          <div class="pagination" data-pagination hidden></div>
+        </>
+      )}
     </div>
   </section>
 </MainLayout>
+
+<script>
+  const grid = document.querySelector('[data-paginated]');
+  const paginationEl = document.querySelector('[data-pagination]');
+  if (grid && paginationEl) {
+    const items = Array.from(grid.children) as HTMLElement[];
+    const pageSize = parseInt(grid.dataset.pageSize || '9', 10);
+    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    let currentPage = 1;
+
+    if (totalPages <= 1) {
+      paginationEl.hidden = true;
+    } else {
+      paginationEl.hidden = false;
+      const getPageNumbers = () => {
+        const pages: (number | string)[] = [1];
+        if (totalPages <= 7) {
+          for (let i = 2; i <= totalPages; i++) pages.push(i);
+        } else {
+          const start = Math.max(2, currentPage - 1);
+          const end = Math.min(totalPages - 1, currentPage + 1);
+          if (start > 2) pages.push('…');
+          for (let i = start; i <= end; i++) pages.push(i);
+          if (end < totalPages - 1) pages.push('…');
+          pages.push(totalPages);
+        }
+        return pages;
+      };
+
+      const renderPagination = () => {
+        paginationEl.innerHTML = '';
+        const prev = document.createElement('button');
+        prev.type = 'button';
+        prev.textContent = '← Prev';
+        prev.disabled = currentPage === 1;
+        prev.addEventListener('click', () => goTo(currentPage - 1));
+        paginationEl.appendChild(prev);
+
+        getPageNumbers().forEach((p) => {
+          if (typeof p === 'string') {
+            const info = document.createElement('span');
+            info.className = 'page-info';
+            info.textContent = '…';
+            paginationEl.appendChild(info);
+          } else {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = String(p);
+            if (p === currentPage) btn.dataset.active = 'true';
+            btn.addEventListener('click', () => goTo(p));
+            paginationEl.appendChild(btn);
+          }
+        });
+
+        const next = document.createElement('button');
+        next.type = 'button';
+        next.textContent = 'Next →';
+        next.disabled = currentPage === totalPages;
+        next.addEventListener('click', () => goTo(currentPage + 1));
+        paginationEl.appendChild(next);
+      };
+
+      const goTo = (page: number) => {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        grid.dataset.currentPage = String(currentPage);
+        items.forEach((item, i) => {
+          const pageNum = Math.floor(i / pageSize) + 1;
+          item.style.display = pageNum === currentPage ? '' : 'none';
+        });
+        renderPagination();
+        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
+      goTo(1);
+    }
+  }
+</script>
 
 <style>
   .page-hero { position: relative; height: 280px; background: url('/images/services-hero.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
@@ -60,4 +147,28 @@ const posts = await listContent(env, "blog");
     color: #666;
     margin-bottom: 20px;
   }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+  .pagination button {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #334155;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .pagination button:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+  .pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .pagination button[data-active] { background: #b11623; color: #fff; border-color: #b11623; }
+  .pagination .page-info { padding: 0.5rem 0.4rem; color: #94a3b8; font-size: 0.9rem; }
 </style>

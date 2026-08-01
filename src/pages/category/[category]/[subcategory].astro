@@ -18,6 +18,8 @@ const liveProducts = await listContent(env, 'products', { limit: 1000 });
 const filteredProducts = liveProducts.filter(
   (p) => p.category === parent.value && p.subcategory === currentSubcategory.value
 );
+const PRODUCT_PAGE_SIZE = 12;
+const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCT_PAGE_SIZE));
 
 // Extract unique brands for this subcategory
 const uniqueBrands = [...new Set(filteredProducts.map(p => p.brand).filter(Boolean))];
@@ -86,24 +88,27 @@ const faqSchema = {
            <a href="/enquiry" class="btn btn-primary" style="margin-top:20px;">Send Enquiry</a>
         </div>
       ) : (
-        <div class="products-grid reveal-stagger">
-          {filteredProducts.map((product) => (
-            <a href={`/products/${product.slug}`} class="product-card" style="text-decoration: none;">
-              <div class="product-img">
-                <img src={product.imageUrl || '/images/marine-engine.webp'} alt={product.title} loading="lazy" />
-              </div>
-              <div class="product-content">
-                <h3>{product.title}</h3>
-                <p class="live-excerpt">{product.excerpt}</p>
-                <div class="product-meta">
-                  {product.brand && <span class="badge badge-brand">{product.brand}</span>}
-                  {product.model_number && <span class="badge badge-model">{product.model_number}</span>}
+        <>
+          <div class="products-grid reveal-stagger" data-paginated data-page-size={PRODUCT_PAGE_SIZE} data-current-page="1">
+            {filteredProducts.map((product) => (
+              <a href={`/products/${product.slug}`} class="product-card" style="text-decoration: none;">
+                <div class="product-img">
+                  <img src={product.imageUrl || '/images/marine-engine.webp'} alt={product.title} loading="lazy" />
                 </div>
-                <span class="view-details">VIEW DETAILS</span>
-              </div>
-            </a>
-          ))}
-        </div>
+                <div class="product-content">
+                  <h3>{product.title}</h3>
+                  <p class="live-excerpt">{product.excerpt}</p>
+                  <div class="product-meta">
+                    {product.brand && <span class="badge badge-brand">{product.brand}</span>}
+                    {product.model_number && <span class="badge badge-model">{product.model_number}</span>}
+                  </div>
+                  <span class="view-details">VIEW DETAILS</span>
+                </div>
+              </a>
+            ))}
+          </div>
+          <div class="pagination" data-pagination hidden></div>
+        </>
       )}
 
       <!-- Programmatic SEO Brand Links -->
@@ -137,6 +142,84 @@ const faqSchema = {
     </div>
   </section>
 </MainLayout>
+
+<script>
+  const grid = document.querySelector('[data-paginated]');
+  const paginationEl = document.querySelector('[data-pagination]');
+  if (grid && paginationEl) {
+    const items = Array.from(grid.children) as HTMLElement[];
+    const pageSize = parseInt(grid.dataset.pageSize || '12', 10);
+    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    let currentPage = 1;
+
+    if (totalPages <= 1) {
+      paginationEl.hidden = true;
+    } else {
+      paginationEl.hidden = false;
+      const getPageNumbers = () => {
+        const pages: (number | string)[] = [1];
+        if (totalPages <= 7) {
+          for (let i = 2; i <= totalPages; i++) pages.push(i);
+        } else {
+          const start = Math.max(2, currentPage - 1);
+          const end = Math.min(totalPages - 1, currentPage + 1);
+          if (start > 2) pages.push('…');
+          for (let i = start; i <= end; i++) pages.push(i);
+          if (end < totalPages - 1) pages.push('…');
+          pages.push(totalPages);
+        }
+        return pages;
+      };
+
+      const renderPagination = () => {
+        paginationEl.innerHTML = '';
+        const prev = document.createElement('button');
+        prev.type = 'button';
+        prev.textContent = '← Prev';
+        prev.disabled = currentPage === 1;
+        prev.addEventListener('click', () => goTo(currentPage - 1));
+        paginationEl.appendChild(prev);
+
+        getPageNumbers().forEach((p) => {
+          if (typeof p === 'string') {
+            const info = document.createElement('span');
+            info.className = 'page-info';
+            info.textContent = '…';
+            paginationEl.appendChild(info);
+          } else {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = String(p);
+            if (p === currentPage) btn.dataset.active = 'true';
+            btn.addEventListener('click', () => goTo(p));
+            paginationEl.appendChild(btn);
+          }
+        });
+
+        const next = document.createElement('button');
+        next.type = 'button';
+        next.textContent = 'Next →';
+        next.disabled = currentPage === totalPages;
+        next.addEventListener('click', () => goTo(currentPage + 1));
+        paginationEl.appendChild(next);
+      };
+
+      const goTo = (page: number) => {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        grid.dataset.currentPage = String(currentPage);
+        items.forEach((item, i) => {
+          const pageNum = Math.floor(i / pageSize) + 1;
+          item.style.display = pageNum === currentPage ? '' : 'none';
+        });
+        renderPagination();
+        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
+      goTo(1);
+    }
+  }
+</script>
 
 <style>
   .page-hero {
@@ -308,6 +391,30 @@ const faqSchema = {
   .faq-item:last-child { margin-bottom: 0; }
   .faq-item h4 { font-size: 18px; color: #b11623; margin-bottom: 10px; font-weight: 600; }
   .faq-item p { font-size: 15px; color: #555; line-height: 1.6; margin: 0; }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 40px 0 20px;
+    flex-wrap: wrap;
+  }
+  .pagination button {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #334155;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .pagination button:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+  .pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .pagination button[data-active] { background: #b11623; color: #fff; border-color: #b11623; }
+  .pagination .page-info { padding: 0.5rem 0.4rem; color: #94a3b8; font-size: 0.9rem; }
 
   @media (max-width: 768px) {
     .products-grid { grid-template-columns: repeat(2, 1fr); }

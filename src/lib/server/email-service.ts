@@ -20,6 +20,7 @@ export interface InlineEmailImageInput {
 }
 
 export interface EmailFileAttachmentInput {
+  id?: string;
   filename: string;
   contentType: string;
   contentBase64: string;
@@ -99,6 +100,14 @@ function getReferencedInlineImageIds(body: string): Set<string> {
   }
 
   return ids;
+}
+
+export function filterReferencedInlineImages(
+  body: string,
+  inlineImages: InlineEmailImageInput[] = []
+): InlineEmailImageInput[] {
+  const referencedIds = getReferencedInlineImageIds(body);
+  return inlineImages.filter((image) => referencedIds.has(image.id));
 }
 
 export function prepareInlineImageAttachments(

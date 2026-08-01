@@ -35,7 +35,7 @@ export const GET: APIRoute = async (context) => {
 
     const [emailsResult, countResult] = await Promise.all([
       sql.query(
-        `SELECT id, from_address, to_address, subject, body, is_read, created_at
+        `SELECT id, from_address, to_address, subject, body, attachments_json, is_read, created_at
          FROM inbound_emails${whereClause}
          ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
         [...params, limit, offset]

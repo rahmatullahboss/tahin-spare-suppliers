@@ -152,6 +152,29 @@ test("prepareEmailAttachments ignores inline images that are no longer reference
   assert.deepEqual(attachments, []);
 });
 
+test("filterReferencedInlineImages returns only images still present in the email body", async () => {
+  const { filterReferencedInlineImages } = await import("../src/lib/server/email-service.ts");
+  const images: InlineEmailImageInput[] = [
+    {
+      id: "kept-image",
+      filename: "kept.jpg",
+      contentType: "image/jpeg",
+      contentBase64: "a2VwdA=="
+    },
+    {
+      id: "removed-image",
+      filename: "removed.jpg",
+      contentType: "image/jpeg",
+      contentBase64: "cmVtb3ZlZA=="
+    }
+  ];
+
+  assert.deepEqual(
+    filterReferencedInlineImages('<p><img src="cid:kept-image"></p>', images),
+    [images[0]]
+  );
+});
+
 test("buildInboundForwardRequest forwards the original received email", () => {
   assert.deepEqual(
     buildInboundForwardRequest("received-email-id"),

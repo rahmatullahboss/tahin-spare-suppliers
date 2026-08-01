@@ -38,8 +38,14 @@ export function sanitizeEmailHeader(value: string, maxLength: number = 200): str
     .slice(0, maxLength);
 }
 
-function attachmentUrl(emailId: string, attachmentId: string): string {
-  return `/api/admin/emails/inbound/${encodeURIComponent(emailId)}/attachments/${encodeURIComponent(attachmentId)}`;
+export type EmailMessageSource = "inbound" | "sent";
+
+function attachmentUrl(
+  emailId: string,
+  attachmentId: string,
+  source: EmailMessageSource = "inbound"
+): string {
+  return `/api/admin/emails/${source}/${encodeURIComponent(emailId)}/attachments/${encodeURIComponent(attachmentId)}`;
 }
 
 export function parseInboundAttachments(value: unknown): InboundEmailAttachment[] {
@@ -74,7 +80,8 @@ export function parseInboundAttachments(value: unknown): InboundEmailAttachment[
 export function sanitizeEmailHtml(
   html: string,
   attachments: InboundEmailAttachment[],
-  emailId: string
+  emailId: string,
+  source: EmailMessageSource = "inbound"
 ): string {
   const attachmentsByContentId = new Map(
     attachments
@@ -119,7 +126,7 @@ export function sanitizeEmailHtml(
       const inlineAttachment = attachmentsByContentId.get(contentId);
       if (!inlineAttachment) return 'src=""';
 
-      const src = attachmentUrl(emailId, inlineAttachment.id);
+      const src = attachmentUrl(emailId, inlineAttachment.id, source);
       return `src="${escapeAttrValue(src)}"`;
     },
   });

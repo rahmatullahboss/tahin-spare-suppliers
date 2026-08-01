@@ -1,6 +1,7 @@
 import { ensureSchema, getDb } from "./db";
 import { slugify } from "./slug";
 import type { RuntimeEnv } from "./env";
+import { normalizeContentLimit } from "./content-limit";
 
 const CONTENT_TABLES = {
   products: {
@@ -73,7 +74,7 @@ export async function listContent(env: RuntimeEnv, type: ContentType, options?: 
   const sql = getDb(env);
   const { table } = CONTENT_TABLES[type];
   const page = Math.max(1, options?.page ?? 1);
-  const limit = Math.min(100, Math.max(1, options?.limit ?? 20));
+  const limit = normalizeContentLimit(options?.limit);
   const offset = (page - 1) * limit;
 
   let query = `SELECT * FROM ${table}`;

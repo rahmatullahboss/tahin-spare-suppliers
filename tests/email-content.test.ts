@@ -32,6 +32,27 @@ test("sanitizeEmailHtml rewrites CID images to the authenticated attachment endp
   assert.doesNotMatch(html, /onerror|cid:/i);
 });
 
+test("sanitizeEmailHtml rewrites sent CID images to the authenticated sent attachment endpoint", () => {
+  const html = sanitizeEmailHtml(
+    '<p>Sent photo</p><img src="cid:photo-outbound">',
+    [{
+      id: "sent-photo-1",
+      filename: "sent-pump.jpg",
+      contentType: "image/jpeg",
+      contentDisposition: "inline",
+      contentId: "photo-outbound"
+    }],
+    "sent-1",
+    "sent"
+  );
+
+  assert.match(
+    html,
+    /src="\/api\/admin\/emails\/sent\/sent-1\/attachments\/sent-photo-1"/
+  );
+  assert.doesNotMatch(html, /cid:/i);
+});
+
 test("sanitizeEmailHtml removes scripts and unsafe links from inbound email HTML", () => {
   const html = sanitizeEmailHtml(
     '<script>alert(1)</script><a href="javascript:alert(2)">Open</a><img src="data:image/svg+xml,bad"><p style="position:fixed">Safe text</p>',
