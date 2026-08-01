@@ -8,6 +8,7 @@ const dashboard = readFileSync(new URL("../src/pages/admin/index.astro", import.
 const contentEditor = readFileSync(new URL("../src/components/admin/ContentEditor.astro", import.meta.url), "utf8");
 const tiptap = readFileSync(new URL("../src/components/TiptapEditor.astro", import.meta.url), "utf8");
 const imageUploader = readFileSync(new URL("../src/components/admin/ImageUploader.astro", import.meta.url), "utf8");
+const categoriesPage = readFileSync(new URL("../src/pages/admin/categories.astro", import.meta.url), "utf8");
 
 test("admin shell provides an accessible mobile drawer instead of horizontal navigation", () => {
   assert.match(layout, /data-admin-menu-toggle/);
@@ -38,4 +39,11 @@ test("content editor uses mobile-safe controls and contained rich media", () => 
   assert.match(tiptap, /\.tiptap-wrapper\s*\{[^}]*min-width:\s*0/s);
   assert.match(tiptap, /@media \(max-width: 600px\)[\s\S]*\.tiptap-content\s*\{[^}]*font-size:\s*16px/s);
   assert.match(imageUploader, /@media \(max-width: 600px\)[\s\S]*\.remove-btn\s*\{[^}]*min-height:\s*44px/s);
+});
+
+test("categories use mobile card actions and reduced nested indentation", () => {
+  assert.match(categoriesPage, /@media \(max-width: 640px\)/);
+  assert.match(categoriesPage, /\.cat-actions\s*\{[^}]*grid-template-columns:\s*1fr 1fr/s);
+  assert.match(categoriesPage, /\.subcategory-list\s*\{[^}]*margin-left:\s*0/s);
+  assert.match(categoriesPage, /min-height:\s*44px/);
 });
