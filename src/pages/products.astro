@@ -1,18 +1,25 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
 
 const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
 ---
-<MainLayout title="Sell Equipments - Tahin Spare Suppliers" activeNav="products" description="Browse our complete catalog of marine propulsion engines, gearboxes, generators, spare parts, cranes, and pumps. Quality reconditioned marine equipment.">
+<MainLayout
+  title="Marine Engines, Generators & Spare Parts | Tahin Spare Suppliers"
+  activeNav="products"
+  description="Browse marine engines, generators, ship spare parts, gearboxes, deck-crane and hydraulic equipment by category, brand and model. Request current availability and worldwide shipping."
+>
   <section class="page-hero">
     <div class="page-hero-accent"></div>
     <div class="page-hero-content">
-      <h1 class="reveal">Sell Equipments</h1>
-      <p class="hero-subtitle reveal">Your one-stop solution for reconditioned marine engines & equipment</p>
+      <h1 class="reveal">Marine Engines, Generators & Spare Parts</h1>
+      <p class="hero-subtitle reveal">Browse marine machinery and ship spare-parts inventory by category, brand and model.</p>
     </div>
   </section>
+
+  <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Marine Equipment', href: '/products' }]} />
 
   <section class="section stock-spares">
     <div class="container">
@@ -20,7 +27,7 @@ const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
         {categories.map((cat) => (
           <a href={`/category/${cat.slug}`} class="stock-card">
             <div class="stock-card-img">
-              <img src={cat.imageUrl} alt={cat.value} loading="lazy" />
+              <img src={cat.imageUrl} alt={`${cat.value} marine equipment category`} width="800" height="600" loading="lazy" decoding="async" />
             </div>
             <div class="stock-card-content">
               <h3>{cat.value}</h3>

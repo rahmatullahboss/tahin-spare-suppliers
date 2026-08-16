@@ -1,5 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listContent } from '../../lib/server/repository';
 import { findCategoryBySlug, listSubcategories } from '../../lib/server/categories';
@@ -9,7 +11,10 @@ const env = getRuntimeEnv(Astro.locals);
 const currentCategory = await findCategoryBySlug(env, category ?? '');
 
 if (!currentCategory) {
-  return Astro.redirect('/products');
+  return new Response('Category not found', {
+    status: 404,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+  });
 }
 
 // Fetch subcategories if this is a custom category with an ID
@@ -23,12 +28,15 @@ const categoryProducts = liveProducts.filter((p) => p.category === currentCatego
 const PRODUCT_PAGE_SIZE = 12;
 const totalProductPages = Math.max(1, Math.ceil(categoryProducts.length / PRODUCT_PAGE_SIZE));
 
-// Extract unique brands for this category to build internal links
-const uniqueBrands = [...new Set(categoryProducts.map(p => p.brand).filter(Boolean))];
-const fallbackBrands = ["Yanmar", "Caterpillar", "Cummins", "Mitsubishi", "Wartsila"];
-const displayBrands = uniqueBrands.length > 0 ? uniqueBrands : fallbackBrands;
+// Build brand links only from real listed inventory.
+const displayBrands = [...new Set(
+  categoryProducts
+    .map((product) => product.brand?.trim() ?? '')
+    .filter((brand) => brand.length > 0)
+)];
+const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
 
-// Generate FAQ Schema for AI SEO
+// FAQ markup mirrors the visible answers below and avoids unsupported stock/condition claims.
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -46,7 +54,7 @@ const faqSchema = {
       "name": `What brands of ${currentCategory.value} do you supply?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `We maintain a vast inventory of major brands including Yanmar, Caterpillar, Wartsila, Cummins, and MAN for ${currentCategory.value}.`
+        "text": `Current online listings for ${currentCategory.value} include ${brandSummary}. If a required maker is not listed, send the exact model or part number for an inventory check.`
       }
     },
     {
@@ -54,13 +62,13 @@ const faqSchema = {
       "name": `What is the condition of the ${currentCategory.value}?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `All our ${currentCategory.value} units are carefully salvaged and fully reconditioned. They undergo strict inspection by our marine technical team before being verified for stock.`
+        "text": `Condition varies by listing. Each product page shows the recorded condition and availability where supplied; contact Tahin Spare Suppliers to confirm the current item before purchase.`
       }
     }
   ]
 };
 ---
-<MainLayout title={`Reconditioned ${currentCategory.value} Exporter | Tahin Spare`} description={`Browse genuine reconditioned ${currentCategory.value} sourced from ship recycling yards. Ready for global export.`} activeNav="products">
+<MainLayout title={`${currentCategory.value} Supplier & Exporter | Tahin Spare Suppliers`} description={`Browse current ${currentCategory.value} listings by brand and model. Request specifications, condition, availability, price and worldwide shipping from Tahin Spare Suppliers.`} activeNav="products">
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <section class="page-hero">
     <div class="page-hero-accent"></div>
@@ -69,6 +77,12 @@ const faqSchema = {
       <p class="hero-subtitle reveal">Browse our inventory of {currentCategory.value}</p>
     </div>
   </section>
+
+  <Breadcrumbs items={[
+    { name: 'Home', href: '/' },
+    { name: 'Marine Equipment', href: '/products' },
+    { name: currentCategory.value, href: `/category/${currentCategory.slug}` }
+  ]} />
 
   {subcategories.length > 0 && (
     <section class="section subcategories-section">
@@ -98,7 +112,7 @@ const faqSchema = {
   <section class="section">
     <div class="container">
       <div class="mb-5">
-        <a href="/products" class="back-link">← Back to Sell Equipments</a>
+        <a href="/products" class="back-link">← Back to Marine Equipment</a>
       </div>
 
       {categoryProducts.length === 0 ? (
@@ -113,7 +127,7 @@ const faqSchema = {
             {categoryProducts.map((product) => (
               <a href={`/products/${product.slug}`} class="product-card" style="text-decoration: none;">
                 <div class="product-img">
-                  <img src={product.imageUrl || '/images/marine-engine.webp'} alt={product.title} loading="lazy" />
+                  <img src={product.imageUrl || currentCategory.imageUrl} alt={product.imageAlt || product.title} width="800" height="600" loading="lazy" decoding="async" />
                 </div>
                 <div class="product-content">
                   <h3>{product.title}</h3>
@@ -135,8 +149,8 @@ const faqSchema = {
       <div class="brand-seo-links">
         <h3>Browse {currentCategory.value} by Brand</h3>
         <div class="tags-container">
-          {displayBrands.map((brand: any) => (
-            <a href={`/inventory/${String(brand).toLowerCase().replace(/\s+/g, '-')}-${currentCategory.slug}`} class="brand-tag">
+          {displayBrands.map((brand) => (
+            <a href={`/brands/${toUrlSlug(brand)}`} class="brand-tag">
               {brand} {currentCategory.value}
             </a>
           ))}
@@ -152,11 +166,11 @@ const faqSchema = {
         </div>
         <div class="faq-item reveal">
           <h4>What brands of {currentCategory.value} do you supply?</h4>
-          <p>We maintain a vast inventory of major brands including Yanmar, Caterpillar, Wartsila, Cummins, and MAN for {currentCategory.value}. Browse our specific brand pages for available stock.</p>
+          <p>Current online listings for {currentCategory.value} include {brandSummary}. If your required maker is not listed, send the exact model or part number for an inventory check.</p>
         </div>
         <div class="faq-item reveal">
           <h4>What is the condition of the {currentCategory.value}?</h4>
-          <p>All our {currentCategory.value} units are carefully salvaged and fully reconditioned. They undergo strict inspection by our marine technical team before being verified for stock.</p>
+          <p>Condition varies by listing. Each product page shows the recorded condition and availability where supplied; contact Tahin Spare Suppliers to confirm the current item before purchase.</p>
         </div>
       </div>
     </div>

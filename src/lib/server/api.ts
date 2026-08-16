@@ -7,6 +7,7 @@ import {
   getContentById,
   listContent,
   updateContent,
+  type ContentInput,
   type ContentType
 } from "./repository";
 import { getRuntimeEnv } from "./env";
@@ -53,18 +54,7 @@ export function createListHandler(type: ContentType): APIRoute {
         return new Response("Unauthorized", { status: 401 });
       }
 
-      const body = await readJson<{
-        title: string;
-        excerpt?: string;
-        content?: string;
-        imageUrl?: string;
-        imageKey?: string;
-        slug?: string;
-        category?: string;
-        subcategory?: string;
-        brand?: string;
-        model_number?: string;
-      }>(context.request);
+      const body = await readJson<ContentInput>(context.request);
 
       if (!body.title || typeof body.title !== "string" || body.title.trim().length === 0) {
         return Response.json({ error: "Title is required." }, { status: 400 });
@@ -110,18 +100,7 @@ export function createDetailHandler(type: ContentType): APIRoute {
         return Response.json({ ok: true });
       }
 
-      const body = await readJson<{
-        title: string;
-        excerpt?: string;
-        content?: string;
-        imageUrl?: string;
-        imageKey?: string;
-        slug?: string;
-        category?: string;
-        subcategory?: string;
-        brand?: string;
-        model_number?: string;
-      }>(context.request);
+      const body = await readJson<ContentInput>(context.request);
 
       if (!body.title || typeof body.title !== "string" || body.title.trim().length === 0) {
         return Response.json({ error: "Title is required." }, { status: 400 });

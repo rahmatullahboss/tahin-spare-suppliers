@@ -10,9 +10,13 @@
   ],
   "vars": {
     "MEDIA_PUBLIC_URL": "",
-    "NOTIFICATION_EMAIL": "tahinship@gmail.com"
+    "NOTIFICATION_EMAIL": "tahinship@gmail.com",
+    "GOOGLE_ANALYTICS_ID": "",
+    "GOOGLE_SITE_VERIFICATION": ""
   }
 
+  // Set GOOGLE_ANALYTICS_ID to the real GA4 web stream measurement ID (G-...).
+  // Set GOOGLE_SITE_VERIFICATION to the real Search Console HTML meta token.
   // Configure DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET,
   // RESEND_API_KEY and RESEND_WEBHOOK_SECRET with `wrangler secret put`.
 }

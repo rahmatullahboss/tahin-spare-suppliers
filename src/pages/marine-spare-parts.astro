@@ -8,7 +8,7 @@ const env = getRuntimeEnv(Astro.locals);
 const allProducts = await listContent(env, 'products', { limit: 1000 });
 const liveParts = allProducts.filter((p) => p.category === 'Spare Parts');
 ---
-<MainLayout title="Marine Spare Parts - Tahin Spare Suppliers" activeNav="products">
+<MainLayout title="Marine Spare Parts - Tahin Spare Suppliers" activeNav="products" canonicalUrl="https://tahinspare.com/category/spare-parts">
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
@@ -53,7 +53,7 @@ const liveParts = allProducts.filter((p) => p.category === 'Spare Parts');
   .page-hero {
     position: relative;
     height: 350px;
-    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    background: url('/images/warehouse.webp') center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;

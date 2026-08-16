@@ -3,6 +3,7 @@ import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import FloatingWhatsApp from '../components/FloatingWhatsApp.astro';
+import { getRuntimeEnv } from '../lib/server/env';
 import '../styles/global.css';
 
 interface Props {
@@ -33,6 +34,10 @@ const {
 
 const canonical = canonicalUrl ?? `${siteUrl}${Astro.url.pathname}`;
 const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const runtimeEnv = getRuntimeEnv(Astro.locals);
+const googleAnalyticsId = runtimeEnv.GOOGLE_ANALYTICS_ID?.trim() ?? '';
+const googleSiteVerification = runtimeEnv.GOOGLE_SITE_VERIFICATION?.trim() ?? '';
+const hasGoogleAnalytics = /^G-[A-Z0-9]+$/i.test(googleAnalyticsId);
 const organizationSchema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -98,6 +103,7 @@ const organizationSchema = {
     {noindex ? <meta name="robots" content="noindex, nofollow" /> : <meta name="robots" content="index, follow, max-image-preview:large" />}
     <link rel="canonical" href={canonical} />
     <meta name="theme-color" content="#b11623" />
+    {googleSiteVerification && <meta name="google-site-verification" content={googleSiteVerification} />}
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -126,6 +132,14 @@ const organizationSchema = {
 
     <!-- JSON-LD Organization Schema -->
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+
+    {hasGoogleAnalytics && (
+      <>
+        <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}></script>
+        <script is:inline set:html={`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} window.gtag = gtag; gtag('js', new Date()); gtag('config', '${googleAnalyticsId}');`}></script>
+        <script is:inline set:html={`document.addEventListener('click', function (event) { var source = event.target instanceof Element ? event.target.closest('[data-ga-event]') : null; if (!source || typeof window.gtag !== 'function') return; var eventName = source.getAttribute('data-ga-event'); if (!eventName) return; window.gtag('event', eventName, { item_name: source.getAttribute('data-ga-item') || undefined, link_url: source.href || undefined }); });`}></script>
+      </>
+    )}
   </head>
   <body>
     <a href="#main-content" class="skip-nav">Skip to main content</a>

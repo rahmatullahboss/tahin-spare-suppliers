@@ -1,5 +1,7 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { absoluteUrl } from "../../lib/seo";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { getContentBySlug } from "../../lib/server/repository";
 
@@ -8,42 +10,80 @@ const slug = Astro.params.slug;
 const part = slug ? await getContentBySlug(env, "parts", slug) : null;
 
 if (!part) {
-  return Astro.redirect("/marine-spare-parts");
+  return new Response("Part not found", {
+    status: 404,
+    headers: { "Content-Type": "text/plain; charset=utf-8" }
+  });
 }
+
+const canonicalPath = `/parts/${part.slug}`;
+const description = part.excerpt || `${part.title} marine spare part from Tahin Spare Suppliers. Contact us for current specifications, availability, price and worldwide shipping.`;
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "@id": `${absoluteUrl(canonicalPath)}#product`,
+  "url": absoluteUrl(canonicalPath),
+  "name": part.title,
+  "description": description,
+  "image": part.imageUrl ? [absoluteUrl(part.imageUrl)] : undefined
+};
 ---
-<MainLayout title={`${part.title} - Tahin Spare Suppliers`} activeNav="products">
+
+<MainLayout
+  title={`${part.title} | Marine Spare Part | Tahin Spare Suppliers`}
+  description={description}
+  activeNav="products"
+  canonicalUrl={absoluteUrl(canonicalPath)}
+  ogImage={part.imageUrl || undefined}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(productSchema)} />
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
-    <div class="page-hero-content">
-      <h1>{part.title}</h1>
-    </div>
+    <div class="page-hero-content"><h1>{part.title}</h1></div>
   </section>
+
+  <Breadcrumbs items={[
+    { name: "Home", href: "/" },
+    { name: "Marine Spare Parts", href: "/category/spare-parts" },
+    { name: part.title, href: canonicalPath }
+  ]} />
 
   <section class="section">
     <div class="container detail-grid">
       <div>
-        <h2>{part.title}</h2>
-        <p class="excerpt">{part.excerpt}</p>
-        <div class="content">{part.content.split("\n").filter(Boolean).map((line) => <p>{line}</p>)}</div>
-        <a href="/enquiry" class="btn-primary">Request Availability</a>
+        <h2>Part Details</h2>
+        {part.excerpt && <p class="excerpt">{part.excerpt}</p>}
+        <div class="content" set:html={part.content}></div>
+        <div class="actions">
+          <a href={`/enquiry?product=${encodeURIComponent(part.title)}`} class="btn-primary" data-ga-event="request_quote_click" data-ga-item={part.title}>Request Availability & Quote</a>
+          <a href={`https://wa.me/8801787429268?text=${encodeURIComponent(`Hello Tahin Spare Suppliers, I need a quote for ${part.title}.`)}`} class="btn-whatsapp" target="_blank" rel="noopener" data-ga-event="whatsapp_product_click" data-ga-item={part.title}>WhatsApp</a>
+        </div>
       </div>
       {part.imageUrl && (
-        <div class="detail-image">
-          <img src={part.imageUrl} alt={part.title} />
-        </div>
+        <figure class="detail-image">
+          <img src={part.imageUrl} alt={`${part.title} marine spare part`} width="900" height="675" loading="eager" fetchpriority="high" decoding="async" />
+          <figcaption>{part.title}</figcaption>
+        </figure>
       )}
     </div>
   </section>
 </MainLayout>
 
 <style>
-  .page-hero { position: relative; height: 300px; background: url('/images/hero-bg.webp') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
-  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-  .page-hero-content { position: relative; z-index: 1; color: #fff; }
+  .page-hero { position: relative; min-height: 300px; background: url('/images/warehouse.webp') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.66); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; padding: 25px; }
+  .page-hero-content h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.2rem); }
   .detail-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr); gap: 40px; align-items: start; }
-  .excerpt { font-size: 18px; color: #555; line-height: 1.7; }
-  .content p { color: #555; line-height: 1.8; }
-  .detail-image img { width: 100%; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-  .btn-primary { display: inline-block; margin-top: 18px; background: #c0392b; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 700; }
+  .excerpt { font-size: 18px; color: #475569; line-height: 1.7; }
+  .content :global(p) { color: #475569; line-height: 1.8; }
+  .content :global(img) { max-width: 100%; height: auto; }
+  .detail-image { margin: 0; }
+  .detail-image img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+  .detail-image figcaption { margin-top: 8px; color: #64748b; font-size: .85rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+  .btn-primary, .btn-whatsapp { display: inline-block; padding: 12px 22px; border-radius: 6px; text-decoration: none; font-weight: 800; }
+  .btn-primary { background: #b11623; color: #fff; }
+  .btn-whatsapp { background: #25d366; color: #052e16; }
   @media (max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }
 </style>

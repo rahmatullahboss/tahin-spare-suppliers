@@ -1,85 +1,157 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
-import { getRuntimeEnv } from "../../lib/server/env";
-import { getContentBySlug, listContent } from "../../lib/server/repository";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import ProductGrid from "../../components/ProductGrid.astro";
+import { getCategorySlug } from "../../lib/categories";
+import { absoluteUrl, schemaConditionUrl } from "../../lib/seo";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { getContentBySlug, listContent, type ContentRecord } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
 const slug = Astro.params.slug;
 const product = slug ? await getContentBySlug(env, "products", slug) : null;
 
 if (!product) {
-  return Astro.redirect("/products");
+  return new Response("Product not found", {
+    status: 404,
+    headers: { "Content-Type": "text/plain; charset=utf-8" }
+  });
 }
 
 const allProducts = await listContent(env, "products", { limit: 1000 });
-const relatedProducts = allProducts.filter(
-  (p: any) => p.category === product.category && p.brand === product.brand && p.id !== product.id && p.brand
-).slice(0, 3); // show up to 3 other models in the same category with the same brand
+const manualSlugs = new Set(product.relatedProducts ?? []);
+const manualRelated = allProducts.filter((candidate) => manualSlugs.has(candidate.slug) && candidate.id !== product.id);
+const fallbackRelated = allProducts.filter((candidate) => (
+  candidate.id !== product.id
+  && !manualSlugs.has(candidate.slug)
+  && Boolean(product.brand)
+  && candidate.brand === product.brand
+  && candidate.category === product.category
+));
+const relatedProducts: ContentRecord[] = [...manualRelated, ...fallbackRelated].slice(0, 3);
+
+const categorySlug = getCategorySlug(product.category ?? "");
+const condition = product.condition?.trim() || "Contact for condition";
+const availability = product.availability?.trim() || "Contact for current availability";
+const location = product.location?.trim() || "Chattogram, Bangladesh";
+const canonicalPath = `/products/${product.slug}`;
+const whatsappText = encodeURIComponent(`Hello Tahin Spare Suppliers, I would like a quote for ${product.title}${product.partNumber ? ` (Part ${product.partNumber})` : ""}.`);
+const whatsappUrl = `https://wa.me/8801787429268?text=${whatsappText}`;
+
+const additionalProperty: Array<Record<string, string>> = [];
+if (availability) additionalProperty.push({ "@type": "PropertyValue", "name": "Availability", "value": availability });
+if (location) additionalProperty.push({ "@type": "PropertyValue", "name": "Location", "value": location });
+if (product.application) additionalProperty.push({ "@type": "PropertyValue", "name": "Application", "value": product.application });
+
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "@id": `${absoluteUrl(canonicalPath)}#product`,
+  "url": absoluteUrl(canonicalPath),
+  "name": product.title,
+  "description": product.metaDescription || product.excerpt || product.title,
+  "image": product.imageUrl ? [absoluteUrl(product.imageUrl)] : undefined,
+  "brand": product.brand ? { "@type": "Brand", "name": product.brand } : undefined,
+  "model": product.model_number || undefined,
+  "sku": product.partNumber || undefined,
+  "mpn": product.partNumber || undefined,
+  "category": product.category || undefined,
+  "itemCondition": schemaConditionUrl(product.condition),
+  "additionalProperty": additionalProperty.length > 0 ? additionalProperty : undefined,
+  "manufacturer": product.brand ? { "@type": "Organization", "name": product.brand } : undefined
+};
+
+const breadcrumbs = [
+  { name: "Home", href: "/" },
+  { name: "Marine Equipment", href: "/products" },
+  ...(product.category && categorySlug ? [{ name: product.category, href: `/category/${categorySlug}` }] : []),
+  { name: product.title, href: canonicalPath }
+];
 ---
-<MainLayout title={`${product.title} - Tahin Spare Suppliers`} activeNav="products">
-  <script type="application/ld+json" set:html={JSON.stringify({
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    "name": product.title,
-    "image": product.imageUrl ? [product.imageUrl] : [],
-    "description": product.excerpt || product.title,
-    "brand": product.brand ? {
-      "@type": "Brand",
-      "name": product.brand
-    } : undefined,
-    "offers": {
-      "@type": "Offer",
-      "url": `https://tahinspare.com/products/${product.slug}`,
-      "priceCurrency": "USD",
-      "price": "0",
-      "availability": "https://schema.org/InStock",
-      "itemCondition": "https://schema.org/UsedCondition",
-      "seller": {
-        "@type": "Organization",
-        "name": "Tahin Spare Suppliers"
-      }
-    }
-  })} />
+
+<MainLayout
+  title={product.seoTitle || `${product.title} | Tahin Spare Suppliers`}
+  description={product.metaDescription || product.excerpt}
+  activeNav="products"
+  canonicalUrl={absoluteUrl(canonicalPath)}
+  ogImage={product.imageUrl || undefined}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(productSchema)} />
 
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
       <h1>{product.title}</h1>
+      {(product.brand || product.model_number || product.partNumber) && (
+        <p>{[product.brand, product.model_number, product.partNumber ? `Part ${product.partNumber}` : ""].filter(Boolean).join(" · ")}</p>
+      )}
     </div>
   </section>
+
+  <Breadcrumbs items={breadcrumbs} />
 
   <section class="section">
     <div class="container detail-grid">
       <div class="product-info-wrap">
         {product.category && <span class="category-badge">{product.category}</span>}
-        <h2>{product.title}</h2>
-        
+        <h2>Product Information</h2>
+
         <table class="specs-table">
           <tbody>
             {product.brand && <tr><th>Brand</th><td>{product.brand}</td></tr>}
             {product.model_number && <tr><th>Model</th><td>{product.model_number}</td></tr>}
+            {product.partNumber && <tr><th>Part Number</th><td>{product.partNumber}</td></tr>}
             {product.category && <tr><th>Category</th><td>{product.category}</td></tr>}
-            <tr><th>Condition</th><td>Reconditioned / Used</td></tr>
-            <tr><th>Availability</th><td><span class="stock-badge">Verified in Stock, {new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}</span></td></tr>
+            {product.subcategory && <tr><th>Sub-category</th><td>{product.subcategory}</td></tr>}
+            <tr><th>Condition</th><td>{condition}</td></tr>
+            <tr><th>Availability</th><td><span class="stock-badge">{availability}</span></td></tr>
+            <tr><th>Location</th><td>{location}</td></tr>
           </tbody>
         </table>
 
-        <p class="excerpt">{product.excerpt}</p>
+        {product.excerpt && <p class="excerpt">{product.excerpt}</p>}
         <div class="content" set:html={product.content}></div>
-        
+
+        {product.technicalSpecifications && (
+          <section class="fact-section" aria-labelledby="technical-specifications">
+            <h2 id="technical-specifications">Technical Specifications</h2>
+            <div class="technical-copy">{product.technicalSpecifications}</div>
+          </section>
+        )}
+
+        {product.application && (
+          <section class="fact-section" aria-labelledby="application">
+            <h2 id="application">Application</h2>
+            <p>{product.application}</p>
+          </section>
+        )}
+
         <div class="cta-box">
-          <h3>Interested in this model?</h3>
-          <p>Contact our sales team directly for pricing, availability, and detailed specifications.</p>
-          <a href="/enquiry" class="btn-primary">Request a Quote</a>
+          <h2>Request Price & Availability</h2>
+          <p>Send the product model or part number to our marine supply team for current stock, specifications, price and worldwide shipping details.</p>
+          <div class="cta-actions">
+            <a href={`/enquiry?product=${encodeURIComponent(product.title)}`} class="btn-primary" data-ga-event="request_quote_click" data-ga-item={product.title}>Request a Quote</a>
+            <a href={whatsappUrl} class="btn-whatsapp" target="_blank" rel="noopener" data-ga-event="whatsapp_product_click" data-ga-item={product.title}>WhatsApp This Product</a>
+          </div>
         </div>
       </div>
-      
+
       <div class="image-sidebar">
-        {product.imageUrl && (
-          <div class="detail-image">
-            <img src={product.imageUrl} alt={product.title} />
-          </div>
+        {product.imageUrl ? (
+          <figure class="detail-image">
+            <img
+              src={product.imageUrl}
+              alt={product.imageAlt || product.title}
+              width="900"
+              height="675"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+            />
+            <figcaption>{product.title}{product.partNumber ? ` — Part ${product.partNumber}` : ""}</figcaption>
+          </figure>
+        ) : (
+          <div class="image-placeholder">Product photo available on request.</div>
         )}
       </div>
     </div>
@@ -88,7 +160,7 @@ const relatedProducts = allProducts.filter(
   {relatedProducts.length > 0 && (
     <section class="section related-section">
       <div class="container">
-        <h3 class="related-title">Other Models from {product.brand || 'this Brand'}</h3>
+        <h2 class="related-title">Related Marine Equipment</h2>
         <ProductGrid products={relatedProducts} basePath="/products" />
       </div>
     </section>
@@ -96,49 +168,41 @@ const relatedProducts = allProducts.filter(
 </MainLayout>
 
 <style>
-  .page-hero { position: relative; height: 300px; background: url('/images/services-hero.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
-  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-  .page-hero-content { position: relative; z-index: 1; color: #fff; }
-  .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(400px, 0.8fr); gap: 50px; align-items: start; }
-  
-  .category-badge { display: inline-block; background: #e67e22; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 1px; }
-  
-  .specs-table { width: 100%; border-collapse: collapse; margin: 25px 0; background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-  .specs-table th, .specs-table td { padding: 15px 20px; text-align: left; border-bottom: 1px solid #eee; }
+  .page-hero { position: relative; min-height: 300px; background: url('/images/warehouse.webp') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.66); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; max-width: 900px; padding: 30px 20px; }
+  .page-hero-content h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.12; }
+  .page-hero-content p { margin: 12px 0 0; color: #f1f5f9; font-size: 1rem; }
+  .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 0.8fr); gap: 50px; align-items: start; }
+  .category-badge { display: inline-block; background: #e67e22; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 18px; letter-spacing: 0.06em; }
+  .product-info-wrap > h2 { margin: 0 0 12px; color: #111827; font-size: 1.55rem; }
+  .specs-table { width: 100%; border-collapse: collapse; margin: 20px 0 26px; background: #fff; border: 1px solid #e5e7eb; }
+  .specs-table th, .specs-table td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
   .specs-table tr:last-child th, .specs-table tr:last-child td { border-bottom: none; }
-  .specs-table th { background: #f8f9fa; font-weight: 600; color: #555; text-transform: uppercase; font-size: 14px; width: 35%; border-right: 1px solid #eee; }
-  .specs-table td { font-weight: 700; color: #111; font-size: 15px; }
-  .stock-badge { color: #27ae60; background: #e8f8f5; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; display: inline-block; }
-
-  .excerpt { font-size: 20px; color: #333; font-weight: 500; line-height: 1.6; margin-top: 10px; margin-bottom: 20px; }
-  .content p { color: #555; line-height: 1.8; font-size: 16px; margin-bottom: 15px; }
-  .content h2 { font-size: 24px; font-weight: 700; color: #111; margin: 30px 0 15px; }
-  .content h3 { font-size: 20px; font-weight: 600; color: #222; margin: 25px 0 12px; }
-  .content ul, .content ol { padding-left: 24px; margin-bottom: 15px; }
-  .content li { color: #555; line-height: 1.8; font-size: 16px; margin-bottom: 6px; }
-  .content blockquote { border-left: 4px solid #e67e22; padding: 12px 20px; margin: 20px 0; background: #faf7f4; border-radius: 0 8px 8px 0; }
-  .content blockquote p { margin-bottom: 0; }
-  .content pre { background: #1e1e1e; color: #d4d4d4; padding: 16px 20px; border-radius: 8px; overflow-x: auto; margin: 20px 0; font-size: 14px; }
-  .content code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
-  .content pre code { background: none; padding: 0; }
-  .content hr { border: none; border-top: 1px solid #eaeaea; margin: 30px 0; }
-  .content a { color: #e67e22; text-decoration: underline; }
-  .content img { max-width: 100%; border-radius: 8px; margin: 15px 0; }
-  
-  .cta-box { background: #111; color: #fff; padding: 30px; border-radius: 12px; margin-top: 40px; text-align: center; }
-  .cta-box h3 { color: #fff; margin-top: 0; margin-bottom: 10px; font-size: 22px; }
-  .cta-box p { color: #bbb; line-height: 1.5; margin-bottom: 25px; }
-  .btn-primary { display: inline-block; background: #c0392b; color: #fff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: background 0.3s; }
-  .btn-primary:hover { background: #e67e22; }
-
-  .detail-image { position: sticky; top: 120px; }
-  .detail-image img { width: 100%; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border: 1px solid #eaeaea; }
-
-  .related-section { background: #fdfdfd; border-top: 1px solid #eaeaea; padding: 60px 0; }
-  .related-title { font-size: 28px; font-weight: 800; margin-bottom: 30px; text-align: center; color: #111; }
-
-  @media (max-width: 992px) { 
-    .detail-grid { grid-template-columns: 1fr; gap: 40px; } 
-    .detail-image { position: relative; top: 0; }
-  }
+  .specs-table th { background: #f8fafc; font-weight: 700; color: #475569; font-size: 13px; width: 34%; border-right: 1px solid #e5e7eb; }
+  .specs-table td { color: #111827; font-size: 15px; }
+  .stock-badge { color: #166534; background: #dcfce7; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; display: inline-block; }
+  .excerpt { font-size: 1.15rem; color: #334155; font-weight: 500; line-height: 1.7; margin: 0 0 22px; }
+  .content :global(p), .fact-section p { color: #475569; line-height: 1.8; font-size: 1rem; }
+  .content :global(h2) { font-size: 1.5rem; margin: 30px 0 12px; color: #111827; }
+  .content :global(h3) { font-size: 1.25rem; margin: 24px 0 10px; color: #1f2937; }
+  .content :global(img) { max-width: 100%; height: auto; border-radius: 8px; }
+  .fact-section { margin-top: 34px; padding-top: 26px; border-top: 1px solid #e5e7eb; }
+  .fact-section h2 { margin: 0 0 12px; color: #111827; font-size: 1.45rem; }
+  .technical-copy { white-space: pre-line; color: #475569; line-height: 1.8; }
+  .cta-box { background: #111827; color: #fff; padding: 30px; border-radius: 12px; margin-top: 40px; }
+  .cta-box h2 { color: #fff; margin: 0 0 10px; font-size: 1.45rem; }
+  .cta-box p { color: #cbd5e1; line-height: 1.6; margin: 0 0 22px; }
+  .cta-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn-primary, .btn-whatsapp { display: inline-block; padding: 13px 22px; border-radius: 7px; text-decoration: none; font-weight: 800; }
+  .btn-primary { background: #b11623; color: #fff; }
+  .btn-whatsapp { background: #25d366; color: #052e16; }
+  .detail-image { position: sticky; top: 120px; margin: 0; }
+  .detail-image img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
+  .detail-image figcaption { padding: 10px 4px 0; color: #64748b; font-size: 0.85rem; line-height: 1.5; }
+  .image-placeholder { padding: 70px 30px; border: 1px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; color: #64748b; text-align: center; }
+  .related-section { background: #f8fafc; border-top: 1px solid #e5e7eb; padding: 60px 0; }
+  .related-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 30px; text-align: center; color: #111827; }
+  @media (max-width: 992px) { .detail-grid { grid-template-columns: 1fr; gap: 36px; } .detail-image { position: relative; top: 0; } }
+  @media (max-width: 600px) { .specs-table th, .specs-table td { padding: 11px 12px; } .specs-table th { width: 40%; } .cta-actions > a { width: 100%; text-align: center; box-sizing: border-box; } }
 </style>

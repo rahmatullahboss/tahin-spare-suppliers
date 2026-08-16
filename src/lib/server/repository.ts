@@ -2,10 +2,16 @@ import { ensureSchema, getDb } from "./db";
 import { slugify } from "./slug";
 import type { RuntimeEnv } from "./env";
 import { normalizeContentLimit } from "./content-limit";
+import { parseRelatedProductSlugs, resolveProductSeo, stringifyRelatedProductSlugs } from "../seo";
 
 const CONTENT_TABLES = {
   products: {
     table: "products",
+    titleColumn: "name",
+    excerptColumn: "short_description"
+  },
+  parts: {
+    table: "parts",
     titleColumn: "name",
     excerptColumn: "short_description"
   },
@@ -32,6 +38,17 @@ export type ContentRecord = {
   subcategory?: string;
   brand?: string;
   model_number?: string;
+  partNumber?: string;
+  condition?: string;
+  availability?: string;
+  location?: string;
+  technicalSpecifications?: string;
+  application?: string;
+  seoTitle?: string;
+  metaDescription?: string;
+  focusKeyword?: string;
+  imageAlt?: string;
+  relatedProducts?: string[];
 };
 
 export type ContentInput = {
@@ -45,43 +62,153 @@ export type ContentInput = {
   subcategory?: string;
   brand?: string;
   model_number?: string;
+  partNumber?: string;
+  condition?: string;
+  availability?: string;
+  location?: string;
+  technicalSpecifications?: string;
+  application?: string;
+  seoTitle?: string;
+  metaDescription?: string;
+  focusKeyword?: string;
+  imageAlt?: string;
+  relatedProducts?: string[];
 };
 
-function mapRecord(type: ContentType, row: Record<string, unknown>): ContentRecord {
-  const config = CONTENT_TABLES[type];
+type NormalizedProductFields = {
+  category: string;
+  subcategory: string;
+  brand: string;
+  modelNumber: string;
+  partNumber: string;
+  condition: string;
+  availability: string;
+  location: string;
+  technicalSpecifications: string;
+  application: string;
+  seoTitle: string;
+  metaDescription: string;
+  focusKeyword: string;
+  imageAlt: string;
+  relatedProducts: string;
+};
+
+function asString(value: unknown): string {
+  return typeof value === "string" ? value : value == null ? "" : String(value);
+}
+
+function normalizeProductFields(input: ContentInput): NormalizedProductFields {
+  const category = input.category?.trim() || "Uncategorized";
+  const subcategory = input.subcategory?.trim() ?? "";
+  const brand = input.brand?.trim() ?? "";
+  const modelNumber = input.model_number?.trim() ?? "";
+  const partNumber = input.partNumber?.trim() ?? "";
+  const condition = input.condition?.trim() ?? "";
+  const availability = input.availability?.trim() ?? "";
+  const location = input.location?.trim() ?? "";
+  const technicalSpecifications = input.technicalSpecifications?.trim() ?? "";
+  const application = input.application?.trim() ?? "";
+  const seo = resolveProductSeo({
+    title: input.title,
+    brand,
+    modelNumber,
+    partNumber,
+    location: location || "Bangladesh",
+    seoTitle: input.seoTitle,
+    metaDescription: input.metaDescription,
+    focusKeyword: input.focusKeyword,
+    imageAlt: input.imageAlt
+  });
 
   return {
-    id: String(row.id),
-    slug: String(row.slug),
-    title: String(row[config.titleColumn]),
-    excerpt: String(row[config.excerptColumn] ?? ""),
-    content: String(row.content ?? ""),
-    imageUrl: String(row.image_url ?? ""),
-    imageKey: String(row.image_key ?? ""),
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
-    ...(type === 'products' ? {
-      category: String(row.category ?? "Uncategorized"),
-      subcategory: String(row.subcategory ?? ""),
-      brand: String(row.brand ?? ""),
-      model_number: String(row.model_number ?? "")
-    } : {})
+    category,
+    subcategory,
+    brand,
+    modelNumber,
+    partNumber,
+    condition,
+    availability,
+    location,
+    technicalSpecifications,
+    application,
+    seoTitle: seo.seoTitle,
+    metaDescription: seo.metaDescription,
+    focusKeyword: seo.focusKeyword,
+    imageAlt: seo.imageAlt,
+    relatedProducts: stringifyRelatedProductSlugs(input.relatedProducts)
   };
 }
 
-export async function listContent(env: RuntimeEnv, type: ContentType, options?: { page?: number; limit?: number; search?: string }) {
+function mapRecord(type: ContentType, row: Record<string, unknown>): ContentRecord {
+  const config = CONTENT_TABLES[type];
+  const title = asString(row[config.titleColumn]);
+  const commonRecord: ContentRecord = {
+    id: asString(row.id),
+    slug: asString(row.slug),
+    title,
+    excerpt: asString(row[config.excerptColumn]),
+    content: asString(row.content),
+    imageUrl: asString(row.image_url),
+    imageKey: asString(row.image_key),
+    createdAt: asString(row.created_at),
+    updatedAt: asString(row.updated_at)
+  };
+
+  if (type !== "products") return commonRecord;
+
+  const brand = asString(row.brand);
+  const modelNumber = asString(row.model_number);
+  const partNumber = asString(row.part_number);
+  const location = asString(row.location);
+  const seo = resolveProductSeo({
+    title,
+    brand,
+    modelNumber,
+    partNumber,
+    location: location || "Bangladesh",
+    seoTitle: asString(row.seo_title),
+    metaDescription: asString(row.meta_description),
+    focusKeyword: asString(row.focus_keyword),
+    imageAlt: asString(row.image_alt)
+  });
+
+  return {
+    ...commonRecord,
+    category: asString(row.category) || "Uncategorized",
+    subcategory: asString(row.subcategory),
+    brand,
+    model_number: modelNumber,
+    partNumber,
+    condition: asString(row.condition),
+    availability: asString(row.availability),
+    location,
+    technicalSpecifications: asString(row.technical_specifications),
+    application: asString(row.application),
+    seoTitle: seo.seoTitle,
+    metaDescription: seo.metaDescription,
+    focusKeyword: seo.focusKeyword,
+    imageAlt: seo.imageAlt,
+    relatedProducts: parseRelatedProductSlugs(row.related_products)
+  };
+}
+
+export async function listContent(
+  env: RuntimeEnv,
+  type: ContentType,
+  options?: { page?: number; limit?: number; search?: string }
+) {
   await ensureSchema(env);
   const sql = getDb(env);
-  const { table } = CONTENT_TABLES[type];
+  const config = CONTENT_TABLES[type];
   const page = Math.max(1, options?.page ?? 1);
   const limit = normalizeContentLimit(options?.limit);
   const offset = (page - 1) * limit;
 
-  let query = `SELECT * FROM ${table}`;
+  let query = `SELECT * FROM ${config.table}`;
   const params: (string | number)[] = [];
 
   if (options?.search) {
-    query += ` WHERE title ILIKE $1 OR excerpt ILIKE $1`;
+    query += ` WHERE ${config.titleColumn} ILIKE $1 OR ${config.excerptColumn} ILIKE $1`;
     params.push(`%${options.search}%`);
   }
 
@@ -91,16 +218,31 @@ export async function listContent(env: RuntimeEnv, type: ContentType, options?: 
   return rows.map((row) => mapRecord(type, row));
 }
 
+export async function listAllContent(env: RuntimeEnv, type: ContentType): Promise<ContentRecord[]> {
+  const batchSize = 1000;
+  const records: ContentRecord[] = [];
+  let page = 1;
+
+  while (true) {
+    const batch = await listContent(env, type, { page, limit: batchSize });
+    records.push(...batch);
+    if (batch.length < batchSize) break;
+    page += 1;
+  }
+
+  return records;
+}
+
 export async function countContent(env: RuntimeEnv, type: ContentType, search?: string): Promise<number> {
   await ensureSchema(env);
   const sql = getDb(env);
-  const { table } = CONTENT_TABLES[type];
+  const config = CONTENT_TABLES[type];
 
-  let query = `SELECT COUNT(*) as total FROM ${table}`;
+  let query = `SELECT COUNT(*) as total FROM ${config.table}`;
   const params: string[] = [];
 
   if (search) {
-    query += ` WHERE title ILIKE $1 OR excerpt ILIKE $1`;
+    query += ` WHERE ${config.titleColumn} ILIKE $1 OR ${config.excerptColumn} ILIKE $1`;
     params.push(`%${search}%`);
   }
 
@@ -134,24 +276,37 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
   const imageKey = input.imageKey ?? "";
-  const category = input.category ?? "Uncategorized";
-  const subcategory = input.subcategory ?? "";
-  const brand = input.brand ?? "";
-  const model_number = input.model_number ?? "";
 
-  let query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-     RETURNING *`;
-  let params: (string | number)[] = [id, slug, input.title, excerpt, content, imageUrl, imageKey];
-
-  if (type === 'products') {
-    query = `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, category, subcategory, brand, model_number, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
-       RETURNING *`;
-    params = [id, slug, input.title, excerpt, content, imageUrl, imageKey, category, subcategory, brand, model_number];
+  if (type === "products") {
+    const product = normalizeProductFields(input);
+    const rows = await sql.query(
+      `INSERT INTO ${config.table} (
+        id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key,
+        category, subcategory, brand, model_number, part_number, condition, availability, location,
+        technical_specifications, application, seo_title, meta_description, focus_keyword, image_alt,
+        related_products, updated_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7,
+        $8, $9, $10, $11, $12, $13, $14, $15,
+        $16, $17, $18, $19, $20, $21, $22, NOW()
+      ) RETURNING *`,
+      [
+        id, slug, input.title, excerpt, content, imageUrl, imageKey,
+        product.category, product.subcategory, product.brand, product.modelNumber, product.partNumber,
+        product.condition, product.availability, product.location, product.technicalSpecifications,
+        product.application, product.seoTitle, product.metaDescription, product.focusKeyword,
+        product.imageAlt, product.relatedProducts
+      ]
+    );
+    return mapRecord(type, rows[0]);
   }
 
-  const rows = await sql.query(query, params);
+  const rows = await sql.query(
+    `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+     RETURNING *`,
+    [id, slug, input.title, excerpt, content, imageUrl, imageKey]
+  );
 
   return mapRecord(type, rows[0]);
 }
@@ -170,25 +325,11 @@ export async function updateContent(
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
   const imageKey = input.imageKey ?? "";
-  const category = input.category ?? "Uncategorized";
-  const subcategory = input.subcategory ?? "";
-  const brand = input.brand ?? "";
-  const model_number = input.model_number ?? "";
 
-  let query = `UPDATE ${config.table}
-     SET slug = $1,
-         ${config.titleColumn} = $2,
-         ${config.excerptColumn} = $3,
-         content = $4,
-         image_url = $5,
-         image_key = $6,
-         updated_at = NOW()
-     WHERE id = $7
-     RETURNING *`;
-  let params: (string | number)[] = [slug, input.title, excerpt, content, imageUrl, imageKey, id];
-
-  if (type === 'products') {
-    query = `UPDATE ${config.table}
+  if (type === "products") {
+    const product = normalizeProductFields(input);
+    const rows = await sql.query(
+      `UPDATE ${config.table}
        SET slug = $1,
            ${config.titleColumn} = $2,
            ${config.excerptColumn} = $3,
@@ -199,13 +340,44 @@ export async function updateContent(
            subcategory = $8,
            brand = $9,
            model_number = $10,
+           part_number = $11,
+           condition = $12,
+           availability = $13,
+           location = $14,
+           technical_specifications = $15,
+           application = $16,
+           seo_title = $17,
+           meta_description = $18,
+           focus_keyword = $19,
+           image_alt = $20,
+           related_products = $21,
            updated_at = NOW()
-       WHERE id = $11
-       RETURNING *`;
-    params = [slug, input.title, excerpt, content, imageUrl, imageKey, category, subcategory, brand, model_number, id];
+       WHERE id = $22
+       RETURNING *`,
+      [
+        slug, input.title, excerpt, content, imageUrl, imageKey,
+        product.category, product.subcategory, product.brand, product.modelNumber, product.partNumber,
+        product.condition, product.availability, product.location, product.technicalSpecifications,
+        product.application, product.seoTitle, product.metaDescription, product.focusKeyword,
+        product.imageAlt, product.relatedProducts, id
+      ]
+    );
+    return rows[0] ? mapRecord(type, rows[0]) : null;
   }
 
-  const rows = await sql.query(query, params);
+  const rows = await sql.query(
+    `UPDATE ${config.table}
+     SET slug = $1,
+         ${config.titleColumn} = $2,
+         ${config.excerptColumn} = $3,
+         content = $4,
+         image_url = $5,
+         image_key = $6,
+         updated_at = NOW()
+     WHERE id = $7
+     RETURNING *`,
+    [slug, input.title, excerpt, content, imageUrl, imageKey, id]
+  );
 
   return rows[0] ? mapRecord(type, rows[0]) : null;
 }

@@ -66,8 +66,8 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
           <input type="text" name="title" required data-title placeholder={`Enter ${titleLabel.toLowerCase()}`} />
         </div>
         <div class="field">
-          <label>Slug</label>
-          <input type="text" name="slug" data-slug placeholder="auto-generated if empty" />
+          <label>SEO URL / Slug</label>
+          <input type="text" name="slug" data-slug placeholder="auto-generated from product name if empty" />
         </div>
         {type === 'products' && (
           <>
@@ -89,13 +89,41 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
             <div class="field-row">
               <div class="field">
                 <label>Brand</label>
-                <input type="text" name="brand" placeholder="e.g. Yanmar" data-brand list="brand-list" />
+                <input type="text" name="brand" placeholder="e.g. Cummins" data-brand list="brand-list" />
                 <datalist id="brand-list"></datalist>
               </div>
               <div class="field">
                 <label>Model</label>
-                <input type="text" name="model_number" placeholder="e.g. 6EY18AL" data-model />
+                <input type="text" name="model_number" placeholder="e.g. VTA-28" data-model />
               </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Part Number</label>
+                <input type="text" name="part_number" placeholder="OEM / manufacturer part number" data-part-number />
+              </div>
+              <div class="field">
+                <label>Condition</label>
+                <input type="text" name="condition" placeholder="e.g. Reconditioned, Used, New" data-condition />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Availability</label>
+                <input type="text" name="availability" placeholder="e.g. In stock / Contact for availability" data-availability />
+              </div>
+              <div class="field">
+                <label>Location</label>
+                <input type="text" name="location" value="Chattogram, Bangladesh" data-location />
+              </div>
+            </div>
+            <div class="field">
+              <label>Application</label>
+              <textarea name="application" rows="2" data-application placeholder="Vessel type, engine application, compatible system, etc."></textarea>
+            </div>
+            <div class="field">
+              <label>Technical Specifications</label>
+              <textarea name="technicalSpecifications" rows="5" data-technical-specifications placeholder="Power, RPM, bore/stroke, dimensions, serial details, compatible models, etc."></textarea>
             </div>
           </>
         )}
@@ -107,6 +135,40 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
           <label>Details</label>
           <TiptapEditor id={type === 'blog' ? 'blog-editor' : 'product-editor'} placeholder={type === 'blog' ? 'Write your blog post...' : 'Enter full details...'} />
         </div>
+        {type === 'products' && (
+          <div class="seo-settings">
+            <div class="seo-settings-header">
+              <div>
+                <h3>Search Engine Optimization</h3>
+                <p>Leave any SEO field blank to use safe defaults, or generate them now and edit.</p>
+              </div>
+              <button type="button" class="btn-seo-defaults" data-generate-seo>Generate SEO Defaults</button>
+            </div>
+            <div class="field">
+              <label>SEO Title</label>
+              <input type="text" name="seoTitle" maxlength="120" data-seo-title placeholder="e.g. Cummins VTA-28 Marine Engine for Sale | Tahin Spare Suppliers" />
+            </div>
+            <div class="field">
+              <label>Meta Description</label>
+              <textarea name="metaDescription" rows="3" maxlength="320" data-meta-description placeholder="Unique buyer-focused search description"></textarea>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Focus Keyword</label>
+                <input type="text" name="focusKeyword" data-focus-keyword placeholder="e.g. Cummins VTA-28 Marine Engine" />
+              </div>
+              <div class="field">
+                <label>Image ALT Text</label>
+                <input type="text" name="imageAlt" data-image-alt placeholder="Describe the real product photo" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Related Products</label>
+              <input type="text" name="relatedProducts" data-related-products placeholder="product-slug-one, product-slug-two" />
+              <small class="field-hint">Enter product slugs separated by commas. If blank, the site can suggest same-brand/category products.</small>
+            </div>
+          </div>
+        )}
         <ImageUploader label="Featured Image" />
         <div class="preview" data-preview></div>
         <div class="actions">
@@ -227,6 +289,28 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
         if (brandEl) brandEl.value = item.brand || '';
         const modelEl = editor.querySelector("[data-model]");
         if (modelEl) modelEl.value = item.model_number || '';
+        const partNumberEl = editor.querySelector("[data-part-number]");
+        if (partNumberEl) partNumberEl.value = item.partNumber || '';
+        const conditionEl = editor.querySelector("[data-condition]");
+        if (conditionEl) conditionEl.value = item.condition || '';
+        const availabilityEl = editor.querySelector("[data-availability]");
+        if (availabilityEl) availabilityEl.value = item.availability || '';
+        const locationEl = editor.querySelector("[data-location]");
+        if (locationEl) locationEl.value = item.location || 'Chattogram, Bangladesh';
+        const applicationEl = editor.querySelector("[data-application]");
+        if (applicationEl) applicationEl.value = item.application || '';
+        const technicalSpecificationsEl = editor.querySelector("[data-technical-specifications]");
+        if (technicalSpecificationsEl) technicalSpecificationsEl.value = item.technicalSpecifications || '';
+        const seoTitleEl = editor.querySelector("[data-seo-title]");
+        if (seoTitleEl) seoTitleEl.value = item.seoTitle || '';
+        const metaDescriptionEl = editor.querySelector("[data-meta-description]");
+        if (metaDescriptionEl) metaDescriptionEl.value = item.metaDescription || '';
+        const focusKeywordEl = editor.querySelector("[data-focus-keyword]");
+        if (focusKeywordEl) focusKeywordEl.value = item.focusKeyword || '';
+        const imageAltEl = editor.querySelector("[data-image-alt]");
+        if (imageAltEl) imageAltEl.value = item.imageAlt || '';
+        const relatedProductsEl = editor.querySelector("[data-related-products]");
+        if (relatedProductsEl) relatedProductsEl.value = Array.isArray(item.relatedProducts) ? item.relatedProducts.join(', ') : '';
       }
       form.querySelector("[data-excerpt]").value = item.excerpt;
       const tiptapWrapper = editor.querySelector("[data-tiptap-wrapper]");
@@ -415,7 +499,8 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
           item.title?.toLowerCase().includes(searchQuery) ||
           item.brand?.toLowerCase().includes(searchQuery) ||
           item.category?.toLowerCase().includes(searchQuery) ||
-          item.model_number?.toLowerCase().includes(searchQuery)
+          item.model_number?.toLowerCase().includes(searchQuery) ||
+          item.partNumber?.toLowerCase().includes(searchQuery)
         );
         currentPage = 1;
         totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
@@ -465,6 +550,49 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
     };
 
     categorySelect?.addEventListener("change", updateSubcategoryDropdown);
+
+    const truncateSeoText = (value, maxLength) => {
+      const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+      if (normalized.length <= maxLength) return normalized;
+      const slice = normalized.slice(0, maxLength - 1);
+      const breakAt = slice.lastIndexOf(' ');
+      return `${(breakAt > maxLength * 0.65 ? slice.slice(0, breakAt) : slice).trim()}…`;
+    };
+
+    const generateSeoDefaults = () => {
+      if (type !== 'products') return;
+      const title = form.querySelector("[data-title]")?.value?.trim() || '';
+      if (!title) {
+        statusEl.textContent = 'Enter the Product Name before generating SEO defaults.';
+        return;
+      }
+
+      const model = form.querySelector("[data-model]")?.value?.trim() || '';
+      const partNumber = form.querySelector("[data-part-number]")?.value?.trim() || '';
+      const location = form.querySelector("[data-location]")?.value?.trim() || 'Bangladesh';
+      const seoTitleEl = form.querySelector("[data-seo-title]");
+      const metaDescriptionEl = form.querySelector("[data-meta-description]");
+      const focusKeywordEl = form.querySelector("[data-focus-keyword]");
+      const imageAltEl = form.querySelector("[data-image-alt]");
+
+      if (seoTitleEl && !seoTitleEl.value.trim()) {
+        const buyerTitle = /\bfor sale\b/i.test(title) ? title : `${title} for Sale`;
+        seoTitleEl.value = truncateSeoText(`${buyerTitle} | Tahin Spare Suppliers`, 70);
+      }
+      if (metaDescriptionEl && !metaDescriptionEl.value.trim()) {
+        metaDescriptionEl.value = truncateSeoText(`${title} available from Tahin Spare Suppliers, ${location}. Contact us for specifications, current availability, price and worldwide shipping.`, 160);
+      }
+      if (focusKeywordEl && !focusKeywordEl.value.trim()) {
+        focusKeywordEl.value = title;
+      }
+      if (imageAltEl && !imageAltEl.value.trim()) {
+        const identifiers = [model ? `model ${model}` : '', partNumber ? `part ${partNumber}` : ''].filter(Boolean);
+        imageAltEl.value = identifiers.length ? `${title}, ${identifiers.join(', ')} product photo` : `${title} product photo`;
+      }
+      statusEl.textContent = 'SEO defaults generated. Review and edit before saving if needed.';
+    };
+
+    editor.querySelector("[data-generate-seo]")?.addEventListener("click", generateSeoDefaults);
 
     const compressImageToWebp = async (file) => {
       const bitmap = await createImageBitmap(file);
@@ -555,7 +683,21 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
             category: form.querySelector("[data-category]")?.value || "",
             subcategory: form.querySelector("[data-subcategory]")?.value || "",
             brand: form.querySelector("[data-brand]")?.value || "",
-            model_number: form.querySelector("[data-model]")?.value || ""
+            model_number: form.querySelector("[data-model]")?.value || "",
+            partNumber: form.querySelector("[data-part-number]")?.value || "",
+            condition: form.querySelector("[data-condition]")?.value || "",
+            availability: form.querySelector("[data-availability]")?.value || "",
+            location: form.querySelector("[data-location]")?.value || "",
+            application: form.querySelector("[data-application]")?.value || "",
+            technicalSpecifications: form.querySelector("[data-technical-specifications]")?.value || "",
+            seoTitle: form.querySelector("[data-seo-title]")?.value || "",
+            metaDescription: form.querySelector("[data-meta-description]")?.value || "",
+            focusKeyword: form.querySelector("[data-focus-keyword]")?.value || "",
+            imageAlt: form.querySelector("[data-image-alt]")?.value || "",
+            relatedProducts: (form.querySelector("[data-related-products]")?.value || "")
+              .split(',')
+              .map((value) => value.trim())
+              .filter(Boolean)
           } : {})
         };
 
@@ -846,6 +988,13 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
   .admin-main .btn-reset { background: #f1f5f9; color: #475569; }
   .admin-main .btn-reset:hover { background: #e2e8f0; }
   .admin-main .form-status { margin: 0.75rem 0 0; font-size: 0.85rem; color: #64748b; }
+  .admin-main .seo-settings { margin: 1.25rem 0; padding: 1rem; border: 1px solid #dbeafe; border-radius: 12px; background: #f8fbff; }
+  .admin-main .seo-settings-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+  .admin-main .seo-settings-header h3 { margin: 0 0 0.25rem; color: #0f172a; font-size: 1rem; }
+  .admin-main .seo-settings-header p { margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.5; }
+  .admin-main .btn-seo-defaults { flex: 0 0 auto; min-height: 40px; padding: 0.55rem 0.8rem; border: 1px solid #bfdbfe; border-radius: 8px; background: #fff; color: #1d4ed8; font-weight: 700; cursor: pointer; }
+  .admin-main .field-hint { display: block; margin-top: 0.35rem; color: #64748b; line-height: 1.45; }
+  @media (max-width: 640px) { .admin-main .seo-settings-header { flex-direction: column; } .admin-main .btn-seo-defaults { width: 100%; } }
   .admin-main .preview { margin-top: 0.75rem; }
 
   @media (max-width: 1100px) {

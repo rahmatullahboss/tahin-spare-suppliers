@@ -1,0 +1,70 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import ProductGrid from "../../components/ProductGrid.astro";
+import { absoluteUrl, toUrlSlug } from "../../lib/seo";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { listContent } from "../../lib/server/repository";
+
+const env = getRuntimeEnv(Astro.locals);
+const brandSlug = Astro.params.brand ?? "";
+const products = await listContent(env, "products", { limit: 1000 });
+const brandProducts = products.filter((product) => product.brand && toUrlSlug(product.brand) === brandSlug);
+const brandName = brandProducts[0]?.brand?.trim() ?? "";
+
+if (!brandName || brandProducts.length === 0) {
+  return new Response("Brand inventory not found", {
+    status: 404,
+    headers: { "Content-Type": "text/plain; charset=utf-8" }
+  });
+}
+
+const title = `${brandName} Marine Engines & Spare Parts | Tahin Spare Suppliers`;
+const description = `Browse ${brandName} marine engine, generator and spare-parts inventory from Tahin Spare Suppliers, Bangladesh. Request specifications, current availability, price and worldwide shipping.`;
+const canonicalPath = `/brands/${brandSlug}`;
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  activeNav="brands"
+  canonicalUrl={absoluteUrl(canonicalPath)}
+>
+  <section class="page-hero">
+    <div class="overlay"></div>
+    <div class="hero-content">
+      <h1>{brandName} Marine Equipment & Spare Parts</h1>
+      <p>Current listed models and components available for direct quote and worldwide export.</p>
+    </div>
+  </section>
+
+  <Breadcrumbs items={[
+    { name: "Home", href: "/" },
+    { name: "Brands", href: "/brands" },
+    { name: brandName, href: canonicalPath }
+  ]} />
+
+  <section class="section">
+    <div class="container">
+      <div class="intro">
+        <h2>Browse {brandName} Inventory</h2>
+        <p>Use the model, part number, condition and availability shown on each product page to identify the right item. If your required {brandName} item is not listed, send the exact model or part number for an inventory check.</p>
+        <a class="quote-link" href={`/enquiry?brand=${encodeURIComponent(brandName)}`}>Request unlisted {brandName} equipment →</a>
+      </div>
+      <ProductGrid products={brandProducts} basePath="/products" />
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { position: relative; min-height: 300px; background: url('/images/warehouse.webp') center/cover no-repeat; display: grid; place-items: center; text-align: center; }
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,.68); }
+  .hero-content { position: relative; z-index: 1; max-width: 820px; padding: 30px 20px; color: white; }
+  .hero-content h1 { margin: 0 0 12px; font-size: clamp(2rem, 5vw, 3.35rem); }
+  .hero-content p { margin: 0; color: #e2e8f0; line-height: 1.7; }
+  .intro { max-width: 850px; margin: 0 auto 36px; text-align: center; }
+  .intro h2 { color: #111827; font-size: 1.8rem; margin: 0 0 12px; }
+  .intro p { color: #475569; line-height: 1.8; margin: 0 0 14px; }
+  .quote-link { color: #b11623; font-weight: 800; text-decoration: none; }
+  .quote-link:hover { text-decoration: underline; }
+</style>

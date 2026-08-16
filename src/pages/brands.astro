@@ -1,0 +1,79 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { toUrlSlug } from "../lib/seo";
+import { getRuntimeEnv } from "../lib/server/env";
+import { listContent } from "../lib/server/repository";
+
+const env = getRuntimeEnv(Astro.locals);
+const products = await listContent(env, "products", { limit: 1000 });
+const brandCounts = new Map<string, { name: string; count: number }>();
+
+products.forEach((product) => {
+  const name = product.brand?.trim();
+  if (!name) return;
+  const slug = toUrlSlug(name);
+  if (!slug) return;
+  const current = brandCounts.get(slug);
+  brandCounts.set(slug, { name: current?.name ?? name, count: (current?.count ?? 0) + 1 });
+});
+
+const brands = [...brandCounts.entries()]
+  .map(([slug, value]) => ({ slug, ...value }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<MainLayout
+  title="Marine Engine & Spare Parts Brands | Tahin Spare Suppliers"
+  description="Browse marine engine, generator and ship spare-parts inventory by manufacturer brand. Find available models and request a worldwide shipping quote from Tahin Spare Suppliers."
+  activeNav="brands"
+>
+  <section class="page-hero">
+    <div class="overlay"></div>
+    <div class="hero-content">
+      <h1>Marine Equipment Brands</h1>
+      <p>Browse current marine engine, generator and spare-parts inventory by manufacturer.</p>
+    </div>
+  </section>
+  <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Brands", href: "/brands" }]} />
+
+  <section class="section">
+    <div class="container">
+      {brands.length > 0 ? (
+        <div class="brands-grid">
+          {brands.map((brand) => (
+            <a class="brand-card" href={`/brands/${brand.slug}`}>
+              <h2>{brand.name}</h2>
+              <p>{brand.count} listed {brand.count === 1 ? "item" : "items"}</p>
+              <span>Browse inventory →</span>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <h2>Brand inventory is being updated</h2>
+          <p>Send your required maker, model or part number and our team will confirm current availability.</p>
+          <a class="btn-primary" href="/enquiry">Request a Quote</a>
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { position: relative; min-height: 300px; background: url('/images/warehouse.webp') center/cover no-repeat; display: grid; place-items: center; text-align: center; }
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,.68); }
+  .hero-content { position: relative; z-index: 1; max-width: 780px; padding: 30px 20px; color: white; }
+  .hero-content h1 { margin: 0 0 12px; font-size: clamp(2.1rem, 5vw, 3.5rem); }
+  .hero-content p { margin: 0; color: #e2e8f0; line-height: 1.7; }
+  .brands-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+  .brand-card { display: block; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; color: inherit; text-decoration: none; transition: transform .2s ease, box-shadow .2s ease; }
+  .brand-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15,23,42,.08); }
+  .brand-card h2 { margin: 0 0 8px; color: #111827; font-size: 1.2rem; }
+  .brand-card p { margin: 0 0 18px; color: #64748b; }
+  .brand-card span { color: #b11623; font-weight: 800; }
+  .empty-state { padding: 50px 24px; border: 1px dashed #cbd5e1; border-radius: 12px; text-align: center; background: #f8fafc; }
+  .btn-primary { display: inline-block; margin-top: 12px; padding: 12px 22px; border-radius: 7px; background: #b11623; color: #fff; text-decoration: none; font-weight: 800; }
+  @media (max-width: 950px) { .brands-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 540px) { .brands-grid { grid-template-columns: 1fr; } }
+</style>

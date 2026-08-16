@@ -8,7 +8,7 @@ const env = getRuntimeEnv(Astro.locals);
 const allProducts = await listContent(env, 'products', { limit: 1000 });
 const categoryProducts = allProducts.filter((p: any) => p.category === 'Marine Propulsion Engine');
 ---
-<MainLayout title="Marine Propulsion Engines - Tahin Spare Suppliers" activeNav="products">
+<MainLayout title="Marine Propulsion Engines - Tahin Spare Suppliers" activeNav="products" canonicalUrl="https://tahinspare.com/category/marine-propulsion-engine">
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
@@ -54,7 +54,7 @@ const categoryProducts = allProducts.filter((p: any) => p.category === 'Marine P
   .page-hero {
     position: relative;
     height: 350px;
-    background: url('/images/hero-bg.webp') center/cover no-repeat;
+    background: url('/images/warehouse.webp') center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;

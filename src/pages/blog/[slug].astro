@@ -1,5 +1,7 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { absoluteUrl } from "../../lib/seo";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { getContentBySlug } from "../../lib/server/repository";
 
@@ -8,44 +10,80 @@ const slug = Astro.params.slug;
 const post = slug ? await getContentBySlug(env, "blog", slug) : null;
 
 if (!post) {
-  return Astro.redirect("/blog");
+  return new Response("Blog post not found", {
+    status: 404,
+    headers: { "Content-Type": "text/plain; charset=utf-8" }
+  });
 }
+
+const canonicalPath = `/blog/${post.slug}`;
+const description = post.excerpt || `${post.title} — marine industry resource from Tahin Spare Suppliers.`;
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "@id": `${absoluteUrl(canonicalPath)}#article`,
+  "url": absoluteUrl(canonicalPath),
+  "headline": post.title,
+  "description": description,
+  "image": post.imageUrl ? [absoluteUrl(post.imageUrl)] : undefined,
+  "datePublished": post.createdAt || undefined,
+  "dateModified": post.updatedAt || undefined,
+  "author": { "@type": "Organization", "name": "Tahin Spare Suppliers", "url": "https://tahinspare.com" },
+  "publisher": { "@id": "https://tahinspare.com/#organization" },
+  "mainEntityOfPage": absoluteUrl(canonicalPath)
+};
 ---
-<MainLayout title={`${post.title} - Tahin Spare Suppliers`}>
+
+<MainLayout
+  title={`${post.title} | Tahin Spare Suppliers`}
+  description={description}
+  activeNav="blog"
+  canonicalUrl={absoluteUrl(canonicalPath)}
+  ogImage={post.imageUrl || undefined}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
       <h1>{post.title}</h1>
-      <p>{post.excerpt}</p>
+      {post.excerpt && <p>{post.excerpt}</p>}
     </div>
   </section>
 
+  <Breadcrumbs items={[
+    { name: "Home", href: "/" },
+    { name: "Marine Industry Resources", href: "/blog" },
+    { name: post.title, href: canonicalPath }
+  ]} />
+
   <section class="section">
-    <div class="container blog-detail">
-      {post.imageUrl && <img src={post.imageUrl} alt={post.title} class="cover-image" />}
+    <article class="container blog-detail">
+      {post.imageUrl && <img src={post.imageUrl} alt={`${post.title} marine industry article`} class="cover-image" width="1200" height="675" loading="eager" fetchpriority="high" decoding="async" />}
       <div class="content" set:html={post.content}></div>
-    </div>
+      <aside class="quote-box">
+        <h2>Need a marine engine or spare-part quote?</h2>
+        <p>Send the maker, model and part number to Tahin Spare Suppliers for current inventory and worldwide shipping information.</p>
+        <a href="/enquiry">Request a Quote</a>
+      </aside>
+    </article>
   </section>
 </MainLayout>
 
 <style>
-  .page-hero { position: relative; min-height: 280px; background: url('/images/services-hero.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
-  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-  .page-hero-content { position: relative; z-index: 1; color: #fff; max-width: 900px; padding: 20px; }
+  .page-hero { position: relative; min-height: 280px; background: url('/images/warehouse.webp') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.66); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; max-width: 900px; padding: 30px 20px; }
+  .page-hero-content h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.2rem); }
+  .page-hero-content p { color: #e2e8f0; line-height: 1.6; }
   .blog-detail { max-width: 900px; }
-  .cover-image { width: 100%; border-radius: 18px; display: block; margin-bottom: 24px; }
+  .cover-image { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 18px; display: block; margin-bottom: 24px; }
   .content { line-height: 1.8; color: #334155; font-size: 1.05rem; }
-  .content p { margin-bottom: 1em; }
-  .content h2 { font-size: 1.6rem; margin: 2em 0 0.75em; font-weight: 700; color: #0f172a; }
-  .content h3 { font-size: 1.3rem; margin: 1.5em 0 0.5em; font-weight: 600; color: #0f172a; }
-  .content ul, .content ol { padding-left: 1.5rem; margin: 1em 0; }
-  .content li { margin: 0.35em 0; }
-  .content blockquote { border-left: 3px solid #d97706; padding-left: 1rem; margin: 1.5em 0; color: #64748b; font-style: italic; }
-  .content pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.9rem; margin: 1.5em 0; }
-  .content code { background: #f1f5f9; padding: 0.15em 0.35em; border-radius: 0.25rem; font-size: 0.9em; color: #dc2626; }
-  .content pre code { background: none; padding: 0; color: inherit; }
-  .content a { color: #d97706; text-decoration: underline; }
-  .content a:hover { color: #b45309; }
-  .content img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.5em 0; }
-  .content hr { border: none; border-top: 2px solid #e2e8f0; margin: 2em 0; }
+  .content :global(p) { margin-bottom: 1em; }
+  .content :global(h2) { font-size: 1.6rem; margin: 2em 0 0.75em; font-weight: 700; color: #0f172a; }
+  .content :global(h3) { font-size: 1.3rem; margin: 1.5em 0 0.5em; font-weight: 600; color: #0f172a; }
+  .content :global(img) { max-width: 100%; height: auto; border-radius: 0.75rem; }
+  .quote-box { margin-top: 44px; padding: 28px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+  .quote-box h2 { margin: 0 0 8px; color: #111827; font-size: 1.35rem; }
+  .quote-box p { color: #475569; line-height: 1.7; }
+  .quote-box a { display: inline-block; margin-top: 8px; padding: 11px 18px; border-radius: 6px; background: #b11623; color: #fff; text-decoration: none; font-weight: 800; }
 </style>

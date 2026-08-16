@@ -1,17 +1,19 @@
 ---
+import type { ContentRecord } from '../lib/server/repository';
+
 interface Props {
-  products: any[];
+  products: ContentRecord[];
   basePath?: string;
 }
 const { products, basePath = '/products' } = Astro.props;
 
 // Group products by brand
-const groupedProducts = products.reduce((acc, product) => {
+const groupedProducts = products.reduce<Record<string, ContentRecord[]>>((acc, product) => {
   const brandName = product.brand || 'Other / Generic';
   if (!acc[brandName]) acc[brandName] = [];
   acc[brandName].push(product);
   return acc;
-}, {} as Record<string, any[]>);
+}, {});
 
 const sortedBrands = Object.keys(groupedProducts).sort((a, b) => {
   if (a === 'Other / Generic') return 1;
@@ -25,19 +27,20 @@ const sortedBrands = Object.keys(groupedProducts).sort((a, b) => {
     <div class="brand-section">
       <div class="brand-header">
         <h3 class="brand-title">{brand}</h3>
-        <span class="brand-count">{groupedProducts[brand].length} Models Available</span>
+        <span class="brand-count">{groupedProducts[brand].length} Items Listed</span>
       </div>
       <div class="products-grid">
-        {groupedProducts[brand].map((product: any) => (
+        {groupedProducts[brand].map((product) => (
           <a href={`${basePath}/${product.slug}`} class="product-card" data-brand={product.brand || ''}>
             {product.imageUrl && (
               <div class="product-img">
-                <img src={product.imageUrl} alt={product.title} loading="lazy" />
+                <img src={product.imageUrl} alt={product.imageAlt || product.title} width="800" height="600" loading="lazy" decoding="async" />
               </div>
             )}
             <div class="product-content">
               <h4>{product.title}</h4>
               {product.model_number && <p class="product-model">Model: {product.model_number}</p>}
+              {product.partNumber && <p class="product-model">Part: {product.partNumber}</p>}
               {product.excerpt && <p class="live-excerpt">{product.excerpt}</p>}
               <span class="view-details">VIEW DETAILS</span>
             </div>

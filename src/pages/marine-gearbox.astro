@@ -8,7 +8,7 @@ const env = getRuntimeEnv(Astro.locals);
 const allProducts = await listContent(env, 'products', { limit: 1000 });
 const categoryProducts = allProducts.filter((p: any) => p.category === 'Marine Gearbox');
 ---
-<MainLayout title="Marine Gearbox - Tahin Spare Suppliers" activeNav="products">
+<MainLayout title="Marine Gearbox - Tahin Spare Suppliers" activeNav="products" canonicalUrl="https://tahinspare.com/category/marine-gearbox">
   <section class="page-hero" style="background: url('/images/marine-gearbox.jpg') center/cover no-repeat;">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">

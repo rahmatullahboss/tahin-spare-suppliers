@@ -1,21 +1,28 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { getRuntimeEnv } from "../../lib/server/env";
-import { listContent } from "../../lib/server/repository";
+import { listAllContent } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
-const posts = await listContent(env, "blog");
+const posts = await listAllContent(env, "blog");
 const PAGE_SIZE = 9;
 const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
 ---
-<MainLayout title="Blog - Tahin Spare Suppliers" activeNav="blog">
+<MainLayout
+  title="Marine Industry Blog & Resources | Tahin Spare Suppliers"
+  description="Marine engine, ship spare-parts, procurement and export resources for ship owners, technical superintendents, fleet managers and marine engineers."
+  activeNav="blog"
+>
   <section class="page-hero">
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
-      <h1>Blog</h1>
-      <p>Marine supply updates, export notes and product highlights.</p>
+      <h1>Marine Industry Blog & Resources</h1>
+      <p>Practical marine engine, spare-parts, procurement and export information for vessel operators and technical buyers.</p>
     </div>
   </section>
+
+  <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Marine Industry Resources", href: "/blog" }]} />
 
   <section class="section">
     <div class="container">
@@ -30,7 +37,7 @@ const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
           <div class="blog-grid" data-paginated data-page-size={PAGE_SIZE} data-current-page="1">
             {posts.map((post) => (
               <a href={`/blog/${post.slug}`} class="blog-card">
-                {post.imageUrl && <img src={post.imageUrl} alt={post.title} />}
+                {post.imageUrl && <img src={post.imageUrl} alt={`${post.title} marine industry article`} width="800" height="450" loading="lazy" decoding="async" />}
                 <div class="blog-card-body">
                   <h2>{post.title}</h2>
                   <p>{post.excerpt}</p>
@@ -124,7 +131,7 @@ const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
 </script>
 
 <style>
-  .page-hero { position: relative; height: 280px; background: url('/images/services-hero.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .page-hero { position: relative; height: 280px; background: url('/images/warehouse.webp') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
   .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
   .page-hero-content { position: relative; z-index: 1; color: #fff; }
   .blog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
