@@ -156,7 +156,8 @@ test("schema scope and thin taxonomy indexation stay truthful", async () => {
   assert.match(subcategoryPage, /noindex=\{filteredProducts\.length === 0\}/);
   assert.doesNotMatch(categoryPage, /"@type": "FAQPage"/);
   assert.doesNotMatch(subcategoryPage, /"@type": "FAQPage"/);
-  assert.match(categoryPage, /Frequently Asked Questions/);
+  assert.match(categoryPage, /What to Send for a Faster Quote/);
+  assert.match(categoryPage, /Supply &(?:amp;)? Inspection Notes/);
   assert.match(subcategoryPage, /Frequently Asked Questions/);
 });
 

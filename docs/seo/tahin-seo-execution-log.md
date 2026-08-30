@@ -264,3 +264,35 @@ Phase 2's automated system contract is production-complete. Evidence enrichment 
 Phase 3's automated keyword ownership/internal-linking system contract is production-complete. First-party guide creation remains intentionally deferred until genuine technical/procurement material exists rather than manufacturing generic SEO content.
 
 Next: Phase 4 landing-page and conversion optimization using truthful buyer evidence, clear RFQ paths and mobile-first conversion behavior.
+
+## 2026-08-30 — Phase 4 landing-page and conversion optimization preview-certified
+
+### Buyer-facing changes
+
+- Homepage now derives its primary category grid from categories that contain live product inventory; empty `Anchor and Chain` is not promoted.
+- Homepage static `MAJOR BRANDS WE CARRY` logo claims were replaced by `Brands in Current Listings`, generated from actual product records with live item counts.
+- Homepage now names the core B2B audiences: ship owners, ship managers, technical superintendents, chief engineers, shipyards and marine procurement teams.
+- A factual proof strip exposes the current **88** online inventory listings, Chattogram sourcing location, established-since-1990 statement and published recent-shipment image count.
+- Added `What to Send for a Faster Quote` guidance covering maker/model, part or serial reference, technical requirement and destination.
+- Category pages now use category-specific procurement guidance instead of one repeated generic FAQ pattern. Examples include OEM part number inputs for Spare Parts, kVA/kW + voltage/frequency/RPM for Generator Sets, and reduction ratio for Marine Gearboxes.
+- Category RFQ buttons preserve the selected category.
+- Product quote URLs now preserve product, brand, category, model and part-number context when those fields exist.
+- Product detail has a mobile fixed `Request Quote` / `WhatsApp` action bar while retaining desktop CTAs.
+- Enquiry pages show a visible quote-context card, preselect the carried category, prefill the message with available product identifiers, and preserve `generate_lead` only after a successful submission while attaching lead context.
+
+### Verification
+
+- Phase 4 focused conversion suite: **5/5 PASS**.
+- Full suite after updating the obsolete generic-FAQ assertion: **87/87 PASS**.
+- Astro production build: **PASS**.
+- Dependency audit: **0 vulnerabilities**.
+- Wrangler dry-run: **PASS**.
+- Isolated preview Worker: `731cb31c-7aa6-4722-9727-66cebed67c38`.
+- Preview production-binding smoke: **PASS**.
+- Preview homepage: 200, current inventory count 88, buyer roles visible, quote-preparation section visible, live-brand section visible, unsupported static brand claim/logo set absent, and empty category promotion absent.
+- Preview Spare Parts category: 200 with part-number-specific procurement guidance and contextual category RFQ.
+- Preview Diesel Generator category: 200 with kVA/kW, voltage, frequency and RPM request guidance.
+- Representative product: 200, mobile quote bar rendered; browser-decoded RFQ URL carries `product`, `brand=MAN B&W`, `category=Spare Parts`, and `model=5L16/24`.
+- Resulting enquiry page: 200 with product/brand/category/model context visible and Spare Parts preselected.
+
+Next: latest-origin race reconciliation, explicit Phase 4 staging, commit/push, CI production deploy and custom-domain verification.

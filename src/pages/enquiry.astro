@@ -7,11 +7,23 @@ import { listAllCategories } from '../lib/server/categories';
 const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
 const requestedProduct = Astro.url.searchParams.get('product')?.trim() ?? '';
 const requestedBrand = Astro.url.searchParams.get('brand')?.trim() ?? '';
+const requestedCategory = Astro.url.searchParams.get('category')?.trim() ?? '';
+const requestedModel = Astro.url.searchParams.get('model')?.trim() ?? '';
+const requestedPart = Astro.url.searchParams.get('part')?.trim() ?? '';
+const requestedIdentifiers = [
+  requestedBrand ? `Brand: ${requestedBrand}` : '',
+  requestedModel ? `Model: ${requestedModel}` : '',
+  requestedPart ? `Part: ${requestedPart}` : '',
+  requestedCategory ? `Category: ${requestedCategory}` : '',
+].filter(Boolean);
 const enquiryContext = requestedProduct
-  ? `I am interested in ${requestedProduct}. Please share specifications, current availability, price and worldwide shipping details.`
+  ? `I am interested in ${requestedProduct}.${requestedIdentifiers.length ? ` ${requestedIdentifiers.join(' · ')}.` : ''} Please share specifications, current availability, price and worldwide shipping details.`
   : requestedBrand
-    ? `I am looking for ${requestedBrand} marine equipment or spare parts. Please share current inventory, specifications and price.`
-    : '';
+    ? `I am looking for ${requestedBrand} marine equipment or spare parts.${requestedCategory ? ` Category: ${requestedCategory}.` : ''} Please share current inventory, specifications and price.`
+    : requestedCategory
+      ? `I am looking for ${requestedCategory}. Please share current inventory, specifications, condition, availability and price.`
+      : '';
+const enquiryContextLabel = requestedProduct || requestedBrand || requestedCategory;
 ---
 <MainLayout title="Request a Marine Equipment Quote | Tahin Spare Suppliers" activeNav="enquiry" description="Request current specifications, availability, price and worldwide shipping for marine engines, generators, ship spare parts and hydraulic equipment from Tahin Spare Suppliers.">
   <section class="page-hero">
@@ -67,7 +79,14 @@ const enquiryContext = requestedProduct
           </div>
         </div>
         <div class="enquiry-form-wrap reveal-right">
-          <form class="enquiry-form" id="enquiry-form" action="/api/enquiry" method="POST">
+          {enquiryContextLabel && (
+            <div class="enquiry-context-card" aria-live="polite">
+              <span>Quote context</span>
+              <strong>{enquiryContextLabel}</strong>
+              {requestedIdentifiers.length > 0 && <p>{requestedIdentifiers.join(' · ')}</p>}
+            </div>
+          )}
+          <form class="enquiry-form" id="enquiry-form" action="/api/enquiry" method="POST" data-enquiry-context={enquiryContextLabel}>
             <input type="text" name="_gotcha" style="display:none" />
             <div class="form-group">
               <label for="name">Your Name *</label>
@@ -86,7 +105,7 @@ const enquiryContext = requestedProduct
               <select id="equipment" name="equipment">
                 <option value="">Select a category</option>
                 {categories.map((cat) => (
-                  <option value={cat.value}>{cat.value}</option>
+                  <option value={cat.value} selected={cat.value === requestedCategory}>{cat.value}</option>
                 ))}
                 <option value="Other">Other</option>
               </select>
@@ -128,7 +147,8 @@ const enquiryContext = requestedProduct
         const equipmentSelect = form.elements.namedItem('equipment') as HTMLSelectElement | null;
         analyticsWindow.gtag?.('event', 'generate_lead', {
           lead_source: 'website_enquiry',
-          item_category: equipmentSelect?.value || undefined
+          item_category: equipmentSelect?.value || undefined,
+          lead_context: form.dataset.enquiryContext || undefined
         });
         statusEl.textContent = '✅ Your enquiry has been sent successfully! Our team will review it and contact you.';
         statusEl.className = 'form-status success';
@@ -223,6 +243,10 @@ const enquiryContext = requestedProduct
     font-size: 14px;
     color: #666;
   }
+  .enquiry-context-card { margin-bottom: 18px; padding: 16px 18px; border: 1px solid #fecaca; border-left: 4px solid #b11623; border-radius: 8px; background: #fff7f7; }
+  .enquiry-context-card span { display: block; margin-bottom: 4px; color: #991b1b; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+  .enquiry-context-card strong { display: block; color: #111827; font-size: 16px; }
+  .enquiry-context-card p { margin: 6px 0 0; color: #64748b; font-size: 13px; line-height: 1.55; }
 
   .enquiry-form {
     display: grid;

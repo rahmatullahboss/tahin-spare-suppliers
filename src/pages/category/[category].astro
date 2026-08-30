@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { getCategoryBuyingGuidance } from '../../lib/category-buying-guidance';
 import { toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listContent } from '../../lib/server/repository';
@@ -34,7 +35,7 @@ const displayBrands = [...new Set(
     .map((product) => product.brand?.trim() ?? '')
     .filter((brand) => brand.length > 0)
 )];
-const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
+const buyingGuidance = getCategoryBuyingGuidance(currentCategory.value);
 const featuredInventory = categoryProducts
   .filter((product) => Boolean(product.model_number || product.partNumber))
   .slice(0, 8);
@@ -147,22 +148,32 @@ const featuredInventory = categoryProducts
         </div>
       )}
       
-      <!-- FAQ Section for AI SEO -->
-      <div class="faq-section mt-5">
-        <h3 class="reveal">Frequently Asked Questions</h3>
-        <div class="faq-item reveal">
-          <h4>Do you export {currentCategory.value} globally?</h4>
-          <p>Tahin Spare Suppliers handles international enquiries for {currentCategory.value} and can provide packing, export-documentation and shipping support from Chattogram, Bangladesh. Confirm the specific item's condition and availability before ordering.</p>
+      <section class="buyer-guidance mt-5" aria-labelledby="buyer-guidance-title">
+        <div class="buyer-guidance-intro reveal">
+          <span class="buyer-guidance-kicker">Buyer guidance for {currentCategory.value}</span>
+          <h3 id="buyer-guidance-title">What to Send for a Faster Quote</h3>
+          <p>{buyingGuidance.supplySummary}</p>
         </div>
-        <div class="faq-item reveal">
-          <h4>What brands of {currentCategory.value} do you supply?</h4>
-          <p>Current online listings for {currentCategory.value} include {brandSummary}. If your required maker is not listed, send the exact model or part number for an inventory check.</p>
+        <div class="buyer-guidance-grid">
+          <div class="buyer-guidance-card reveal">
+            <h4>Request Details</h4>
+            <ul>
+              {buyingGuidance.requestDetails.map((detail) => <li>{detail}</li>)}
+            </ul>
+          </div>
+          <div class="buyer-guidance-card reveal">
+            <h4>Supply &amp; Inspection Notes</h4>
+            <p>{buyingGuidance.inspectionNote}</p>
+            <p>For international orders, ask for the packing, documentation and shipping options available for the specific item and destination.</p>
+          </div>
         </div>
-        <div class="faq-item reveal">
-          <h4>What is the condition of the {currentCategory.value}?</h4>
-          <p>Condition varies by listing. Each product page shows the recorded condition and availability where supplied; contact Tahin Spare Suppliers to confirm the current item before purchase.</p>
-        </div>
-      </div>
+        <a
+          class="category-quote-link"
+          href={`/enquiry?category=${encodeURIComponent(currentCategory.value)}`}
+          data-ga-event="request_quote_click"
+          data-ga-item={currentCategory.value}
+        >Request a {currentCategory.value} Quote →</a>
+      </section>
     </div>
   </section>
 </MainLayout>
@@ -452,12 +463,19 @@ const featuredInventory = categoryProducts
   .featured-inventory-grid span { color: #64748b; font-size: 13px; line-height: 1.45; }
   @media (max-width: 600px) { .featured-inventory-grid { grid-template-columns: 1fr; } }
 
-  .faq-section { background: #fafafa; padding: 40px; border-radius: 8px; margin-bottom: 30px; }
-  .faq-section h3 { font-size: 24px; color: #222; margin-bottom: 30px; font-weight: 800; }
-  .faq-item { margin-bottom: 25px; }
-  .faq-item:last-child { margin-bottom: 0; }
-  .faq-item h4 { font-size: 18px; color: #b11623; margin-bottom: 10px; font-weight: 600; }
-  .faq-item p { font-size: 15px; color: #555; line-height: 1.6; margin: 0; }
+  .buyer-guidance { background: #fafafa; padding: 40px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e5e7eb; }
+  .buyer-guidance-intro { max-width: 900px; }
+  .buyer-guidance-kicker { display: inline-block; color: #b11623; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+  .buyer-guidance h3 { font-size: 24px; color: #222; margin: 0 0 12px; font-weight: 800; }
+  .buyer-guidance-intro p, .buyer-guidance-card p { font-size: 15px; color: #555; line-height: 1.7; }
+  .buyer-guidance-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 24px; }
+  .buyer-guidance-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 9px; padding: 20px; }
+  .buyer-guidance-card h4 { font-size: 18px; color: #111827; margin: 0 0 12px; }
+  .buyer-guidance-card ul { margin: 0; padding-left: 20px; color: #475569; line-height: 1.7; }
+  .buyer-guidance-card li + li { margin-top: 6px; }
+  .category-quote-link { display: inline-block; margin-top: 22px; padding: 12px 18px; border-radius: 7px; background: #b11623; color: #fff; font-weight: 800; text-decoration: none; }
+  .category-quote-link:hover { background: #8c0f1a; }
+  @media (max-width: 700px) { .buyer-guidance { padding: 26px 18px; } .buyer-guidance-grid { grid-template-columns: 1fr; } .category-quote-link { width: 100%; box-sizing: border-box; text-align: center; } }
 
   .pagination {
     display: flex;

@@ -44,6 +44,13 @@ const availabilityBadgeClass = availabilityPolicy.positive
   : "stock-badge stock-badge-neutral";
 const location = product.location?.trim() || "Chattogram, Bangladesh";
 const canonicalPath = `/products/${product.slug}`;
+const quoteParams = new URLSearchParams();
+quoteParams.set("product", product.title);
+if (product.brand) quoteParams.set("brand", product.brand);
+if (product.category) quoteParams.set("category", product.category);
+if (product.model_number) quoteParams.set("model", product.model_number);
+if (product.partNumber) quoteParams.set("part", product.partNumber);
+const quoteUrl = `/enquiry?${quoteParams.toString()}`;
 const whatsappText = encodeURIComponent(`Hello Tahin Spare Suppliers, I would like a quote for ${product.title}${product.partNumber ? ` (Part ${product.partNumber})` : ""}.`);
 const whatsappUrl = `https://wa.me/8801787429268?text=${whatsappText}`;
 
@@ -143,7 +150,7 @@ const breadcrumbs = [
           <h2>Request Price & Availability</h2>
           <p>Send the product model or part number to our marine supply team for current stock, specifications, price and worldwide shipping details.</p>
           <div class="cta-actions">
-            <a href={`/enquiry?product=${encodeURIComponent(product.title)}`} class="btn-primary" data-ga-event="request_quote_click" data-ga-item={product.title}>Request a Quote</a>
+            <a href={quoteUrl} class="btn-primary" data-ga-event="request_quote_click" data-ga-item={product.title}>Request a Quote</a>
             <a href={whatsappUrl} class="btn-whatsapp" target="_blank" rel="noopener" data-ga-event="whatsapp_product_click" data-ga-item={product.title}>WhatsApp This Product</a>
           </div>
         </div>
@@ -178,6 +185,11 @@ const breadcrumbs = [
       </div>
     </section>
   )}
+
+  <nav class="mobile-quote-bar" aria-label="Product quote actions">
+    <a href={quoteUrl} data-ga-event="request_quote_click" data-ga-item={product.title}>Request Quote</a>
+    <a href={whatsappUrl} target="_blank" rel="noopener" data-ga-event="whatsapp_product_click" data-ga-item={product.title}>WhatsApp</a>
+  </nav>
 </MainLayout>
 
 <style>
@@ -219,6 +231,14 @@ const breadcrumbs = [
   .image-placeholder { padding: 70px 30px; border: 1px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; color: #64748b; text-align: center; }
   .related-section { background: #f8fafc; border-top: 1px solid #e5e7eb; padding: 60px 0; }
   .related-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 30px; text-align: center; color: #111827; }
+  .mobile-quote-bar { display: none; }
   @media (max-width: 992px) { .detail-grid { grid-template-columns: 1fr; gap: 36px; } .detail-image { position: relative; top: 0; } }
-  @media (max-width: 600px) { .specs-table th, .specs-table td { padding: 11px 12px; } .specs-table th { width: 40%; } .cta-actions > a { width: 100%; text-align: center; box-sizing: border-box; } }
+  @media (max-width: 600px) {
+    .specs-table th, .specs-table td { padding: 11px 12px; }
+    .specs-table th { width: 40%; }
+    .cta-actions > a { width: 100%; text-align: center; box-sizing: border-box; }
+    .mobile-quote-bar { position: fixed; z-index: 60; left: 10px; right: 10px; bottom: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; border-radius: 12px; background: rgba(17, 24, 39, .96); box-shadow: 0 12px 30px rgba(0,0,0,.25); }
+    .mobile-quote-bar a { padding: 12px 8px; border-radius: 7px; text-align: center; text-decoration: none; font-weight: 800; font-size: 13px; background: #b11623; color: #fff; }
+    .mobile-quote-bar a:last-child { background: #25d366; color: #052e16; }
+  }
 </style>
