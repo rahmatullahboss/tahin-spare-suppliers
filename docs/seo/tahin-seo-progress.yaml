@@ -344,8 +344,8 @@ current_growth_cycle:
     destructive_git_cleanup_allowed: false
   current_git_state:
     branch: master
-    head: 49d7760
-    origin_master: 49d7760
+    head: 698e3be
+    origin_master: 698e3be
     ahead: 0
     behind: 0
     seo_baseline_commit: f04a4b1
@@ -361,6 +361,7 @@ current_growth_cycle:
     phase5_production_docs_commit: a2ee37b
     ai_discoverability_commit: f21eee8
     phase6_production_docs_commit: 49d7760
+    search_measurement_commit: 698e3be
   current_verification:
     date: 2026-08-30
     focused_seo_tests:
@@ -399,11 +400,11 @@ current_growth_cycle:
         - MEDIA_BUCKET R2
         - ASSETS
     production:
-      current_worker_version: 88b2fc41-5f43-4b75-ba8b-3f6c9530e817
+      current_worker_version: 40914947-119a-46be-b7f9-226f4602d3de
       direct_smoke: pass
       seo_contract_checks: pass
       baseline_github_actions_run: 33297862196
-      latest_github_actions_run: 33302080432
+      latest_github_actions_run: 33305513255
       github_actions_deploy: pass
       github_actions_smoke: pass
       ci_cloudflare_credentials_configured: true
@@ -477,6 +478,23 @@ current_growth_cycle:
       indexnow_mutation_hook: unit_verified
       indexnow_invalid_or_missing_key_noop: pass
       indexnow_canonical_url_filter: pass
+    phase7_production:
+      implementation_commit: 698e3be
+      github_actions_run: 33305513255
+      worker_version: 40914947-119a-46be-b7f9-226f4602d3de
+      smoke: pass
+      homepage_status: 200
+      contact_status: 200
+      enquiry_status: 200
+      spare_parts_category_status: 200
+      diesel_generator_category_status: 200
+      sitemap_status: 200
+      representative_product_status: 200
+      ga4_runtime_tag: absent_external_configuration
+      google_site_verification: absent_external_configuration
+      bing_site_verification: absent_external_configuration
+      indexnow_key_endpoint_status: 404_disabled
+      external_account_actions_pending: true
   findings:
     - id: SEO-GR-001
       severity: critical
@@ -685,17 +703,17 @@ current_growth_cycle:
         production_contract_checks_pass: true
     - id: growth-phase-7
       name: search_console_ga4_bing_measurement
-      status: code_support_preview_certified_external_account_actions_pending
+      status: system_contract_complete_production_verified_external_account_actions_pending
       tasks:
-        ga4_valid_measurement_id_guard: preview_verified
-        successful_enquiry_generate_lead: preview_verified
-        successful_contact_generate_lead: preview_verified
+        ga4_valid_measurement_id_guard: production_verified_unconfigured
+        successful_enquiry_generate_lead: production_source_verified
+        successful_contact_generate_lead: production_source_verified
         rfq_click_supporting_events: preserved
         whatsapp_click_supporting_events: preserved
-        google_html_verification_hook: preview_verified_unconfigured
-        bing_html_verification_hook: preview_verified_unconfigured
+        google_html_verification_hook: production_verified_unconfigured
+        bing_html_verification_hook: production_verified_unconfigured
         runtime_env_types_synced: true
-        indexnow_key_endpoint: preview_verified_disabled
+        indexnow_key_endpoint: production_verified_404_disabled
         indexnow_create_update_delete_notifications: unit_verified
         indexnow_slug_change_old_and_new_urls: unit_verified
         indexnow_canonical_host_filter: unit_verified
@@ -714,6 +732,11 @@ current_growth_cycle:
         dependency_audit_pass: true
         wrangler_dry_run_pass: true
         preview_smoke_pass: true
+        implementation_commit: 698e3be
+        github_actions_run: 33305513255
+        production_worker: 40914947-119a-46be-b7f9-226f4602d3de
+        production_smoke_pass: true
+        production_contract_checks_pass: true
     - id: growth-phase-8
       name: performance_and_crawl_efficiency
       status: queued

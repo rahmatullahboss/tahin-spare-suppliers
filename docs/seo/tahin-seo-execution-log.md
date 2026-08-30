@@ -411,3 +411,39 @@ Next: latest-origin race reconciliation, Phase 6 staged review, commit/push, CI 
 Phase 6's code-controlled AI-search discoverability contract is production-complete. Search/AI visibility remains grounded in canonical human-visible facts, first-party evidence, accurate structured data and crawlable internal links.
 
 Next: Phase 7 Search Console / GA4 / Bing measurement support and external-account reconciliation.
+
+## 2026-08-30 — Phase 7 search measurement production deployment verified
+
+### Code-controlled measurement/search support
+
+- Phase 7 implementation commit: `698e3be` (`feat: add search measurement integrations`).
+- GA4 loading remains guarded to a valid `G-...` Measurement ID and `generate_lead` is emitted only after successful enquiry/contact responses.
+- Google and Bing HTML verification hooks emit no placeholder/fake meta values while their real account tokens are absent.
+- IndexNow support covers product/part/blog create, update, delete and slug-change notifications, filters to canonical `https://tahinspare.com` URLs, exposes the authorized key only when a valid key is configured, and treats external request failure as non-blocking.
+- With no real IndexNow key configured, `/indexnow-key.txt` remains a deliberate 404 and no IndexNow notification is sent.
+
+### Release certification
+
+- Focused Search Measurement suite: **6/6 PASS**.
+- SEO + AI-discoverability focused suites: **21/21 PASS** combined.
+- Full suite: **103/103 PASS**, including the Neon schema-bootstrap batching regression guard.
+- Astro production build: **PASS**.
+- Dependency audit: **0 vulnerabilities**.
+- Wrangler dry-run: **PASS** with SESSION KV, MEDIA_BUCKET R2 and ASSETS bindings.
+- GitHub Actions run `33305513255`: Verify **PASS**, deployment credential gate **PASS**, Cloudflare production deploy **PASS**, production smoke **PASS**.
+- Production Worker from the implementation deployment: `40914947-119a-46be-b7f9-226f4602d3de`.
+
+### Direct custom-domain verification
+
+- `/`, `/contact`, `/enquiry`, `/category/spare-parts`, `/category/diesel-generator-set` and `/sitemap.xml`: **200**.
+- Representative sitemap product `/products/volvo-penta-tamd162c-marine-diesel-engine-for-sale`: **200**.
+- GA4 runtime tag: absent because no real Measurement ID is configured.
+- Google verification meta: absent because no real verification value is configured.
+- Bing `msvalidate.01` meta: absent because no real verification value is configured.
+- `/indexnow-key.txt`: **404** while IndexNow remains unconfigured.
+
+### External account actions still pending
+
+The code/system contract is production-verified, but the following actions require authorized external account values and are intentionally not fabricated: real GA4 property/web-stream Measurement ID, Google Search Console property verification and sitemap submission, Bing Webmaster Tools verification and sitemap submission, and a real authorized IndexNow key.
+
+Next: Phase 8 evidence-driven performance and crawl-efficiency hardening without weakening correctness or the batched Neon schema-bootstrap protection.
