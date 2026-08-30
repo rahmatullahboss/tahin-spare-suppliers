@@ -115,6 +115,34 @@ const breadcrumbs = [
         {product.category && <span class="category-badge">{product.category}</span>}
         <h2>Product Information</h2>
 
+        <section class="answer-summary" aria-labelledby="product-at-a-glance">
+          <h2 id="product-at-a-glance">Product at a Glance</h2>
+          <p>
+            This listing is for <strong>{product.title}</strong>.
+            {product.brand && <> Brand: <strong>{product.brand}</strong>.</>}
+            {product.model_number && <> Model: <strong>{product.model_number}</strong>.</>}
+            {product.partNumber && <> Part number: <strong>{product.partNumber}</strong>.</>}
+            {product.category && <> Category: <strong>{product.category}</strong>.</>}
+            Recorded condition: <strong>{condition}</strong>. Current availability: <strong>{availability}</strong>.
+            Location: <strong>{location}</strong>. Price is quote-based; final availability, condition, technical suitability,
+            packing, freight and commercial terms should be confirmed in the written quotation before ordering.
+          </p>
+          <ul class="verification-list">
+            <li>
+              <strong>Availability last checked:</strong>{' '}
+              {availabilityPolicy.verifiedAt
+                ? <time datetime={availabilityPolicy.verifiedAt}>{availabilityPolicy.verifiedAt}</time>
+                : 'No current verification date is published; confirm during quotation.'}
+            </li>
+            <li>
+              <strong>Condition last checked:</strong>{' '}
+              {product.conditionVerifiedAt
+                ? <time datetime={product.conditionVerifiedAt}>{product.conditionVerifiedAt}</time>
+                : 'No separate condition verification date is published; confirm the exact item before ordering.'}
+            </li>
+          </ul>
+        </section>
+
         <table class="specs-table">
           <tbody>
             {product.brand && <tr><th>Brand</th><td><a class="authority-link" href={`/brands/${toUrlSlug(product.brand)}`}>{product.brand}</a></td></tr>}
@@ -202,6 +230,11 @@ const breadcrumbs = [
   .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 0.8fr); gap: 50px; align-items: start; }
   .category-badge { display: inline-block; background: #e67e22; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 18px; letter-spacing: 0.06em; }
   .product-info-wrap > h2 { margin: 0 0 12px; color: #111827; font-size: 1.55rem; }
+  .answer-summary { margin: 18px 0 26px; padding: 22px; border: 1px solid #e2e8f0; border-left: 4px solid #b11623; border-radius: 10px; background: #f8fafc; }
+  .answer-summary h2 { margin: 0 0 10px; color: #111827; font-size: 1.35rem; }
+  .answer-summary p { margin: 0; color: #475569; line-height: 1.8; }
+  .verification-list { margin: 16px 0 0; padding-left: 20px; color: #475569; line-height: 1.7; }
+  .verification-list li + li { margin-top: 6px; }
   .specs-table { width: 100%; border-collapse: collapse; margin: 20px 0 26px; background: #fff; border: 1px solid #e5e7eb; }
   .specs-table th, .specs-table td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
   .specs-table tr:last-child th, .specs-table tr:last-child td { border-bottom: none; }

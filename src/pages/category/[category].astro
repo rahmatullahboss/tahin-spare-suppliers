@@ -92,6 +92,10 @@ const featuredInventory = categoryProducts
         <a href="/products" class="back-link">← Back to Marine Equipment</a>
       </div>
 
+      <div class="inventory-answer">
+        <strong>Current online inventory:</strong> {categoryProducts.length} published listings across {displayBrands.length} listed {displayBrands.length === 1 ? 'brand' : 'brands'} for {currentCategory.value}. Counts reflect the current published website inventory and can change as items are added, sold, reserved or reverified.
+      </div>
+
       {categoryProducts.length === 0 ? (
         <div class="empty-state">
            <h3>No products available</h3>
@@ -292,6 +296,7 @@ const featuredInventory = categoryProducts
     transition: color 0.3s;
   }
   .back-link:hover { color: #b11623; }
+  .inventory-answer { margin: -10px 0 28px; padding: 14px 16px; border: 1px solid #e2e8f0; border-left: 4px solid #b11623; border-radius: 8px; background: #f8fafc; color: #475569; line-height: 1.7; }
 
   .empty-state {
     text-align: center;

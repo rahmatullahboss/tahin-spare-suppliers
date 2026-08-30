@@ -366,3 +366,32 @@ Next: latest-origin race reconciliation, explicit Phase 5 staging, commit/push, 
 Phase 5's code-controlled trust/entity/authority contract is production-complete. Google Business Profile, Bing Places and legitimate external industry mentions remain external account/business-development actions rather than code claims.
 
 Next: Phase 6 AI-search discoverability using visible factual procurement content, first-party inventory evidence, accurate structured data and crawlable internal links—without AI-only duplicate pages, query fan-out or `llms.txt` ranking tactics.
+
+## 2026-08-30 — Phase 6 AI-search discoverability preview-certified
+
+### Human-visible factual answer improvements
+
+- Product pages now include a concise `Product at a Glance` section using the actual listing title, maker, model, part number, category, recorded condition, current public availability state and location.
+- The same product section explicitly states that price is quote-based and that final availability, condition, technical suitability, packing, freight and commercial terms must be confirmed in the written quotation before ordering.
+- Product pages now surface `Availability last checked` and `Condition last checked` with the recorded verification date when available, or an explicit confirm-before-ordering boundary when a verification date is not published.
+- Brand hubs now state the current number of published listings and live equipment categories from the real inventory dataset.
+- Category hubs now state the current number of published listings and listed brands from the real inventory dataset.
+- Existing technical specifications, application text, structured Product data, descriptive product image captions, category procurement guidance and Business Information evidence remain on canonical human-visible pages.
+- No AI-only duplicate content, query fan-out pages or `llms.txt` ranking tactic was added.
+
+### Verification
+
+- Phase 6 focused AI-discoverability suite: **5/5 PASS**.
+- Full suite: **97/97 PASS**.
+- Astro production build: **PASS**.
+- Dependency audit: **0 vulnerabilities**.
+- Wrangler dry-run: **PASS**.
+- Isolated preview Worker: `88e3b855-4001-42c7-8d85-3db2b159a293`.
+- Preview production-binding smoke: **PASS**.
+- Representative MAN B&W product: 200 with `Product at a Glance`, recorded-condition/current-availability statements, quote-based commercial boundary, both verification labels and written-quotation confirmation language.
+- MAN B&W brand hub: 200 with **14** current published listings across **2** live equipment categories.
+- Spare Parts category: 200 with **28** current published listings across **8** listed brands.
+- `/llms.txt`: **404**, confirming no AI-only ranking file was introduced.
+- Phase 5 documentation-only GitHub Actions run `33301633940`: **PASS**; identical production code deployment Worker is `367a77f6-6df3-46f6-b2d4-9efb816ef17d` before Phase 6 release.
+
+Next: latest-origin race reconciliation, Phase 6 staged review, commit/push, CI deploy and custom-domain verification.
