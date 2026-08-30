@@ -20,6 +20,9 @@ const STATIC_PAGES: SitemapPage[] = [
   { url: "/services" },
   { url: "/enquiry" },
   { url: "/contact" },
+  { url: "/business-info" },
+  { url: "/privacy" },
+  { url: "/terms" },
   { url: "/blog" }
 ];
 

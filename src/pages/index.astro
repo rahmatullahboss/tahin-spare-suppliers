@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { toUrlSlug } from '../lib/seo';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
@@ -197,7 +198,7 @@ const shipmentImages = [
       </ol>
       <div class="quote-prep-actions reveal">
         <a href="/enquiry" class="btn btn-quote-solid" data-ga-event="request_quote_click" data-ga-item="homepage-quote-prep">Send Your Requirement</a>
-        <a href="https://wa.me/8801787429268" target="_blank" rel="noopener" class="quote-whatsapp" data-ga-event="whatsapp_contact_click" data-ga-item="homepage-quote-prep">WhatsApp Sales →</a>
+        <a href={BUSINESS_PROFILE.whatsapp.primary.href} target="_blank" rel="noopener" class="quote-whatsapp" data-ga-event="whatsapp_contact_click" data-ga-item="homepage-quote-prep">WhatsApp Sales →</a>
       </div>
     </div>
   </section>
@@ -294,7 +295,7 @@ const shipmentImages = [
     <div class="ps-overlay"></div>
     <div class="container ps-content">
       <h2 class="ps-title reveal-scale">Looking for Marine Equipment?</h2>
-      <p class="ps-contact reveal">Call us: +880 1787-429268 / +88-01710917904 or Email: sales@tahinspare.com</p>
+      <p class="ps-contact reveal">Call us: {BUSINESS_PROFILE.whatsapp.primary.display} / {BUSINESS_PROFILE.phone.display} or Email: {BUSINESS_PROFILE.email}</p>
       <div class="ps-carousel reveal">
         <div class="ps-carousel-track">
           <div class="ps-card">

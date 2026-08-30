@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
 ---
 <MainLayout title="About Tahin Spare Suppliers | Marine Equipment Supplier" activeNav="about" description="Learn about Tahin Spare Suppliers, a Bangladesh-based marine engine, generator, hydraulic equipment and spare-parts supplier serving international buyers since 1990.">
   <section class="page-hero">
@@ -30,11 +31,11 @@ import Icon from '../components/Icon.astro';
       <div class="proprietor-grid">
         <div class="proprietor-info reveal-left" style="background:#f3e2e2; padding:30px; border-radius:10px;">
           <h2 class="section-title" style="text-align:center; margin-bottom:10px;">MEET OUR PROPRIETOR</h2>
-          <h3 class="proprietor-name">MD Jamal Uddin</h3>
-          <p class="proprietor-role">Proprietor, Tahin Spare Suppliers</p>
+          <h3 class="proprietor-name">{BUSINESS_PROFILE.proprietor}</h3>
+          <p class="proprietor-role">Proprietor, {BUSINESS_PROFILE.name}</p>
           <div class="proprietor-bio">
-            <p>Under the visionary leadership of <strong>MD Jamal Uddin</strong>, Tahin Spare Suppliers has grown into a global name in the marine industry. With decades of experience and deep-rooted connections within the Chattogram Ship-Breaking Hub, he has established a legacy of trust, quality, and reliability.</p>
-            <blockquote>"Our commitment is to provide the highest quality reconditioned marine equipment that ensures the safety and efficiency of your maritime operations. We value every client and strive to build long-term partnerships through transparent service and competitive excellence."</blockquote>
+            <p>Under the leadership of <strong>{BUSINESS_PROFILE.proprietor}</strong>, Tahin Spare Suppliers focuses on marine-equipment sourcing, inventory identification and direct quotation support from the Chattogram marine-sourcing area.</p>
+            <p>Our operating approach is to identify the exact item where possible, state the recorded condition, confirm the service or inspection scope that can be evidenced, and agree packing, documentation and shipping requirements in the quotation.</p>
           </div>
         </div>
         <div class="proprietor-image reveal-right">
@@ -77,7 +78,7 @@ import Icon from '../components/Icon.astro';
         <div class="strength-card">
           <Icon name="warehouse" size={40} class="strength-icon" />
           <h3>Inventory Access</h3>
-          <p>Our Bhatiari operation supports listed and warehouse inventory checks, including product photos or video inspection where available before purchase.</p>
+          <p>Our {BUSINESS_PROFILE.address.area} operation supports listed and warehouse inventory checks, including product photos or video inspection where available before purchase.</p>
         </div>
         <div class="strength-card">
           <Icon name="globe" size={40} class="strength-icon" />
@@ -102,17 +103,17 @@ import Icon from '../components/Icon.astro';
         <div class="offer-card">
           <Icon name="cogs" size={36} class="offer-icon" />
           <h3>Marine Propulsion Engine</h3>
-          <p>Main propulsion engines from Yanmar, Daihatsu, Caterpillar, MAN B&W, Sulzer, MAK, Deutz, MWM, MTU, SKL.</p>
+          <p>Browse current propulsion-engine listings by maker and model, then confirm the exact unit, recorded condition and required operating specification before ordering.</p>
         </div>
         <div class="offer-card">
           <Icon name="industry" size={36} class="offer-icon" />
           <h3>Marine Gearbox</h3>
-          <p>High-quality reconditioned marine gearboxes for various engine models and sizes.</p>
+          <p>Marine gearbox listings can include used or reconditioned units; confirm the exact maker, model, ratio, recorded condition and available evidence for the specific unit.</p>
         </div>
         <div class="offer-card">
           <Icon name="fan" size={36} class="offer-icon" />
           <h3>Auxiliary Engine</h3>
-          <p>Reliable auxiliary engines for onboard power generation and machinery operation.</p>
+          <p>Auxiliary-engine listings are identified by maker/model and should be checked against the required onboard application, operating specification and recorded condition.</p>
         </div>
         <div class="offer-card">
           <Icon name="bolt" size={36} class="offer-icon" />
@@ -127,12 +128,12 @@ import Icon from '../components/Icon.astro';
         <div class="offer-card">
           <Icon name="ship" size={36} class="offer-icon" />
           <h3>Hydraulic Deck Crane Equipment</h3>
-          <p>Hydraulic crane systems, deck cranes, winches, and complete hydraulic power units.</p>
+          <p>Current hydraulic deck-equipment listings may include crane, winch, component or power-unit requirements; match the exact maker/model and technical specification before purchase.</p>
         </div>
         <div class="offer-card">
           <Icon name="anchor" size={36} class="offer-icon" />
           <h3>Anchor and Chain</h3>
-          <p>Quality anchors and chains for various ship sizes sourced directly from recycling yards.</p>
+          <p>Anchor and chain requirements can be sent for a current availability and specification check. An empty online category should not be treated as evidence of stock.</p>
         </div>
       </div>
     </div>

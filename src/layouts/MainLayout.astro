@@ -3,6 +3,7 @@ import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import FloatingWhatsApp from '../components/FloatingWhatsApp.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getRuntimeEnv } from '../lib/server/env';
 import '../styles/global.css';
 
@@ -17,8 +18,8 @@ interface Props {
 }
 
 const defaultTitle = 'Tahin Spare Suppliers - Marine Engine & Spare Parts Exporter';
-const defaultDescription = 'Tahin Spare Suppliers exports reconditioned marine engines, generators, gearboxes, hydraulic equipment, and spare parts from Chattogram, Bangladesh worldwide.';
-const siteUrl = 'https://tahinspare.com';
+const defaultDescription = 'Tahin Spare Suppliers supplies and exports marine engines, generators, gearboxes, hydraulic equipment and spare parts from Chattogram, Bangladesh.';
+const siteUrl = BUSINESS_PROFILE.website;
 const logoUrl = `${siteUrl}/images/logo-512.png`;
 const socialImageUrl = `${siteUrl}/images/tahin-spare-social.png`;
 
@@ -46,7 +47,7 @@ const organizationSchema = {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       "url": siteUrl,
-      "name": "Tahin Spare Suppliers",
+      "name": BUSINESS_PROFILE.name,
       "publisher": {
         "@id": `${siteUrl}/#organization`
       },
@@ -55,8 +56,7 @@ const organizationSchema = {
     {
       "@type": ["Organization", "LocalBusiness"],
       "@id": `${siteUrl}/#organization`,
-      "name": "Tahin Spare Suppliers",
-      "legalName": "Tahin Spare Suppliers",
+      "name": BUSINESS_PROFILE.name,
       "url": siteUrl,
       "logo": {
         "@type": "ImageObject",
@@ -67,28 +67,28 @@ const organizationSchema = {
       },
       "image": socialImageUrl,
       "description": defaultDescription,
-      "foundingDate": "1990",
-      "areaServed": "Worldwide",
-      "telephone": "+8801710917904",
-      "email": "sales@tahinspare.com",
+      "foundingDate": String(BUSINESS_PROFILE.establishedYear),
+      "areaServed": BUSINESS_PROFILE.serviceArea,
+      "telephone": BUSINESS_PROFILE.phone.e164,
+      "email": BUSINESS_PROFILE.email,
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "Kadamrasul (Saleh Carpet), D.T. Road, Bhatiary",
-        "addressLocality": "Sitakunda",
-        "addressRegion": "Chattogram",
-        "addressCountry": "BD"
+        "streetAddress": BUSINESS_PROFILE.address.street,
+        "addressLocality": BUSINESS_PROFILE.address.locality,
+        "addressRegion": BUSINESS_PROFILE.address.region,
+        "addressCountry": BUSINESS_PROFILE.address.countryCode
       },
       "contactPoint": {
         "@type": "ContactPoint",
-        "telephone": "+8801710917904",
+        "telephone": BUSINESS_PROFILE.phone.e164,
         "contactType": "sales",
-        "email": "sales@tahinspare.com",
-        "areaServed": "Worldwide",
+        "email": BUSINESS_PROFILE.email,
+        "areaServed": BUSINESS_PROFILE.serviceArea,
         "availableLanguage": ["en", "bn"]
       },
       "sameAs": [
-        "https://www.facebook.com/profile.php?id=61581355746283",
-        "https://www.linkedin.com/in/tahin-spare-suppliers-a65b133a8/"
+        BUSINESS_PROFILE.social.facebook,
+        BUSINESS_PROFILE.social.linkedin
       ]
     }
   ]

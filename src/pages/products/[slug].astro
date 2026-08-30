@@ -2,6 +2,7 @@
 import MainLayout from "../../layouts/MainLayout.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import ProductGrid from "../../components/ProductGrid.astro";
+import { BUSINESS_PROFILE } from "../../lib/business-profile";
 import { getCategorySlug } from "../../lib/categories";
 import { absoluteUrl, schemaConditionUrl, toUrlSlug } from "../../lib/seo";
 import { inventoryVerificationMaxAgeDays, resolvePublicAvailability } from "../../lib/inventory-quality";
@@ -52,7 +53,7 @@ if (product.model_number) quoteParams.set("model", product.model_number);
 if (product.partNumber) quoteParams.set("part", product.partNumber);
 const quoteUrl = `/enquiry?${quoteParams.toString()}`;
 const whatsappText = encodeURIComponent(`Hello Tahin Spare Suppliers, I would like a quote for ${product.title}${product.partNumber ? ` (Part ${product.partNumber})` : ""}.`);
-const whatsappUrl = `https://wa.me/8801787429268?text=${whatsappText}`;
+const whatsappUrl = `${BUSINESS_PROFILE.whatsapp.primary.href}?text=${whatsappText}`;
 
 const additionalProperty: Array<Record<string, string>> = [];
 if (availability) additionalProperty.push({ "@type": "PropertyValue", "name": "Availability", "value": availability });

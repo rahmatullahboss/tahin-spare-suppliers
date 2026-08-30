@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
 
@@ -44,36 +45,36 @@ const enquiryContextLabel = requestedProduct || requestedBrand || requestedCateg
               <Icon name="whatsapp" size={20} class="info-icon whatsapp-info-icon" />
               <div>
                 <h4>WhatsApp</h4>
-                <p><a href="https://wa.me/8801787429268" target="_blank" rel="noopener" data-ga-event="whatsapp_contact_click" data-ga-item="primary-sales-whatsapp">+880 1787-429268</a></p>
-                <p><a href="https://wa.me/8801674784019" target="_blank" rel="noopener" data-ga-event="whatsapp_contact_click" data-ga-item="secondary-sales-whatsapp">+880 1674-784019</a></p>
+                <p><a href={BUSINESS_PROFILE.whatsapp.primary.href} target="_blank" rel="noopener" data-ga-event="whatsapp_contact_click" data-ga-item="primary-sales-whatsapp">{BUSINESS_PROFILE.whatsapp.primary.display}</a></p>
+                <p><a href={BUSINESS_PROFILE.whatsapp.secondary.href} target="_blank" rel="noopener" data-ga-event="whatsapp_contact_click" data-ga-item="secondary-sales-whatsapp">{BUSINESS_PROFILE.whatsapp.secondary.display}</a></p>
               </div>
             </div>
             <div class="info-item">
               <Icon name="phone-alt" size={20} class="info-icon" />
               <div>
                 <h4>Call Us</h4>
-                <p>+88-01710917904</p>
+                <p><a href={BUSINESS_PROFILE.phone.href}>{BUSINESS_PROFILE.phone.display}</a></p>
               </div>
             </div>
             <div class="info-item">
               <Icon name="envelope" size={20} class="info-icon" />
               <div>
                 <h4>Email Us</h4>
-                <p>sales@tahinspare.com</p>
+                <p><a href={`mailto:${BUSINESS_PROFILE.email}`}>{BUSINESS_PROFILE.email}</a></p>
               </div>
             </div>
             <div class="info-item">
               <Icon name="map-marker-alt" size={20} class="info-icon" />
               <div>
                 <h4>Our Location</h4>
-                <p><a href="https://maps.app.goo.gl/3wovmfX2FxXH5ymn9?g_st=aw" target="_blank" rel="noopener">Kadamrasul (Saleh Carpet), D.T. Road, Bhatiary, Sitakunda, Chattogram, Bangladesh</a></p>
+                <p><a href={BUSINESS_PROFILE.address.mapsUrl} target="_blank" rel="noopener">{BUSINESS_PROFILE.address.singleLine}</a></p>
               </div>
             </div>
             <div class="info-item">
               <Icon name="clock" size={20} class="info-icon" />
               <div>
                 <h4>Working Hours</h4>
-                <p>Sat - Thu: 9:00 AM - 6:00 PM</p>
+                <p>{BUSINESS_PROFILE.workingHours}</p>
               </div>
             </div>
           </div>

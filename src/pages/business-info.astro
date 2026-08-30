@@ -1,0 +1,84 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
+---
+
+<MainLayout
+  title="Business Information | Tahin Spare Suppliers"
+  description="Verified public business and contact information for Tahin Spare Suppliers, a quote-based marine equipment and spare-parts supplier in Chattogram, Bangladesh."
+>
+  <section class="page-hero">
+    <div class="container">
+      <h1>Business Information</h1>
+      <p>Public identity, contact details and how our quote-based marine supply process works.</p>
+    </div>
+  </section>
+
+  <Breadcrumbs items={[
+    { name: 'Home', href: '/' },
+    { name: 'Business Information', href: '/business-info' },
+  ]} />
+
+  <section class="section">
+    <div class="container trust-shell">
+      <section class="trust-card">
+        <h2>Company & Contact Details</h2>
+        <dl class="business-details">
+          <div><dt>Business name</dt><dd>{BUSINESS_PROFILE.name}</dd></div>
+          <div><dt>Proprietor</dt><dd>{BUSINESS_PROFILE.proprietor}</dd></div>
+          <div><dt>Established</dt><dd>{BUSINESS_PROFILE.establishedYear}</dd></div>
+          <div><dt>Address</dt><dd><a href={BUSINESS_PROFILE.address.mapsUrl} target="_blank" rel="noopener">{BUSINESS_PROFILE.address.singleLine}</a></dd></div>
+          <div><dt>Sales email</dt><dd><a href={`mailto:${BUSINESS_PROFILE.email}`}>{BUSINESS_PROFILE.email}</a></dd></div>
+          <div><dt>Phone</dt><dd><a href={BUSINESS_PROFILE.phone.href}>{BUSINESS_PROFILE.phone.display}</a></dd></div>
+          <div><dt>WhatsApp</dt><dd><a href={BUSINESS_PROFILE.whatsapp.primary.href} target="_blank" rel="noopener">{BUSINESS_PROFILE.whatsapp.primary.display}</a></dd></div>
+          <div><dt>Working hours</dt><dd>{BUSINESS_PROFILE.workingHours}</dd></div>
+        </dl>
+      </section>
+
+      <section class="trust-card">
+        <h2>How Online Listings & Quotes Work</h2>
+        <p>Tahin Spare Suppliers operates as a quote-based B2B marine equipment and spare-parts supplier. The website is an inventory and enquiry surface, not a public-price checkout store.</p>
+        <p>A product listing helps identify an item or requirement. Current availability, recorded condition, technical specification, price, packing, documentation, freight and other commercial terms are confirmed for the specific enquiry in the written quotation or related order documents.</p>
+        <p>If a required item is not published online, buyers can send the maker, model, part number, nameplate information, quantity and destination for a current sourcing or availability check.</p>
+      </section>
+
+      <section class="trust-card evidence-card">
+        <div>
+          <h2>Evidence & Condition Approach</h2>
+          <p>Condition and service scope vary by item. Product-specific photos, nameplates, inspection information, measurements, reconditioning details or test evidence should be treated as available only when they can be supplied for that exact item or job.</p>
+          <p>We do not treat a generic category, brand logo or marketing statement as proof that a particular unit is currently available, reconditioned or tested.</p>
+        </div>
+        <img src="/images/team-workshop.webp" alt="Tahin Spare Suppliers team and workshop activity" width="900" height="675" loading="lazy" />
+      </section>
+
+      <div class="trust-actions">
+        <a class="primary" href="/enquiry">Request a Quote</a>
+        <a href="/contact">Contact Details</a>
+        <a href="/about">About Tahin Spare Suppliers</a>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { padding: 70px 0 54px; background: #111827; color: #fff; text-align: center; }
+  .page-hero h1 { margin: 0 0 10px; font-size: clamp(2rem, 5vw, 3rem); }
+  .page-hero p { margin: 0 auto; max-width: 720px; color: #cbd5e1; line-height: 1.7; }
+  .trust-shell { max-width: 980px; }
+  .trust-card { margin-bottom: 22px; padding: 28px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
+  .trust-card h2 { margin: 0 0 14px; color: #111827; }
+  .trust-card p { color: #475569; line-height: 1.75; }
+  .business-details { margin: 0; }
+  .business-details div { display: grid; grid-template-columns: 180px 1fr; gap: 18px; padding: 12px 0; border-bottom: 1px solid #eef2f7; }
+  .business-details div:last-child { border-bottom: 0; }
+  .business-details dt { font-weight: 800; color: #334155; }
+  .business-details dd { margin: 0; color: #475569; }
+  .business-details a { color: #b11623; }
+  .evidence-card { display: grid; grid-template-columns: 1.2fr .8fr; gap: 24px; align-items: center; }
+  .evidence-card img { width: 100%; height: auto; border-radius: 10px; }
+  .trust-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .trust-actions a { padding: 12px 16px; border: 1px solid #b11623; border-radius: 7px; color: #b11623; font-weight: 800; text-decoration: none; }
+  .trust-actions .primary { background: #b11623; color: #fff; }
+  @media (max-width: 700px) { .business-details div, .evidence-card { grid-template-columns: 1fr; gap: 5px; } .trust-card { padding: 22px 18px; } .trust-actions a { width: 100%; text-align: center; box-sizing: border-box; } }
+</style>

@@ -314,3 +314,38 @@ Next: latest-origin race reconciliation, explicit Phase 4 staging, commit/push, 
 Phase 4's landing-page and conversion system contract is production-complete.
 
 Next: Phase 5 trust/entity/authority hardening, prioritizing only verifiable business identity, evidence and operational claims.
+
+## 2026-08-30 — Phase 5 trust/entity/authority preview-certified
+
+### Trust and entity changes
+
+- Added one normalized `BUSINESS_PROFILE` source for public business name, proprietor, established year, website, sales email, phone, WhatsApp contacts, address, working hours, service area and social profiles.
+- Homepage Organization/WebSite schema now consumes the normalized business identity rather than repeating contact values independently.
+- Footer, Contact, Enquiry, homepage contact CTA, floating WhatsApp, Services and product/part WhatsApp actions now use normalized public contact data where applicable.
+- Normalized the visible phone format to `+880 1710-917904` and removed the stale `+88-01710917904` presentation.
+- Removed the unsupported 24-hour response promise from Contact.
+- Added crawlable `/business-info`, `/privacy` and `/terms` trust pages and linked them from the footer and XML sitemap.
+- Business Information explains the quote-based B2B model, exact-item evidence policy and the distinction between an online listing and a confirmed quotation.
+- Privacy documents the actual contact/enquiry form data flow, optional Google Analytics integration, service-provider processing and contact path for data questions.
+- Terms states that website listings are not a binding offer and that availability, condition, price, specifications and commercial terms are confirmed in a written quotation/order document.
+- About retains first-party warehouse/team imagery while removing unsupported `global name`, `highest quality`, generic reliability and empty-category stock language.
+- Services now makes testing/performance verification conditional on the agreed scope, requires supporting evidence when available, removes a hard-coded maker list and uses destination-specific export wording.
+
+### Verification
+
+- Phase 5 focused trust suite: **5/5 PASS**.
+- Full suite: **92/92 PASS**.
+- Astro production build: **PASS**.
+- Dependency audit: **0 vulnerabilities**.
+- Wrangler dry-run: **PASS**.
+- Isolated preview Worker: `fb27e8e4-f437-49f9-a753-ad5b059cafe4`.
+- Preview production-binding smoke: **PASS**.
+- `/business-info`, `/privacy` and `/terms`: 200 and indexable; all three appear in `/sitemap.xml`.
+- Contact: normalized public phone present; old phone presentation and 24-hour response promise absent.
+- Homepage Organization schema: normalized phone/address plus current Facebook and LinkedIn identities present.
+- About: old unsupported promotional claims absent while product-specific evidence language remains.
+- Services: agreed-scope testing, supporting-evidence and destination-specific language present; old hard-coded brand list absent.
+
+External profile verification (Google Business Profile / Bing Places) and legitimate industry mentions remain external account/business-development actions and are not fabricated in code.
+
+Next: latest-origin race reconciliation, explicit Phase 5 staging, commit/push, CI deploy and custom-domain production verification.

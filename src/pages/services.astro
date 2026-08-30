@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
 ---
 <MainLayout title="Our Services - Tahin Spare Suppliers" activeNav="services" description="Tahin Spare Suppliers offers marine engine supply, spare parts export, equipment reconditioning, and worldwide shipping from Bangladesh.">
   <section class="page-hero">
@@ -54,9 +55,9 @@ import Icon from '../components/Icon.astro';
             <li><Icon name="check" size={14} class="svc-check" /> Full engine disassembly, cleaning &amp; inspection</li>
             <li><Icon name="check" size={14} class="svc-check" /> Component reconditioning &amp; replacement</li>
             <li><Icon name="check" size={14} class="svc-check" /> Precision reassembly &amp; calibration</li>
-            <li><Icon name="check" size={14} class="svc-check" /> Load testing &amp; performance verification</li>
-            <li><Icon name="check" size={14} class="svc-check" /> Inspection or test records where available for the job</li>
-            <li><Icon name="check" size={14} class="svc-check" /> Brands: Yanmar · Daihatsu · Caterpillar · Cummins · Mitsubishi · Bergen · Wartsila</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Load testing or performance verification when included in the agreed scope</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Inspection, test records or other supporting evidence where available for the job</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Supported maker/model scope confirmed before the job</li>
           </ul>
           <a href="/enquiry" class="btn btn-primary">Get a Quote</a>
         </div>
@@ -76,7 +77,7 @@ import Icon from '../components/Icon.astro';
           <h2>Worldwide Parts Export</h2>
           <p>We support international export of marine engines, generator sets, hydraulic equipment and engine spare parts. Packing, documentation and freight arrangements are confirmed according to the item, destination and order terms.</p>
           <ul>
-            <li><Icon name="check" size={14} class="svc-check" /> Export to Asia, Middle East, Africa & Europe</li>
+            <li><Icon name="check" size={14} class="svc-check" /> Destination-specific export and freight coordination</li>
             <li><Icon name="check" size={14} class="svc-check" /> Proper packing & documentation support</li>
             <li><Icon name="check" size={14} class="svc-check" /> Commercial and export-documentation support as applicable</li>
             <li><Icon name="check" size={14} class="svc-check" /> Sea and air freight coordination based on destination</li>
@@ -99,7 +100,7 @@ import Icon from '../components/Icon.astro';
       <p>Send your brand, model or part number for a quotation and confirmation of current availability and export options.</p>
       <div class="cta-btns">
         <a href="/enquiry" class="btn btn-primary">Send Enquiry</a>
-        <a href="https://wa.me/8801787429268" class="btn btn-outline" target="_blank" rel="noopener">WhatsApp Us</a>
+        <a href={BUSINESS_PROFILE.whatsapp.primary.href} class="btn btn-outline" target="_blank" rel="noopener">WhatsApp Us</a>
       </div>
     </div>
   </section>

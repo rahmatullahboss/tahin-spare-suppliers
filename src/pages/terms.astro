@@ -1,0 +1,62 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
+---
+
+<MainLayout
+  title="Terms | Tahin Spare Suppliers"
+  description="Website and quotation terms for marine equipment and spare-parts enquiries with Tahin Spare Suppliers."
+>
+  <section class="page-hero">
+    <div class="container">
+      <h1>Website & Quotation Terms</h1>
+      <p>How website listings, enquiries and written quotations should be interpreted.</p>
+    </div>
+  </section>
+
+  <Breadcrumbs items={[
+    { name: 'Home', href: '/' },
+    { name: 'Terms', href: '/terms' },
+  ]} />
+
+  <section class="section">
+    <article class="container policy-shell">
+      <h2>Website Listings</h2>
+      <p>Information published on this website is provided to help buyers identify marine equipment and spare-parts requirements. A website listing, category page, image or availability label is not a binding offer or completed sale.</p>
+
+      <h2>Quotation & Order Confirmation</h2>
+      <p>Current availability, recorded condition, technical specifications, quantity, price, currency, payment terms, packing, documentation, freight, delivery timing and other commercial details are confirmed through a written quotation, invoice or other agreed order document.</p>
+
+      <h2>Technical Suitability</h2>
+      <p>Buyers should provide and verify the exact maker, model, part number, serial/nameplate information, dimensions, ratio, electrical specification or other relevant technical details. Similar equipment names or model families do not by themselves confirm interchangeability or suitability for a vessel or system.</p>
+
+      <h2>Condition, Inspection & Testing</h2>
+      <p>Condition varies by item. Photos, measurements, inspection information, reconditioning work, test results or other supporting evidence apply only when they are available and identified for the specific item or agreed job. Generic website wording should not be treated as proof of a particular item's condition or testing status.</p>
+
+      <h2>Availability & Third-Party References</h2>
+      <p>Inventory can change as items are sold, reserved, added or reverified. Manufacturer names, models and trademarks are used to identify equipment or compatibility requirements; ownership of third-party marks remains with their respective owners.</p>
+
+      <h2>Questions Before Ordering</h2>
+      <p>If any listing detail is important to your purchase decision, ask for that detail to be confirmed in the written quotation before placing the order.</p>
+
+      <div class="policy-contact">
+        <strong>Sales contact</strong>
+        <a href={`mailto:${BUSINESS_PROFILE.email}`}>{BUSINESS_PROFILE.email}</a>
+        <a href={BUSINESS_PROFILE.phone.href}>{BUSINESS_PROFILE.phone.display}</a>
+      </div>
+    </article>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { padding: 70px 0 54px; background: #111827; color: #fff; text-align: center; }
+  .page-hero h1 { margin: 0 0 10px; font-size: clamp(2rem, 5vw, 3rem); }
+  .page-hero p { margin: 0 auto; max-width: 720px; color: #cbd5e1; line-height: 1.7; }
+  .policy-shell { max-width: 880px; }
+  .policy-shell h2 { margin: 32px 0 10px; color: #111827; font-size: 1.35rem; }
+  .policy-shell h2:first-child { margin-top: 0; }
+  .policy-shell p { color: #475569; line-height: 1.8; }
+  .policy-contact { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin-top: 28px; padding: 18px; border-left: 4px solid #b11623; background: #f8fafc; }
+  .policy-contact a { color: #b11623; font-weight: 800; }
+</style>

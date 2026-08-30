@@ -1,8 +1,9 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
 ---
-<MainLayout title="Contact Us - Tahin Spare Suppliers" activeNav="contact" description="Contact Tahin Spare Suppliers via WhatsApp, phone, or email. Located in Sitakunda, Chattogram, Bangladesh near the ship-breaking yard.">
+<MainLayout title="Contact Us - Tahin Spare Suppliers" activeNav="contact" description="Contact Tahin Spare Suppliers via WhatsApp, phone or email. Located in Sitakunda, Chattogram, Bangladesh.">
   <section class="page-hero">
     <div class="page-hero-accent"></div>
     <div class="page-hero-content">
@@ -16,25 +17,25 @@ import Icon from '../components/Icon.astro';
         <div class="contact-card">
           <Icon name="map-marker-alt" size={36} class="contact-icon" />
           <h3>Our Location</h3>
-          <p><a href="https://maps.app.goo.gl/3wovmfX2FxXH5ymn9?g_st=aw" target="_blank" rel="noopener">Kadamrasul (Saleh Carpet), D.T. Road<br/>Bhatiary, Sitakunda, Chattogram<br/>Bangladesh (Near Scrap Ship Yard)</a></p>
+          <p><a href={BUSINESS_PROFILE.address.mapsUrl} target="_blank" rel="noopener">{BUSINESS_PROFILE.address.street}<br/>{BUSINESS_PROFILE.address.locality}, {BUSINESS_PROFILE.address.region}<br/>{BUSINESS_PROFILE.address.country}</a></p>
         </div>
         <div class="contact-card">
           <Icon name="whatsapp" size={36} class="contact-icon whatsapp-contact-icon" />
           <h3>WhatsApp</h3>
-          <p><a href="https://wa.me/8801787429268" target="_blank" rel="noopener">+880 1787-429268</a></p>
-          <p><a href="https://wa.me/8801674784019" target="_blank" rel="noopener">+880 1674-784019</a></p>
+          <p><a href={BUSINESS_PROFILE.whatsapp.primary.href} target="_blank" rel="noopener">{BUSINESS_PROFILE.whatsapp.primary.display}</a></p>
+          <p><a href={BUSINESS_PROFILE.whatsapp.secondary.href} target="_blank" rel="noopener">{BUSINESS_PROFILE.whatsapp.secondary.display}</a></p>
         </div>
         <div class="contact-card">
           <Icon name="phone-alt" size={36} class="contact-icon" />
           <h3>Call Us</h3>
-          <p><a href="tel:+8801710917904">+88-01710917904</a></p>
+          <p><a href={BUSINESS_PROFILE.phone.href}>{BUSINESS_PROFILE.phone.display}</a></p>
           <p>Available: Sat - Thu</p>
         </div>
         <div class="contact-card">
           <Icon name="envelope" size={36} class="contact-icon" />
           <h3>Email Us</h3>
-          <p><a href="mailto:sales@tahinspare.com">sales@tahinspare.com</a></p>
-          <p>We reply within 24 hours</p>
+          <p><a href={`mailto:${BUSINESS_PROFILE.email}`}>{BUSINESS_PROFILE.email}</a></p>
+          <p>Response time varies by enquiry and working hours</p>
         </div>
       </div>
 
@@ -101,7 +102,7 @@ import Icon from '../components/Icon.astro';
       });
 
       if (res.ok) {
-        statusEl.textContent = 'Your message has been sent successfully! We will get back to you within 24 hours.';
+        statusEl.textContent = 'Your message has been sent successfully! Our team will review it and respond using the contact details you provided.';
         statusEl.className = 'form-status success';
         form.reset();
       } else {

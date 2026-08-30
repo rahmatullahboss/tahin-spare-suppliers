@@ -1,0 +1,61 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
+---
+
+<MainLayout
+  title="Privacy | Tahin Spare Suppliers"
+  description="How Tahin Spare Suppliers handles information submitted through website contact and enquiry forms and uses optional website analytics."
+>
+  <section class="page-hero">
+    <div class="container">
+      <h1>Privacy</h1>
+      <p>How information submitted through this website is used to answer marine-supply enquiries.</p>
+    </div>
+  </section>
+
+  <Breadcrumbs items={[
+    { name: 'Home', href: '/' },
+    { name: 'Privacy', href: '/privacy' },
+  ]} />
+
+  <section class="section">
+    <article class="container policy-shell">
+      <h2>Information You Submit</h2>
+      <p>Our contact and enquiry forms may collect information you choose to provide, including your name, email address, phone number, equipment category, subject, product requirement and message.</p>
+
+      <h2>How We Use It</h2>
+      <p>Submitted information is used to review and respond to enquiries, prepare or follow up on quotations, understand the requested equipment or spare part, and maintain the website's enquiry/contact records. Where configured, the website may also send a notification email to our team so an enquiry can be reviewed.</p>
+
+      <h2>Website Analytics</h2>
+      <p>Google Analytics may be enabled on this website to help us understand site usage and conversion activity. The analytics integration is loaded only when a valid analytics configuration is present. Analytics providers may process technical and usage information according to their own service terms and privacy practices.</p>
+
+      <h2>Sharing & Selling Information</h2>
+      <p>We do not sell contact or enquiry information as a business product. Information may be processed by service providers used to operate the website, database, email notifications, analytics or hosting, to the extent needed for those services.</p>
+
+      <h2>Retention & Requests</h2>
+      <p>Enquiry and contact records may be retained for business communication, quotation follow-up, recordkeeping and site administration. If you want to ask about information you submitted, request a correction, or request deletion where appropriate, contact us using the email below. A request may require enough information to identify the relevant submission.</p>
+
+      <div class="policy-contact">
+        <strong>Privacy contact</strong>
+        <a href={`mailto:${BUSINESS_PROFILE.email}`}>{BUSINESS_PROFILE.email}</a>
+      </div>
+
+      <p class="policy-note">This page describes the website's current operational privacy practices and may be updated when site services or data flows change.</p>
+    </article>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { padding: 70px 0 54px; background: #111827; color: #fff; text-align: center; }
+  .page-hero h1 { margin: 0 0 10px; font-size: clamp(2rem, 5vw, 3rem); }
+  .page-hero p { margin: 0 auto; max-width: 720px; color: #cbd5e1; line-height: 1.7; }
+  .policy-shell { max-width: 880px; }
+  .policy-shell h2 { margin: 32px 0 10px; color: #111827; font-size: 1.35rem; }
+  .policy-shell h2:first-child { margin-top: 0; }
+  .policy-shell p { color: #475569; line-height: 1.8; }
+  .policy-contact { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 28px; padding: 18px; border-left: 4px solid #b11623; background: #f8fafc; }
+  .policy-contact a { color: #b11623; font-weight: 800; }
+  .policy-note { margin-top: 28px; font-size: .92rem; }
+</style>

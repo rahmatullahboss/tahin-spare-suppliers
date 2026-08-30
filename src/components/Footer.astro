@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
 ---
 <footer class="site-footer">
   <div class="footer-top">
@@ -32,26 +33,29 @@ import Icon from './Icon.astro';
           <li><a href="/enquiry">Request a Quote</a></li>
           <li><a href="/blog">Blog</a></li>
           <li><a href="/contact">Contact Us</a></li>
+          <li><a href="/business-info">Business Information</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/terms">Terms</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h3>Contact Info</h3>
         <ul class="contact-list">
-          <li><Icon name="whatsapp" size={14} class="contact-icon whatsapp-icon" /> <a href="https://wa.me/8801787429268" target="_blank" rel="noopener">+880 1787-429268</a></li>
-          <li><Icon name="whatsapp" size={14} class="contact-icon whatsapp-icon" /> <a href="https://wa.me/8801674784019" target="_blank" rel="noopener">+880 1674-784019</a></li>
-          <li><Icon name="phone" size={14} class="contact-icon" /> +88-01710917904</li>
-          <li><Icon name="envelope" size={14} class="contact-icon" /> sales@tahinspare.com</li>
-          <li><Icon name="map-marker-alt" size={14} class="contact-icon" /> <a href="https://maps.app.goo.gl/3wovmfX2FxXH5ymn9?g_st=aw" target="_blank" rel="noopener">Kadamrasul (Saleh Carpet), D.T. Road, Bhatiary, Sitakunda, Chattogram, Bangladesh</a></li>
+          <li><Icon name="whatsapp" size={14} class="contact-icon whatsapp-icon" /> <a href={BUSINESS_PROFILE.whatsapp.primary.href} target="_blank" rel="noopener">{BUSINESS_PROFILE.whatsapp.primary.display}</a></li>
+          <li><Icon name="whatsapp" size={14} class="contact-icon whatsapp-icon" /> <a href={BUSINESS_PROFILE.whatsapp.secondary.href} target="_blank" rel="noopener">{BUSINESS_PROFILE.whatsapp.secondary.display}</a></li>
+          <li><Icon name="phone" size={14} class="contact-icon" /> <a href={BUSINESS_PROFILE.phone.href}>{BUSINESS_PROFILE.phone.display}</a></li>
+          <li><Icon name="envelope" size={14} class="contact-icon" /> <a href={`mailto:${BUSINESS_PROFILE.email}`}>{BUSINESS_PROFILE.email}</a></li>
+          <li><Icon name="map-marker-alt" size={14} class="contact-icon" /> <a href={BUSINESS_PROFILE.address.mapsUrl} target="_blank" rel="noopener">{BUSINESS_PROFILE.address.singleLine}</a></li>
         </ul>
         <div class="footer-social">
-          <a href="https://www.facebook.com/profile.php?id=61581355746283" aria-label="Facebook" target="_blank" rel="noopener"><Icon name="facebook-f" size={14} /></a>
-          <a href="https://www.linkedin.com/in/tahin-spare-suppliers-a65b133a8/" aria-label="LinkedIn" target="_blank" rel="noopener"><Icon name="linkedin-in" size={14} /></a>
+          <a href={BUSINESS_PROFILE.social.facebook} aria-label="Facebook" target="_blank" rel="noopener"><Icon name="facebook-f" size={14} /></a>
+          <a href={BUSINESS_PROFILE.social.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener"><Icon name="linkedin-in" size={14} /></a>
         </div>
       </div>
     </div>
   </div>
   <div class="footer-bottom">
-    <p>&copy; {new Date().getFullYear()} Tahin Spare Suppliers. All Rights Reserved. | Est. 1990 | Proprietor: Md. Jamal Uddin</p>
+    <p>&copy; {new Date().getFullYear()} {BUSINESS_PROFILE.name}. All Rights Reserved. | Est. {BUSINESS_PROFILE.establishedYear} | Proprietor: {BUSINESS_PROFILE.proprietor}</p>
     <p>Created by <a href="https://digitalcare.site/" target="_blank" rel="noopener" class="created-by">DigitalCare</a></p>
   </div>
 </footer>

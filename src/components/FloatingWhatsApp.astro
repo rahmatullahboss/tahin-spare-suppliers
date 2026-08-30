@@ -1,8 +1,9 @@
 ---
 import Icon from './Icon.astro';
+import { BUSINESS_PROFILE } from '../lib/business-profile';
 ---
 <a
-  href="https://wa.me/8801787429268"
+  href={BUSINESS_PROFILE.whatsapp.primary.href}
   class="floating-whatsapp"
   target="_blank"
   rel="noopener"
