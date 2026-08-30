@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
-    "smoke:production": "node scripts/smoke-production.mjs"
+    "smoke:production": "node scripts/smoke-production.mjs",
+    "seo:snapshot": "node scripts/seo-growth-snapshot.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.7",

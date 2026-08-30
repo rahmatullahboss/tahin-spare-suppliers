@@ -485,3 +485,70 @@ Next: Phase 8 evidence-driven performance and crawl-efficiency hardening without
 Phase 8 is code/system complete and production verified. No synthetic ranking, traffic, lead, backlink, revenue or Core Web Vitals result is inferred from this deployment.
 
 Next: Phase 9 builds the 90-day operating cadence, KPI definitions, blank reporting baseline, inventory/content/internal-link maintenance schedule, indexing anomaly workflow and technical regression procedure without fabricating external analytics data.
+
+## 2026-08-30 — Phase 9 90-day growth cadence local release candidate certified
+
+### Phase 8 documentation checkpoint closure
+
+- Phase 8 documentation checkpoint commit `b5483bf` was pushed after a fresh `origin/master` race check.
+- GitHub Actions run `33306570079`: Verify **PASS**, deployment credential gate **PASS**, Cloudflare deployment **PASS**, production smoke **PASS**.
+- The documentation-only deployment moved the same application code to Worker `56cf2211-aa1f-4101-a7a7-7e810b621322` at 100% traffic.
+
+### Operating system implementation
+
+- Added `docs/seo/90-day-growth-cadence.md` with explicit **Owner (role)**, action, evidence/output, escalation trigger and weekly/monthly/quarterly frequencies.
+- Weekly operating loops cover Search Console query/page review, GA4 lead/conversion review, Bing Webmaster review, inventory freshness, evidence-backed product/category enrichment, internal-link maintenance and indexing anomalies.
+- Monthly loops cover full technical regression, commercial-page prioritization, stale/deleted inventory handling and field Core Web Vitals review.
+- Quarterly loops cover authority/entity review and the next 90-day backlog.
+- KPI definitions explicitly separate qualified leads from supporting click events, Search Console index evidence from sitemap inclusion, and field CWV from synthetic timings.
+- Added `docs/seo/growth-report-template.md`; all unavailable external metrics begin as **Not available** and the template explicitly forbids estimating/backfilling missing analytics data.
+- Added `docs/seo/growth-baseline-2026-08-30.md` with only verified code-controlled production facts and explicit **Not available** markers for GA4/Search Console/Bing/CWV/authority metrics that require external evidence.
+
+### Executable monitoring
+
+- Added `npm run seo:snapshot` backed by `scripts/seo-growth-snapshot.mjs`.
+- The monitor fetches production robots/sitemap/homepage/IndexNow-key state and crawls **every URL emitted by the sitemap** with bounded timeout/concurrency.
+- It fails on sitemap/robots unavailability, non-200 sitemap URLs, noindex URLs in the sitemap, canonical mismatch, missing canonical, off-host sitemap URL or fetch failure.
+- It records GA4/Google/Bing verification-hook presence and IndexNow key endpoint state without querying or inventing external analytics data.
+- Prepared `docs/seo/seo-monitor.github-actions.yml` as a ready-to-enable GitHub Actions template: every Monday at `02:00 UTC` (08:00 Asia/Dhaka equivalent) it runs the production snapshot and uploads `seo-growth-snapshot.json` for 90 days. The template contains no production-deploy command. Installing it under `.github/workflows/` remains blocked by the currently available GitHub credentials; the underlying snapshot command is fully usable manually.
+
+### First verified production baseline
+
+Snapshot generated `2026-08-30T10:32:14.691Z` returned `healthy: true`:
+
+- homepage: **200**
+- robots: **200**
+- sitemap: **200**
+- sitemap URLs: **149**
+- products: **88**
+- categories: **10**
+- brands: **40**
+- static pages: **11**
+- non-200 sitemap URLs: **0**
+- noindex sitemap URLs: **0**
+- canonical mismatches: **0**
+- missing canonicals: **0**
+- off-host sitemap URLs: **0**
+- fetch errors: **0**
+- GA4 runtime tag: unconfigured/absent
+- Google verification meta: unconfigured/absent
+- Bing verification meta: unconfigured/absent
+- IndexNow key endpoint: **404**, expected while no authorized key is configured
+
+### TDD and local release gates
+
+- New Phase 9 focused tests were created before the implementation and initially failed **4/4** because the cadence/report/script/workflow artifacts did not yet exist.
+- After implementation, focused Phase 9 tests: **4/4 PASS**.
+- Full suite: **110/110 PASS**.
+- Astro production build: **PASS**.
+- Dependency audit: **0 vulnerabilities**.
+- Wrangler dry-run: **PASS**.
+- `git diff --check`: **PASS**.
+
+### GitHub workflow installation credential boundary
+
+- The first Phase 9 push attempt over the configured HTTPS origin was rejected because the OAuth credential is not authorized to create/update `.github/workflows/seo-monitor.yml` without the GitHub `workflow` scope.
+- An existing SSH credential could read the repository (`git ls-remote` succeeded) but its key is marked read-only, so it cannot be used as a workflow-write bypass.
+- To continue all pushable work without weakening the monitoring design, the workflow was moved to the committed ready-to-enable template `docs/seo/seo-monitor.github-actions.yml`. The executable `npm run seo:snapshot` monitor remains fully usable now; only installing the template under `.github/workflows/` and dispatching it are external credential actions.
+
+External Search Console/GA4/Bing/IndexNow account values, GitHub workflow-install authorization and external authority/profile actions remain pending and are intentionally not synthesized. The pushable Phase 9 code/system release candidate is ready for amended staged review, fresh-origin reconciliation, commit/push, existing CI deployment and production verification.
