@@ -349,3 +349,20 @@ Next: Phase 5 trust/entity/authority hardening, prioritizing only verifiable bus
 External profile verification (Google Business Profile / Bing Places) and legitimate industry mentions remain external account/business-development actions and are not fabricated in code.
 
 Next: latest-origin race reconciliation, explicit Phase 5 staging, commit/push, CI deploy and custom-domain production verification.
+
+## 2026-08-30 — Phase 5 production deployment verified
+
+- Phase 5 commit: `c5cc0fd` (`feat: strengthen business trust signals`).
+- Git CLI push: `f12378b..c5cc0fd master -> master`.
+- GitHub Actions run `33301079648`: Verify **PASS**, deployment credential gate **PASS**, Cloudflare production deploy **PASS**, production smoke **PASS**.
+- Current production Worker: `a5e06ac0-f551-4434-8c68-1102a6bf39cf`.
+- Direct custom-domain smoke: homepage, Spare Parts and Diesel Generator category **PASS**.
+- `/business-info`, `/privacy` and `/terms`: 200, indexable and present in the production XML sitemap.
+- Homepage Organization schema: normalized phone and address present; current Facebook/LinkedIn identities present; unsupported `legalName` assertion absent.
+- Contact: normalized `+880 1710-917904` presentation present; old phone presentation, 24-hour response promise and old ship-breaking-yard meta wording absent.
+- About: proprietor identity and item-specific evidence wording present; old unsupported global-name/highest-quality/reliability/empty-stock claims absent.
+- Services: testing remains conditional on agreed scope, supporting-evidence language is present and the old hard-coded maker list is absent.
+
+Phase 5's code-controlled trust/entity/authority contract is production-complete. Google Business Profile, Bing Places and legitimate external industry mentions remain external account/business-development actions rather than code claims.
+
+Next: Phase 6 AI-search discoverability using visible factual procurement content, first-party inventory evidence, accurate structured data and crawlable internal links—without AI-only duplicate pages, query fan-out or `llms.txt` ranking tactics.
