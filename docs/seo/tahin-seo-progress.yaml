@@ -1,8 +1,8 @@
 project: tahin-spare-suppliers
 initiative: buyer-intent-seo
 started: 2026-08-16
-updated: 2026-08-16
-status: implementation_committed_locally_push_blocked_external_credentials_and_google_account_actions_pending
+updated: 2026-08-30
+status: growth_reconciliation_in_progress_local_seo_ahead_of_origin_production_release_pending
 branch: master
 workspace: /home/user/dev/tahin-spare-suppliers
 
@@ -14,6 +14,8 @@ source_documents:
   product_marketing: .agents/product-marketing.md
   design: docs/superpowers/specs/2026-08-16-tahin-seo-buyer-intent-design.md
   implementation_plan: docs/superpowers/plans/2026-08-16-tahin-seo-buyer-intent-implementation-plan.md
+  growth_reconciliation_plan: docs/superpowers/plans/2026-08-30-tahin-seo-growth-and-production-reconciliation-plan.md
+  execution_log: docs/seo/tahin-seo-execution-log.md
   google_setup_checklist: docs/seo/google-search-setup-checklist.md
 
 skills:
@@ -325,3 +327,149 @@ notes:
   - Google account identifiers are never guessed or committed as fake production values.
   - Product schema intentionally omits a fabricated Offer because pricing is quote-based.
   - Progress must be updated after the master CI deployment result is known.
+
+current_growth_cycle:
+  started: 2026-08-30
+  plan: docs/superpowers/plans/2026-08-30-tahin-seo-growth-and-production-reconciliation-plan.md
+  status: in_progress
+  objective: >-
+    Reconcile the already-certified buyer-intent SEO baseline with production, then harden
+    indexation/schema/inventory freshness before expanding search content.
+  safety:
+    preserve_unknown_untracked_files: true
+    unknown_untracked_paths_observed:
+      - .ai-bridge/
+      - .codexpro-cloudflared.yml
+      - .codexpro.env
+    destructive_git_cleanup_allowed: false
+  current_git_state:
+    branch: master
+    head: f04a4b1
+    origin_master: 92b5ad5
+    ahead: 1
+    behind: 0
+    seo_commit_message: "feat: implement buyer-intent SEO system"
+  current_verification:
+    date: 2026-08-30
+    focused_seo_tests:
+      command: node --experimental-strip-types --test tests/seo-system.test.ts
+      result: pass
+      passed: 16
+      failed: 0
+    tests:
+      command: npm test
+      result: pass
+      passed: 67
+      failed: 0
+    build:
+      command: npm run build
+      result: pass
+      warnings: 0
+    dependency_audit:
+      command: npm audit --audit-level=high
+      result: pass
+      vulnerabilities: 0
+    wrangler_dry_run:
+      command: npx wrangler deploy --dry-run
+      result: pass
+      bindings_verified:
+        - SESSION KV
+        - MEDIA_BUCKET R2
+        - ASSETS
+  findings:
+    - id: SEO-GR-001
+      severity: critical
+      status: open_release_blocker
+      summary: Buyer-intent SEO commit is local-only and not reconciled with origin/master/production.
+      next_action: Review release diff, resolve authorized push/deploy route, deploy, then run production verification.
+    - id: SEO-GR-002
+      severity: medium
+      status: resolved_local_pending_release
+      summary: Legacy "Sell Equipments" wording and related unsupported homepage/footer claims were removed.
+      resolution: Buyer-facing inventory wording and factual marketing-copy regression coverage are now in place.
+    - id: SEO-GR-003
+      severity: high
+      status: resolved_local_pending_release
+      summary: Sitemap emitted ignored priority/changefreq fields and fabricated today's date as lastmod fallback.
+      resolution: Sitemap now emits canonical useful URLs, real lastmod only when available, and excludes ignored priority/changefreq fields.
+    - id: SEO-GR-004
+      severity: high
+      status: resolved_local_pending_release
+      summary: Empty/thin taxonomy and arbitrary brand-category pages could become indexable low-value surfaces.
+      resolution: Empty taxonomy is noindex and excluded from sitemap; unvalidated brand-category pages are guarded by 404/noindex rules.
+    - id: SEO-GR-005
+      severity: medium
+      status: resolved_local_pending_release
+      summary: Organization/WebSite schema was emitted globally and included unsupported quote-model priceRange.
+      resolution: Primary entity schema is homepage-scoped and unsupported priceRange is removed.
+    - id: SEO-GR-006
+      severity: medium
+      status: resolved_local_pending_release
+      summary: FAQPage JSON-LD remained implemented although Google deprecated FAQ rich results in May 2026.
+      resolution: Useful visible FAQs remain, but FAQPage JSON-LD and its rich-result dependency are removed.
+    - id: SEO-GR-007
+      severity: high
+      status: queued
+      summary: Inventory freshness and brand/model normalization are not yet enforced as SEO data-quality contracts.
+      next_action: Add normalized entity/freshness policy before large-scale programmatic SEO expansion.
+  phases:
+    - id: growth-phase-0
+      name: production_reconciliation_and_release_gate
+      status: local_release_preparation_complete_external_delivery_blocked
+      tasks:
+        plan_documented: true
+        progress_tracker_updated: true
+        execution_log_created: true
+        baseline_tests_reverified: true
+        baseline_build_reverified: true
+        remaining_sell_equipments_copy_removed: true
+        unsupported_public_claims_hardened: true
+        release_diff_reviewed: true
+        authorized_push_route_resolved: false
+        production_deployed: false
+        production_smoke_passed: false
+        production_seo_baseline_verified: false
+    - id: growth-phase-1
+      name: technical_indexation_and_schema_hardening
+      status: local_complete_pending_production_release
+      tasks:
+        truthful_sitemap_fields: true
+        truthful_lastmod_only: true
+        empty_taxonomy_noindex: true
+        empty_taxonomy_sitemap_exclusion: true
+        homepage_entity_schema_scope: true
+        unsupported_price_range_removed: true
+        deprecated_faqpage_markup_removed: true
+        visible_buyer_faqs_preserved: true
+        legacy_category_301_consolidation: true
+        canonical_internal_footer_links: true
+        unvalidated_programmatic_pages_guarded: true
+        focused_tests_pass: true
+        full_tests_pass: true
+        build_pass: true
+        dependency_audit_pass: true
+        wrangler_dry_run_pass: true
+    - id: growth-phase-2
+      name: inventory_data_quality_and_freshness
+      status: queued
+    - id: growth-phase-3
+      name: keyword_architecture_and_internal_linking
+      status: queued
+    - id: growth-phase-4
+      name: landing_page_and_conversion_optimization
+      status: queued
+    - id: growth-phase-5
+      name: trust_entity_and_authority_signals
+      status: queued
+    - id: growth-phase-6
+      name: ai_search_discoverability
+      status: queued
+    - id: growth-phase-7
+      name: search_console_ga4_bing_measurement
+      status: queued_external_account_actions
+    - id: growth-phase-8
+      name: performance_and_crawl_efficiency
+      status: queued
+    - id: growth-phase-9
+      name: ninety_day_growth_cadence
+      status: queued

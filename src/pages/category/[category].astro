@@ -36,40 +36,13 @@ const displayBrands = [...new Set(
 )];
 const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
 
-// FAQ markup mirrors the visible answers below and avoids unsupported stock/condition claims.
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": `Do you export ${currentCategory.value} globally?`,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": `Yes, Tahin Spare Suppliers exports reconditioned and used ${currentCategory.value} worldwide directly from the Chattogram Ship-Recycling Yards. We provide secure crating and complete export documentation.`
-      }
-    },
-    {
-      "@type": "Question",
-      "name": `What brands of ${currentCategory.value} do you supply?`,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": `Current online listings for ${currentCategory.value} include ${brandSummary}. If a required maker is not listed, send the exact model or part number for an inventory check.`
-      }
-    },
-    {
-      "@type": "Question",
-      "name": `What is the condition of the ${currentCategory.value}?`,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": `Condition varies by listing. Each product page shows the recorded condition and availability where supplied; contact Tahin Spare Suppliers to confirm the current item before purchase.`
-      }
-    }
-  ]
-};
 ---
-<MainLayout title={`${currentCategory.value} Supplier & Exporter | Tahin Spare Suppliers`} description={`Browse current ${currentCategory.value} listings by brand and model. Request specifications, condition, availability, price and worldwide shipping from Tahin Spare Suppliers.`} activeNav="products">
-  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+<MainLayout
+  title={`${currentCategory.value} Supplier & Exporter | Tahin Spare Suppliers`}
+  description={`Browse current ${currentCategory.value} listings by brand and model. Request specifications, condition, availability, price and worldwide shipping from Tahin Spare Suppliers.`}
+  activeNav="products"
+  noindex={categoryProducts.length === 0}
+>
   <section class="page-hero">
     <div class="page-hero-accent"></div>
     <div class="page-hero-content">
@@ -162,7 +135,7 @@ const faqSchema = {
         <h3 class="reveal">Frequently Asked Questions</h3>
         <div class="faq-item reveal">
           <h4>Do you export {currentCategory.value} globally?</h4>
-          <p>Yes, Tahin Spare Suppliers exports reconditioned and used {currentCategory.value} worldwide directly from the Chattogram Ship-Recycling Yards. We provide secure crating and complete export documentation.</p>
+          <p>Tahin Spare Suppliers handles international enquiries for {currentCategory.value} and can provide packing, export-documentation and shipping support from Chattogram, Bangladesh. Confirm the specific item's condition and availability before ordering.</p>
         </div>
         <div class="faq-item reveal">
           <h4>What brands of {currentCategory.value} do you supply?</h4>

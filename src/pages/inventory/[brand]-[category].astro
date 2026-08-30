@@ -1,81 +1,73 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import { toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listContent } from '../../lib/server/repository';
 import { findCategoryBySlug } from '../../lib/server/categories';
 
 const { brand, category } = Astro.params;
 const env = getRuntimeEnv(Astro.locals);
-
-// Validate category
 const currentCategory = await findCategoryBySlug(env, category ?? '');
-if (!currentCategory) {
-  return Astro.redirect('/products');
+
+if (!currentCategory || !brand) {
+  return new Response('Inventory combination not found', {
+    status: 404,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+  });
 }
 
-// Ensure brand is present and format it nicely
-const formattedBrand = brand ? brand.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
-
 const liveProducts = await listContent(env, 'products', { limit: 1000 });
+const categoryProducts = liveProducts.filter((product) => (
+  product.category === currentCategory.value
+  && Boolean(product.brand)
+  && toUrlSlug(product.brand ?? '') === brand
+));
 
-// Filter products matching BOTH category and brand (case insensitive)
-const categoryProducts = liveProducts.filter((p) => {
-  const matchesCategory = p.category === currentCategory.value;
-  const matchesBrand = p.brand && p.brand.toLowerCase() === formattedBrand.toLowerCase();
-  return matchesCategory && matchesBrand;
-});
+if (categoryProducts.length === 0) {
+  return new Response('Inventory combination not found', {
+    status: 404,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+  });
+}
 
-const pageTitle = `Reconditioned ${formattedBrand} ${currentCategory.value} Suppliers & Exporters`;
-const pageDesc = `Browse our extensive inventory of genuine reconditioned ${formattedBrand} ${currentCategory.value}. Sourced from Chattogram, ready for worldwide export at Tahin Spare Suppliers.`;
+const displayBrand = categoryProducts[0]?.brand?.trim() || brand.replace(/-/g, ' ');
+const pageTitle = `${displayBrand} ${currentCategory.value} Inventory | Tahin Spare Suppliers`;
+const pageDesc = `Browse currently listed ${displayBrand} ${currentCategory.value} from Tahin Spare Suppliers. Check each listing for model, condition and availability, then request a quote.`;
+const canonicalPath = `/inventory/${brand}-${currentCategory.slug}`;
 ---
-<MainLayout title={pageTitle} description={pageDesc} activeNav="products">
+<MainLayout
+  title={pageTitle}
+  description={pageDesc}
+  activeNav="products"
+  canonicalUrl={`https://tahinspare.com${canonicalPath}`}
+  noindex={true}
+>
   <section class="page-hero">
     <div class="page-hero-accent"></div>
     <div class="page-hero-content container">
-      <h1 class="reveal"><span style="color:#222;">{formattedBrand}</span> <br/>{currentCategory.value}</h1>
-      <p class="hero-subtitle reveal">Certified Reconditioned & Used Marine Equipment for Ready Export</p>
+      <h1>{displayBrand} {currentCategory.value}</h1>
+      <p>Currently listed equipment grouped by brand and category.</p>
     </div>
   </section>
 
+  <Breadcrumbs items={[
+    { name: 'Home', href: '/' },
+    { name: 'Marine Equipment', href: '/products' },
+    { name: currentCategory.value, href: `/category/${currentCategory.slug}` },
+    { name: displayBrand, href: canonicalPath }
+  ]} />
+
   <section class="section">
     <div class="container">
-      <div class="header-action">
-        <a href={`/category/${category}`} class="back-link">← Back to All {currentCategory.value}</a>
-      </div>
-
-      <div class="seo-intro-box">
+      <div class="inventory-intro">
         <p>
-          At <strong>Tahin Spare Suppliers</strong>, we maintain a vast stock of genuine, reconditioned <strong>{formattedBrand} {currentCategory.value}</strong>. 
-          Sourced directly from the world's largest ship recycling yards in Chattogram, our inventory is thoroughly inspected by marine professionals to ensure peak performance and reliability.
+          This page groups currently listed <strong>{displayBrand} {currentCategory.value}</strong> inventory.
+          Review the individual listing for model, condition and recorded availability, and contact Tahin Spare Suppliers to confirm the item before ordering.
         </p>
       </div>
-
-      {categoryProducts.length === 0 ? (
-        <div class="empty-state">
-           <h3>Awaiting Stock Updates</h3>
-           <p>Our online catalog is currently updating. We may have unlisted <strong>{formattedBrand} {currentCategory.value}</strong> in our warehouse. Please send us your requirements.</p>
-           <a href="/enquiry" class="btn btn-primary" style="margin-top:20px;">Send Enquiry for Availability</a>
-        </div>
-      ) : (
-        <div class="products-grid reveal-stagger">
-          {categoryProducts.map((product) => (
-            <a href={`/products/${product.slug}`} class="product-card" style="text-decoration: none;">
-              <div class="product-img">
-                <img src={product.imageUrl || '/images/marine-engine.webp'} alt={product.title} loading="lazy" />
-              </div>
-              <div class="product-content">
-                <h3>{product.title}</h3>
-                <p class="live-excerpt">{product.excerpt}</p>
-                <div class="product-meta">
-                  {product.brand && <span class="badge badge-brand">{product.brand}</span>}
-                  {product.model_number && <span class="badge badge-model">{product.model_number}</span>}
-                </div>
-                <span class="view-details">VIEW DETAILS</span>
-              </div>
-            </a>
-          ))}
-        </div>
-      )}
+      <ProductGrid products={categoryProducts} />
     </div>
   </section>
 </MainLayout>
@@ -83,151 +75,27 @@ const pageDesc = `Browse our extensive inventory of genuine reconditioned ${form
 <style>
   .page-hero {
     position: relative;
-    height: 280px;
-    background-color: #fcfcfc;
-    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
-    background-size: 20px 20px;
+    min-height: 260px;
+    background: #f8fafc;
     display: flex;
     align-items: center;
     overflow: hidden;
   }
   .page-hero-accent {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: clamp(20px, 5vw, 100px);
-    height: 100%;
+    inset: 0 auto 0 0;
+    width: clamp(24px, 6vw, 110px);
     background: #b11623;
     clip-path: polygon(0 0, 100% 0, 30% 100%, 0 100%);
-    z-index: 0;
   }
-  .page-hero-content { position: relative; z-index: 1; padding-left: 20px; }
-  .page-hero-content h1 { font-size: 40px; font-weight: 800; margin-bottom: 12px; color: #b11623; line-height: 1.1; }
-  .page-hero-content p { font-size: 16px; color: #555; max-width: 600px; font-weight: 500; }
-
-  .header-action { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-  .back-link {
-    display: inline-block;
-    color: #666;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s;
-  }
-  .back-link:hover { color: #b11623; }
-
-  .seo-intro-box {
-    background: #fdfdfd;
+  .page-hero-content { position: relative; z-index: 1; }
+  .page-hero-content h1 { margin: 0 0 10px; color: #111827; font-size: clamp(2rem, 5vw, 3rem); }
+  .page-hero-content p { margin: 0; color: #475569; }
+  .inventory-intro {
+    margin-bottom: 30px;
+    padding: 20px 24px;
     border-left: 4px solid #b11623;
-    padding: 20px 25px;
-    margin-bottom: 40px;
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    background: #f8fafc;
   }
-  .seo-intro-box p { color: #444; line-height: 1.7; font-size: 15px; margin: 0; }
-
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    background: #f9f9f9;
-    border-radius: 12px;
-    border: 1px dashed #ccc;
-  }
-  .empty-state h3 { font-size: 24px; color: #222; margin-bottom: 15px; }
-  .empty-state p { font-size: 15px; color: #666; max-width: 500px; margin: 0 auto; line-height: 1.6; }
-  .btn-primary { background: #b11623; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block; transition: background 0.3s; }
-  .btn-primary:hover { background: #8c0f1a; }
-
-  .products-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  .product-card {
-    position: relative;
-    border-radius: 0;
-    background: #fff;
-    border: 1px solid #eaeaea;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-  }
-  .product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
-  }
-  .product-img {
-    width: 100%;
-    height: 240px;
-    position: relative;
-    overflow: hidden;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 92%);
-  }
-  .product-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s ease;
-  }
-  .product-card:hover .product-img img {
-    transform: scale(1.06);
-  }
-  .product-content {
-    padding: 24px 24px 30px;
-    background: #fff;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-  }
-  .product-content h3 {
-    font-size: 20px;
-    color: #111;
-    font-weight: 700;
-    line-height: 1.4;
-    margin-bottom: 10px;
-  }
-  .live-excerpt {
-    margin: 0 0 16px;
-    color: #666;
-    line-height: 1.6;
-    flex-grow: 1;
-  }
-  .product-meta {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-  .badge {
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-  .badge-brand { background: #eee; color: #333; }
-  .badge-model { background: #ffeaa7; color: #d35400; }
-  
-  .view-details {
-    font-size: 13px;
-    color: #b11623;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: color 0.3s;
-    margin-top: auto;
-  }
-  .product-card:hover .view-details {
-    color: #c0392b;
-  }
-
-  @media (max-width: 768px) {
-    .products-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 480px) {
-    .products-grid { grid-template-columns: 1fr; }
-  }
+  .inventory-intro p { margin: 0; color: #334155; line-height: 1.7; }
 </style>

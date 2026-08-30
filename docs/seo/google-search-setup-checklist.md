@@ -64,7 +64,7 @@ After the SEO release is deployed and `https://tahinspare.com/sitemap.xml` retur
 3. Confirm Search Console accepts the sitemap without fetch errors.
 4. Re-check after Google processes it for discovered/indexed URL counts.
 
-The sitemap implementation enumerates products, parts, blog posts, top-level categories, subcategories and real brand pages. It uses paginated repository reads so it does not silently stop at the first 1,000 records.
+The sitemap implementation enumerates products, parts, blog posts, useful top-level categories/subcategories and real brand pages using paginated repository reads. Empty taxonomy pages are intentionally excluded. `<lastmod>` is emitted only when a real content modification timestamp exists; the sitemap does not fabricate the current date and does not emit Google-ignored `<priority>` or `<changefreq>` fields.
 
 ## 4. Priority URL inspection
 
@@ -89,12 +89,15 @@ For each URL verify:
 
 ## 5. Structured-data verification
 
-Test representative product and blog pages with Google's Rich Results Test / Schema Markup Validator.
+Test the homepage plus representative product and blog pages with Google's Rich Results Test / Schema Markup Validator.
 
-Product pages intentionally **do not invent a price Offer**. Tahin Spare Suppliers is quote-based; Product JSON-LD carries the product identity, brand, model, part number, category, condition when safely known, and visible supporting properties. If the business later publishes a real price/currency/availability contract, Offer markup can be added from that same authoritative data.
+The primary `WebSite` + `Organization` entity graph is emitted on the canonical homepage rather than redundantly on every route. Product pages intentionally **do not invent a price Offer**. Tahin Spare Suppliers is quote-based; Product JSON-LD carries the product identity, brand, model, part number, category, condition when safely known, and visible supporting properties. If the business later publishes a real price/currency/availability contract, Offer markup can be added from that same authoritative data.
+
+Visible buyer FAQs may remain on category pages, but FAQPage JSON-LD is not used as a Google rich-result tactic because Google deprecated FAQ rich results in May 2026.
 
 Verify:
 
+- homepage Organization/WebSite fields match visible, verifiable business information,
 - Product markup parses,
 - `name`, `brand`, `model`, `mpn/sku` match visible page content,
 - condition is only emitted when it can be mapped safely,
@@ -105,9 +108,19 @@ Verify:
 
 Source-level work in this release removes broken hero resources, reserves image layout space, lazy-loads listing images, prioritizes the primary product/blog image and avoids adding unnecessary client-side JavaScript.
 
-After sufficient field data exists, verify Search Console Core Web Vitals and PageSpeed Insights for mobile and desktop. Investigate any failing URL group rather than assuming local build performance proves real-user CWV.
+After sufficient field data exists, verify Search Console Core Web Vitals and PageSpeed Insights for mobile and desktop. Use real-user/field data at the 75th percentile and target LCP <= 2.5 s, INP <= 200 ms, and CLS <= 0.1. Investigate any failing URL group rather than assuming local build performance proves real-user CWV.
 
-## 7. Product publishing operating procedure
+## 7. Bing Webmaster Tools / IndexNow
+
+1. Verify `tahinspare.com` in Bing Webmaster Tools.
+2. Submit `https://tahinspare.com/sitemap.xml`.
+3. Review Bing indexing/crawl diagnostics for representative inventory URLs.
+4. After the inventory freshness workflow is implemented, evaluate IndexNow for real product/part create, update, sold/unavailable, and removal events.
+5. IndexNow is a freshness notification mechanism, not a replacement for crawlable internal links, canonical URLs, or the XML sitemap.
+
+No IndexNow key or endpoint integration is fabricated in code until the authorized Bing/site-owner setup is available.
+
+## 8. Product publishing operating procedure
 
 For every new inventory item, enter as much real data as possible:
 
@@ -132,7 +145,7 @@ For every new inventory item, enter as much real data as possible:
 
 Use **Generate SEO Defaults** only as a starting point. Review the generated title/meta/ALT and keep every product page materially useful and unique. Do not create model pages with no real inventory facts just to target keywords.
 
-## 8. Ongoing monitoring
+## 9. Ongoing monitoring
 
 Weekly during the first month after rollout, then monthly:
 

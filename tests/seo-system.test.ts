@@ -137,10 +137,33 @@ test("technical SEO has environment-backed Google hooks and complete sitemap col
   assert.match(sitemap, /listAllContent\(env, "blog"\)/);
   assert.match(sitemap, /\/brands\/\$\{brandSlug\}/);
   assert.match(sitemap, /\/category\/\$\{parent\.slug\}\/\$\{subcategory\.slug\}/);
+  assert.doesNotMatch(sitemap, /<priority>/);
+  assert.doesNotMatch(sitemap, /<changefreq>/);
+  assert.doesNotMatch(sitemap, /lastmod\s*\?\?\s*today/);
+  assert.match(sitemap, /categoryProducts\.length > 0/);
+  assert.match(sitemap, /subcategoryProducts\.length > 0/);
+});
+
+test("schema scope and thin taxonomy indexation stay truthful", async () => {
+  const layout = await source("src/layouts/MainLayout.astro");
+  const categoryPage = await source("src/pages/category/[category].astro");
+  const subcategoryPage = await source("src/pages/category/[category]/[subcategory].astro");
+
+  assert.match(layout, /const isHomepage = Astro\.url\.pathname === ['\"]\/['\"]/);
+  assert.doesNotMatch(layout, /"priceRange"/);
+  assert.match(layout, /isHomepage\s*&&[\s\S]*organizationSchema/);
+  assert.match(categoryPage, /noindex=\{categoryProducts\.length === 0\}/);
+  assert.match(subcategoryPage, /noindex=\{filteredProducts\.length === 0\}/);
+  assert.doesNotMatch(categoryPage, /"@type": "FAQPage"/);
+  assert.doesNotMatch(subcategoryPage, /"@type": "FAQPage"/);
+  assert.match(categoryPage, /Frequently Asked Questions/);
+  assert.match(subcategoryPage, /Frequently Asked Questions/);
 });
 
 test("navigation and structured-content hubs match buyer intent", async () => {
   const header = await source("src/components/Header.astro");
+  const footer = await source("src/components/Footer.astro");
+  const homepage = await source("src/pages/index.astro");
   const productsHub = await source("src/pages/products.astro");
   const brands = await source("src/pages/brands.astro");
   const brandPage = await source("src/pages/brands/[brand].astro");
@@ -155,10 +178,26 @@ test("navigation and structured-content hubs match buyer intent", async () => {
   assert.match(header, />Request Quote<\/a>/);
   assert.match(productsHub, /Marine Engines, Generators & Spare Parts/);
   assert.doesNotMatch(productsHub, /Sell Equipments/);
+  assert.doesNotMatch(homepage, /Sell Equipments/);
+  assert.doesNotMatch(footer, /Sell Equipments/);
+  assert.match(homepage, /Marine Equipment & Spare Parts/);
+  assert.match(footer, /Products & Inventory/);
+  assert.doesNotMatch(footer, /href="\/(marine-propulsion-engines|marine-gearbox|marine-auxillary-engines|diesel-generator-sets|marine-spare-parts|hydraulic-crane-equipment|anchor-and-chain|marine-pump)"/);
+  assert.match(footer, /href="\/category\/marine-propulsion-engine"/);
+  assert.match(footer, /href="\/category\/spare-parts"/);
   assert.match(brands, /Marine Equipment Brands/);
   assert.match(brandPage, /Brand inventory not found/);
   assert.match(blog, /"@type": "BlogPosting"/);
   assert.match(blog, /<Breadcrumbs items=/);
+});
+
+test("core marketing pages avoid unsupported universal and superlative claims", async () => {
+  const homepage = await source("src/pages/index.astro");
+  const about = await source("src/pages/about.astro");
+  const services = await source("src/pages/services.astro");
+  const combined = `${homepage}\n${about}\n${services}`;
+
+  assert.doesNotMatch(combined, /vast inventory|most competitive|ready for immediate dispatch|every product undergoes|every part is inspected, tested and certified|all kinds of reconditioned|trusted exporter|all commercial & shipping documents provided|competitive freight rates|for all engine types|Fast<br\/>Clearance/i);
 });
 
 test("buyer enquiry context and conversion analytics are wired", async () => {
@@ -195,7 +234,7 @@ test("missing hero asset references are fully removed", async () => {
   }
 });
 
-test("legacy category pages canonicalize to dynamic category authority", async () => {
+test("legacy category pages permanently redirect to dynamic category authority", async () => {
   const expected = new Map([
     ["src/pages/marine-propulsion-engines.astro", "/category/marine-propulsion-engine"],
     ["src/pages/marine-gearbox.astro", "/category/marine-gearbox"],
@@ -209,6 +248,15 @@ test("legacy category pages canonicalize to dynamic category authority", async (
 
   for (const [file, canonicalPath] of expected) {
     const text = await source(file);
-    assert.match(text, new RegExp(`canonicalUrl="https://tahinspare\\.com${canonicalPath}"`));
+    assert.match(text, new RegExp(`Astro\\.redirect\\(['\"]${canonicalPath}['\"],\\s*301\\)`));
   }
+});
+
+test("unvalidated brand-category programmatic pages cannot become indexable thin pages", async () => {
+  const inventoryPage = await source("src/pages/inventory/[brand]-[category].astro");
+
+  assert.match(inventoryPage, /categoryProducts\.length === 0/);
+  assert.match(inventoryPage, /status:\s*404/);
+  assert.match(inventoryPage, /noindex=\{true\}/);
+  assert.doesNotMatch(inventoryPage, /world's largest|vast stock|Certified Reconditioned|ready for worldwide export/i);
 });

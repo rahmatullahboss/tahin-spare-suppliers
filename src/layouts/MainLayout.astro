@@ -34,6 +34,7 @@ const {
 
 const canonical = canonicalUrl ?? `${siteUrl}${Astro.url.pathname}`;
 const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const isHomepage = Astro.url.pathname === '/';
 const runtimeEnv = getRuntimeEnv(Astro.locals);
 const googleAnalyticsId = runtimeEnv.GOOGLE_ANALYTICS_ID?.trim() ?? '';
 const googleSiteVerification = runtimeEnv.GOOGLE_SITE_VERIFICATION?.trim() ?? '';
@@ -66,7 +67,6 @@ const organizationSchema = {
       },
       "image": socialImageUrl,
       "description": defaultDescription,
-      "priceRange": "$$$",
       "foundingDate": "1990",
       "areaServed": "Worldwide",
       "telephone": "+8801710917904",
@@ -100,7 +100,7 @@ const organizationSchema = {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    {noindex ? <meta name="robots" content="noindex, nofollow" /> : <meta name="robots" content="index, follow, max-image-preview:large" />}
+    {noindex ? <meta name="robots" content="noindex, follow" /> : <meta name="robots" content="index, follow, max-image-preview:large" />}
     <link rel="canonical" href={canonical} />
     <meta name="theme-color" content="#b11623" />
     {googleSiteVerification && <meta name="google-site-verification" content={googleSiteVerification} />}
@@ -130,8 +130,8 @@ const organizationSchema = {
     {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
     <title>{title}</title>
 
-    <!-- JSON-LD Organization Schema -->
-    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+    <!-- Site/entity schema belongs on the canonical homepage rather than every route. -->
+    {isHomepage && <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />}
 
     {hasGoogleAnalytics && (
       <>
