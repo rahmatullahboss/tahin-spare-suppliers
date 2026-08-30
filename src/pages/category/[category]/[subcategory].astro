@@ -3,7 +3,7 @@ import MainLayout from '../../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import { toUrlSlug } from '../../../lib/seo';
 import { getRuntimeEnv } from '../../../lib/server/env';
-import { listContent } from '../../../lib/server/repository';
+import { listProductSummaries } from '../../../lib/server/repository';
 import { findSubcategoryBySlug } from '../../../lib/server/categories';
 
 const { category, subcategory } = Astro.params;
@@ -19,10 +19,8 @@ if (!result) {
 
 const { parent, subcategory: currentSubcategory } = result;
 
-const liveProducts = await listContent(env, 'products', { limit: 1000 });
-const filteredProducts = liveProducts.filter(
-  (p) => p.category === parent.value && p.subcategory === currentSubcategory.value
-);
+const categoryProducts = await listProductSummaries(env, { category: parent.value, limit: 1000 });
+const filteredProducts = categoryProducts.filter((p) => p.subcategory === currentSubcategory.value);
 const PRODUCT_PAGE_SIZE = 12;
 const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCT_PAGE_SIZE));
 

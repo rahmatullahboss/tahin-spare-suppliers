@@ -4,7 +4,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import { toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
-import { listContent } from '../../lib/server/repository';
+import { listProductSummaries } from '../../lib/server/repository';
 import { findCategoryBySlug } from '../../lib/server/categories';
 
 const { brand, category } = Astro.params;
@@ -18,10 +18,9 @@ if (!currentCategory || !brand) {
   });
 }
 
-const liveProducts = await listContent(env, 'products', { limit: 1000 });
+const liveProducts = await listProductSummaries(env, { category: currentCategory.value, limit: 1000 });
 const categoryProducts = liveProducts.filter((product) => (
-  product.category === currentCategory.value
-  && Boolean(product.brand)
+  Boolean(product.brand)
   && toUrlSlug(product.brand ?? '') === brand
 ));
 

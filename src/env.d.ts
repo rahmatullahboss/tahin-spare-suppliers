@@ -25,5 +25,8 @@ declare namespace App {
     runtime: {
       env: RuntimeEnv;
     };
+    cfContext?: {
+      waitUntil(promise: Promise<unknown>): void;
+    };
   }
 }

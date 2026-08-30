@@ -3,10 +3,10 @@ import MainLayout from "../layouts/MainLayout.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { toUrlSlug } from "../lib/seo";
 import { getRuntimeEnv } from "../lib/server/env";
-import { listContent } from "../lib/server/repository";
+import { listProductSummaries } from "../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
-const products = await listContent(env, "products", { limit: 1000 });
+const products = await listProductSummaries(env, { limit: 1000 });
 const brandCounts = new Map<string, { name: string; count: number }>();
 
 products.forEach((product) => {

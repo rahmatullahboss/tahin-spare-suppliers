@@ -5,12 +5,12 @@ import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { toUrlSlug } from '../lib/seo';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
-import { listContent } from '../lib/server/repository';
+import { listProductSummaries } from '../lib/server/repository';
 
 const env = getRuntimeEnv(Astro.locals);
 const [categories, products] = await Promise.all([
   listAllCategories(env),
-  listContent(env, 'products', { limit: 1000 }),
+  listProductSummaries(env, { limit: 1000 }),
 ]);
 const liveCategories = categories.filter((category) => products.some((product) => product.category === category.value));
 const liveBrandCounts = new Map<string, number>();

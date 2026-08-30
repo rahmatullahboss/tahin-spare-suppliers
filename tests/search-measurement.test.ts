@@ -96,9 +96,9 @@ test("content admin API notifies IndexNow after create update and delete", async
   const keyRoute = await source("src/pages/indexnow-key.txt.ts");
 
   assert.match(api, /notifyContentChange/);
-  assert.match(api, /await notifyContentChange\(env, type, \[item\.slug\]\)/);
+  assert.match(api, /queueContentChange\(context, env, type, \[item\.slug\]\)/);
   assert.match(api, /existingItem\?\.slug/);
-  assert.match(api, /await notifyContentChange\(env, type, .*item\.slug/);
+  assert.match(api, /queueContentChange\(context, env, type, .*item\.slug/);
   assert.match(keyRoute, /getIndexNowKey/);
   assert.match(keyRoute, /status: 404/);
   assert.match(keyRoute, /text\/plain/);

@@ -7,7 +7,7 @@ import { getCategorySlug } from "../../lib/categories";
 import { absoluteUrl, schemaConditionUrl, toUrlSlug } from "../../lib/seo";
 import { inventoryVerificationMaxAgeDays, resolvePublicAvailability } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
-import { getContentBySlug, listContent, type ContentRecord } from "../../lib/server/repository";
+import { getContentBySlug, listProductSummaries, type ContentRecord } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
 const slug = Astro.params.slug;
@@ -20,7 +20,7 @@ if (!product) {
   });
 }
 
-const allProducts = await listContent(env, "products", { limit: 1000 });
+const allProducts = await listProductSummaries(env, { limit: 1000 });
 const manualSlugs = new Set(product.relatedProducts ?? []);
 const manualRelated = allProducts.filter((candidate) => manualSlugs.has(candidate.slug) && candidate.id !== product.id);
 const fallbackRelated = allProducts.filter((candidate) => (

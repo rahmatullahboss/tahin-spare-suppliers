@@ -1,9 +1,7 @@
 import type { APIRoute } from "astro";
 import { toUrlSlug } from "../lib/seo";
-import type { CustomCategory, DisplayCategory } from "../lib/categories";
-import { listAllCategories, listAllSubcategories } from "../lib/server/categories";
 import { getRuntimeEnv } from "../lib/server/env";
-import { listAllContent, type ContentRecord } from "../lib/server/repository";
+import { getSitemapSnapshot, type SitemapSnapshot } from "../lib/server/sitemap-data";
 
 const SITE_URL = "https://tahinspare.com";
 
@@ -43,30 +41,14 @@ function xmlEscape(value: string): string {
 
 export const GET: APIRoute = async (context) => {
   const env = getRuntimeEnv(context.locals);
-  let products: ContentRecord[] = [];
-  let parts: ContentRecord[] = [];
-  let blogPosts: ContentRecord[] = [];
-  let categories: DisplayCategory[] = [];
-  let subcategories: CustomCategory[] = [];
-
-  const results = await Promise.allSettled([
-    listAllContent(env, "products"),
-    listAllContent(env, "parts"),
-    listAllContent(env, "blog"),
-    listAllCategories(env),
-    listAllSubcategories(env)
-  ]);
-
-  if (results[0].status === "fulfilled") products = results[0].value;
-  else console.error("Sitemap product collection failed", results[0].reason);
-  if (results[1].status === "fulfilled") parts = results[1].value;
-  else console.error("Sitemap parts collection failed", results[1].reason);
-  if (results[2].status === "fulfilled") blogPosts = results[2].value;
-  else console.error("Sitemap blog collection failed", results[2].reason);
-  if (results[3].status === "fulfilled") categories = results[3].value;
-  else console.error("Sitemap category collection failed", results[3].reason);
-  if (results[4].status === "fulfilled") subcategories = results[4].value;
-  else console.error("Sitemap subcategory collection failed", results[4].reason);
+  let snapshot: SitemapSnapshot;
+  try {
+    snapshot = await getSitemapSnapshot(env);
+  } catch (error) {
+    console.error("Sitemap data collection failed", error);
+    snapshot = { products: [], parts: [], blogPosts: [], categories: [], subcategories: [] };
+  }
+  const { products, parts, blogPosts, categories, subcategories } = snapshot;
 
   const dynamicPages: SitemapPage[] = [];
 

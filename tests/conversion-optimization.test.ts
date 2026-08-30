@@ -9,7 +9,7 @@ const source = async (path: string) => readFile(new URL(`../${path}`, import.met
 test("homepage proves current supply scope and serves named B2B buyers without unsupported brand claims", async () => {
   const homepage = await source("src/pages/index.astro");
 
-  assert.match(homepage, /listContent/);
+  assert.match(homepage, /listProductSummaries/);
   assert.match(homepage, /liveCategories/);
   assert.match(homepage, /liveBrands/);
   assert.match(homepage, /ship owners/i);

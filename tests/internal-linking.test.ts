@@ -33,9 +33,9 @@ test("products hub prioritizes live categories and conditionally links a parts c
   const productsPage = await source("src/pages/products.astro");
 
   assert.match(productsPage, /liveCategories/);
-  assert.match(productsPage, /listContent\(env, ['"]products['"]/);
-  assert.match(productsPage, /listContent\(env, ['"]parts['"]/);
-  assert.match(productsPage, /parts\.length > 0/);
+  assert.match(productsPage, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
+  assert.match(productsPage, /countContent\(env, ['"]parts['"]\)/);
+  assert.match(productsPage, /partsCount > 0/);
   assert.match(productsPage, /href="\/parts"/);
 });
 

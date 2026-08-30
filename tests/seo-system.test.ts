@@ -131,10 +131,9 @@ test("technical SEO has environment-backed Google hooks and complete sitemap col
   assert.match(layout, /googletagmanager\.com\/gtag\/js/);
   assert.match(exampleConfig, /"GOOGLE_ANALYTICS_ID": ""/);
   assert.match(exampleConfig, /"GOOGLE_SITE_VERIFICATION": ""/);
-  assert.match(sitemap, /Promise\.allSettled/);
-  assert.match(sitemap, /listAllContent\(env, "products"\)/);
-  assert.match(sitemap, /listAllContent\(env, "parts"\)/);
-  assert.match(sitemap, /listAllContent\(env, "blog"\)/);
+  assert.match(sitemap, /getSitemapSnapshot\(env\)/);
+  assert.doesNotMatch(sitemap, /Promise\.allSettled/);
+  assert.doesNotMatch(sitemap, /listAllContent/);
   assert.match(sitemap, /\/brands\/\$\{brandSlug\}/);
   assert.match(sitemap, /\/category\/\$\{parent\.slug\}\/\$\{subcategory\.slug\}/);
   assert.doesNotMatch(sitemap, /<priority>/);

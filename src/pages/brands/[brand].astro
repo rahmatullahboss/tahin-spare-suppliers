@@ -6,7 +6,7 @@ import { absoluteUrl, toUrlSlug } from "../../lib/seo";
 import { canonicalizeBrand } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { listAllCategories } from "../../lib/server/categories";
-import { listContent } from "../../lib/server/repository";
+import { listProductSummaries } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
 const brandSlug = Astro.params.brand ?? "";
@@ -18,7 +18,7 @@ if (canonicalBrandSlug && canonicalBrandSlug !== brandSlug) {
 }
 
 const [products, categories] = await Promise.all([
-  listContent(env, "products", { limit: 1000 }),
+  listProductSummaries(env, { limit: 1000 }),
   listAllCategories(env),
 ]);
 const brandProducts = products.filter((product) => product.brand && toUrlSlug(product.brand) === brandSlug);

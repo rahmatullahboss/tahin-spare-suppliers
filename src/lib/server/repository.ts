@@ -232,6 +232,28 @@ export async function listContent(
   return rows.map((row) => mapRecord(type, row));
 }
 
+export async function listProductSummaries(
+  env: RuntimeEnv,
+  options?: { page?: number; limit?: number; category?: string }
+): Promise<ContentRecord[]> {
+  await ensureSchema(env);
+  const sql = getDb(env);
+  const page = Math.max(1, options?.page ?? 1);
+  const limit = normalizeContentLimit(options?.limit);
+  const offset = (page - 1) * limit;
+  const params: string[] = [];
+  let query = "SELECT id, slug, name, short_description, image_url, updated_at, category, subcategory, brand, model_number, part_number, image_alt FROM products";
+
+  if (options?.category) {
+    query += " WHERE category = $1";
+    params.push(options.category);
+  }
+
+  query += ` ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
+  const rows = await sql.query(query, params.length ? params : undefined);
+  return rows.map((row) => mapRecord("products", row));
+}
+
 export async function listAllContent(env: RuntimeEnv, type: ContentType): Promise<ContentRecord[]> {
   const batchSize = 1000;
   const records: ContentRecord[] = [];

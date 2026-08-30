@@ -4,7 +4,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { getCategoryBuyingGuidance } from '../../lib/category-buying-guidance';
 import { toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
-import { listContent } from '../../lib/server/repository';
+import { listProductSummaries } from '../../lib/server/repository';
 import { findCategoryBySlug, listSubcategories } from '../../lib/server/categories';
 
 const { category } = Astro.params;
@@ -23,9 +23,7 @@ const subcategories = currentCategory.id
   ? await listSubcategories(env, currentCategory.id)
   : [];
 
-const liveProducts = await listContent(env, 'products', { limit: 1000 });
-
-const categoryProducts = liveProducts.filter((p) => p.category === currentCategory.value);
+const categoryProducts = await listProductSummaries(env, { category: currentCategory.value, limit: 1000 });
 const PRODUCT_PAGE_SIZE = 12;
 const totalProductPages = Math.max(1, Math.ceil(categoryProducts.length / PRODUCT_PAGE_SIZE));
 

@@ -31,6 +31,20 @@ export async function requireAdminRequest(context: Parameters<APIRoute>[0]) {
   return env;
 }
 
+function queueContentChange(
+  context: Parameters<APIRoute>[0],
+  env: ReturnType<typeof getRuntimeEnv>,
+  type: ContentType,
+  slugs: Array<string | undefined>,
+) {
+  const notification = notifyContentChange(env, type, slugs);
+  if (context.locals.cfContext?.waitUntil) {
+    context.locals.cfContext.waitUntil(notification);
+    return;
+  }
+  void notification;
+}
+
 export function createListHandler(type: ContentType): APIRoute {
   return async (context) => {
     try {
@@ -62,7 +76,7 @@ export function createListHandler(type: ContentType): APIRoute {
       }
 
       const item = await createContent(env, type, body);
-      await notifyContentChange(env, type, [item.slug]);
+      queueContentChange(context, env, type, [item.slug]);
       return Response.json({ item });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Internal server error";
@@ -100,7 +114,7 @@ export function createDetailHandler(type: ContentType): APIRoute {
           }
         }
 
-        await notifyContentChange(env, type, [existingItem?.slug]);
+        queueContentChange(context, env, type, [existingItem?.slug]);
         return Response.json({ ok: true });
       }
 
@@ -111,7 +125,7 @@ export function createDetailHandler(type: ContentType): APIRoute {
       }
 
       const item = await updateContent(env, type, id, body);
-      await notifyContentChange(env, type, [existingItem?.slug, item.slug]);
+      queueContentChange(context, env, type, [existingItem?.slug, item.slug]);
       return Response.json({ item });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Internal server error";
