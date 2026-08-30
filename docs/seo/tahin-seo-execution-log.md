@@ -447,3 +447,41 @@ Next: Phase 7 Search Console / GA4 / Bing measurement support and external-accou
 The code/system contract is production-verified, but the following actions require authorized external account values and are intentionally not fabricated: real GA4 property/web-stream Measurement ID, Google Search Console property verification and sitemap submission, Bing Webmaster Tools verification and sitemap submission, and a real authorized IndexNow key.
 
 Next: Phase 8 evidence-driven performance and crawl-efficiency hardening without weakening correctness or the batched Neon schema-bootstrap protection.
+
+## 2026-08-30 — Phase 8 performance and crawl-efficiency production deployment verified
+
+### Evidence-driven hot-path changes
+
+- Added a lightweight public product-summary projection so homepage, products/brands hubs, category/subcategory pages, brand pages, product related-item discovery and guarded brand-category inventory pages no longer fetch unused full product content/specification fields.
+- Category and subcategory paths push the category filter into the database before application-side filtering; `/products` checks dedicated parts existence with a count query instead of loading all part records.
+- Sitemap product, parts, blog and custom-category collections are now issued through one Neon transaction request, preserving the earlier batched `ensureSchema()` protection and reducing crawl-time database subrequest fan-out.
+- Sitemap keeps a static-page fallback if the batched collection fails rather than turning the sitemap endpoint into a hard failure.
+- IndexNow create/update/delete/slug-change delivery now uses Astro Cloudflare `cfContext.waitUntil()` when available, keeping the bounded external notification request outside the admin response critical path while preserving non-blocking failure behavior.
+
+### TDD and release certification
+
+- New Phase 8 regression suite was written red-first; all three initial contracts failed before implementation and passed after the changes.
+- Focused performance/search/SEO/schema-batching verification: **26/26 PASS** at the implementation checkpoint.
+- Final full suite: **106/106 PASS**.
+- Astro production build: **PASS**.
+- Dependency audit: **0 vulnerabilities**.
+- Wrangler dry-run: **PASS** with SESSION KV, MEDIA_BUCKET R2 and ASSETS bindings.
+- Isolated preview Worker: `ca0a165b-1af1-4d74-9eeb-902d042dc3fa`.
+- Preview core pages and sitemap: **PASS**; unconfigured `/indexnow-key.txt`: **404**.
+- Preview and then-current production sitemap URL sets were **149/149 exact-equal** and representative rendered HTML byte sizes were unchanged.
+- Synthetic request timings did not show a consistent preview latency win, so no Core Web Vitals or latency improvement claim is recorded from those samples. The certified improvement is structural DB payload/subrequest reduction with unchanged crawl output.
+
+### Production delivery and direct verification
+
+- Phase 8 implementation commit: `90016ac` (`perf: reduce crawl and inventory request cost`).
+- Fresh-origin race check before push showed no remote advance; push completed without touching the preserved local MCP/credential paths.
+- GitHub Actions run `33306359684`: Verify **PASS**, dependency audit/build/Wrangler validation **PASS**, Cloudflare credential gate **PASS**, production deployment **PASS**, production smoke **PASS**.
+- Current production Worker: `beed305e-e598-437a-a93a-d2739fa204c4`, deployed at 100% traffic.
+- Direct custom-domain checks: `/`, `/products`, `/brands`, `/category/spare-parts`, `/brands/man-b-w`, representative product, `/contact`, `/enquiry` and `/sitemap.xml` all return **200**.
+- Production sitemap contains **149** canonical URL entries; invalid brand-category combination returns true **404**.
+- GA4, Google Search Console verification and Bing verification markup remain absent while their real values are unconfigured; `/indexnow-key.txt` remains deliberate **404**.
+- Existing schema-bootstrap transaction guard, inventory freshness rules, canonical brand normalization, structured product data, conversion semantics and noindex policy for unvalidated programmatic inventory combinations remain protected by the full regression suite.
+
+Phase 8 is code/system complete and production verified. No synthetic ranking, traffic, lead, backlink, revenue or Core Web Vitals result is inferred from this deployment.
+
+Next: Phase 9 builds the 90-day operating cadence, KPI definitions, blank reporting baseline, inventory/content/internal-link maintenance schedule, indexing anomaly workflow and technical regression procedure without fabricating external analytics data.
