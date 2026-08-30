@@ -344,8 +344,8 @@ current_growth_cycle:
     destructive_git_cleanup_allowed: false
   current_git_state:
     branch: master
-    head: f21eee8
-    origin_master: f21eee8
+    head: 49d7760
+    origin_master: 49d7760
     ahead: 0
     behind: 0
     seo_baseline_commit: f04a4b1
@@ -360,6 +360,7 @@ current_growth_cycle:
     trust_authority_commit: c5cc0fd
     phase5_production_docs_commit: a2ee37b
     ai_discoverability_commit: f21eee8
+    phase6_production_docs_commit: 49d7760
   current_verification:
     date: 2026-08-30
     focused_seo_tests:
@@ -372,10 +373,15 @@ current_growth_cycle:
       result: pass
       passed: 5
       failed: 0
+    focused_search_measurement_tests:
+      command: node --experimental-strip-types --test tests/search-measurement.test.ts
+      result: pass
+      passed: 6
+      failed: 0
     tests:
       command: npm test
       result: pass
-      passed: 97
+      passed: 103
       failed: 0
     build:
       command: npm run build
@@ -393,11 +399,11 @@ current_growth_cycle:
         - MEDIA_BUCKET R2
         - ASSETS
     production:
-      current_worker_version: 876a4331-86f7-4e08-a057-6ddd3751e3bb
+      current_worker_version: 88b2fc41-5f43-4b75-ba8b-3f6c9530e817
       direct_smoke: pass
       seo_contract_checks: pass
       baseline_github_actions_run: 33297862196
-      latest_github_actions_run: 33301934759
+      latest_github_actions_run: 33302080432
       github_actions_deploy: pass
       github_actions_smoke: pass
       ci_cloudflare_credentials_configured: true
@@ -458,6 +464,19 @@ current_growth_cycle:
       ai_only_duplicate_pages_added: false
       structured_data_preserved: true
       first_party_visible_evidence_preserved: true
+    phase7_preview:
+      worker_version: a6d1d55d-40d8-434c-afa3-c2b2af8bd471
+      smoke: pass
+      ga4_runtime_tag: absent_external_configuration
+      google_site_verification: absent_external_configuration
+      bing_site_verification: absent_external_configuration
+      indexnow_key_endpoint_status: 404_disabled
+      contact_generate_lead_source: pass
+      enquiry_generate_lead_source: pass
+      bing_meta_hook: source_verified
+      indexnow_mutation_hook: unit_verified
+      indexnow_invalid_or_missing_key_noop: pass
+      indexnow_canonical_url_filter: pass
   findings:
     - id: SEO-GR-001
       severity: critical
@@ -666,7 +685,35 @@ current_growth_cycle:
         production_contract_checks_pass: true
     - id: growth-phase-7
       name: search_console_ga4_bing_measurement
-      status: queued_external_account_actions
+      status: code_support_preview_certified_external_account_actions_pending
+      tasks:
+        ga4_valid_measurement_id_guard: preview_verified
+        successful_enquiry_generate_lead: preview_verified
+        successful_contact_generate_lead: preview_verified
+        rfq_click_supporting_events: preserved
+        whatsapp_click_supporting_events: preserved
+        google_html_verification_hook: preview_verified_unconfigured
+        bing_html_verification_hook: preview_verified_unconfigured
+        runtime_env_types_synced: true
+        indexnow_key_endpoint: preview_verified_disabled
+        indexnow_create_update_delete_notifications: unit_verified
+        indexnow_slug_change_old_and_new_urls: unit_verified
+        indexnow_canonical_host_filter: unit_verified
+        indexnow_timeout_bounded: true
+        indexnow_failure_non_blocking: true
+        measurement_checklist_updated: true
+        ga4_account_configured: external_account_action_pending
+        google_search_console_verified: external_account_action_pending
+        google_sitemap_submitted: external_account_action_pending
+        bing_webmaster_verified: external_account_action_pending
+        bing_sitemap_submitted: external_account_action_pending
+        indexnow_real_key_configured: external_account_action_pending
+        focused_tests_pass: true
+        full_tests_pass: true
+        build_pass: true
+        dependency_audit_pass: true
+        wrangler_dry_run_pass: true
+        preview_smoke_pass: true
     - id: growth-phase-8
       name: performance_and_crawl_efficiency
       status: queued

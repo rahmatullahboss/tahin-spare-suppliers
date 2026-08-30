@@ -19,10 +19,12 @@
 6. Open the website once with normal consent/browser settings and verify the visit appears in GA4 Realtime/DebugView.
 7. The release already emits these GA4 events when GA4 is configured:
    - `generate_lead` after a successful `/enquiry` submission,
-   - `request_quote_click` from product RFQ CTAs,
+   - `generate_lead` after a successful `/contact` submission,
+   - `request_quote_click` from RFQ CTAs,
    - `whatsapp_product_click` from product/part WhatsApp CTAs,
-   - `whatsapp_contact_click` from the enquiry-page WhatsApp contacts.
-8. In GA4, mark `generate_lead` as a key event/conversion and evaluate whether the click events should also be key events for reporting.
+   - `whatsapp_contact_click` from buyer-contact WhatsApp CTAs.
+8. In GA4, mark `generate_lead` as the primary key event. Keep RFQ/WhatsApp clicks as supporting funnel events unless reporting requirements justify a different treatment.
+9. Verify `generate_lead` in Realtime/DebugView only after a successful form response; failed/abandoned submissions must not be counted as completed leads.
 
 The layout emits the Google tag only when `GOOGLE_ANALYTICS_ID` matches a `G-...` measurement-ID shape. Empty or invalid values do not emit a fake tag.
 
@@ -112,13 +114,26 @@ After sufficient field data exists, verify Search Console Core Web Vitals and Pa
 
 ## 7. Bing Webmaster Tools / IndexNow
 
-1. Verify `tahinspare.com` in Bing Webmaster Tools.
-2. Submit `https://tahinspare.com/sitemap.xml`.
-3. Review Bing indexing/crawl diagnostics for representative inventory URLs.
-4. After the inventory freshness workflow is implemented, evaluate IndexNow for real product/part create, update, sold/unavailable, and removal events.
-5. IndexNow is a freshness notification mechanism, not a replacement for crawlable internal links, canonical URLs, or the XML sitemap.
+1. Add or import `https://tahinspare.com/` in Bing Webmaster Tools.
+2. For Bing meta-tag verification, copy only the real token from Bing's `msvalidate.01` tag and configure:
 
-No IndexNow key or endpoint integration is fabricated in code until the authorized Bing/site-owner setup is available.
+   ```text
+   BING_SITE_VERIFICATION=REAL_BING_TOKEN_HERE
+   ```
+
+   When configured, the shared layout emits `<meta name="msvalidate.01" content="...">`. Empty values emit no fake Bing verification tag.
+3. Submit `https://tahinspare.com/sitemap.xml` and review indexing/crawl diagnostics for representative inventory URLs.
+4. Optional IndexNow support is implemented for content create, update and delete events. To activate it, generate/authorize a real IndexNow key and configure:
+
+   ```text
+   INDEXNOW_KEY=REAL_INDEXNOW_KEY_HERE
+   ```
+
+5. When a valid key is configured, `https://tahinspare.com/indexnow-key.txt` exposes the key for IndexNow ownership verification and admin product/part/blog mutations submit canonical changed URLs to `https://api.indexnow.org/indexnow`. Slug changes submit both the previous and current canonical URL. Requests are bounded by a short timeout and IndexNow rejection/network failure does not turn a successful content write into a failed write.
+6. When `INDEXNOW_KEY` is absent or invalid, `/indexnow-key.txt` returns 404 and content mutations make no IndexNow request.
+7. IndexNow is a freshness notification mechanism, not a guarantee of crawling/indexing and not a replacement for crawlable internal links, canonical URLs, or the XML sitemap.
+
+Never invent a Bing verification token or IndexNow key. Both must come from the authorized site-owner/search-account setup.
 
 ## 8. Product publishing operating procedure
 

@@ -11,6 +11,7 @@ import {
   type ContentType
 } from "./repository";
 import { getRuntimeEnv } from "./env";
+import { notifyContentChange } from "./indexnow";
 
 export async function readJson<T>(request: Request): Promise<T> {
   try {
@@ -61,6 +62,7 @@ export function createListHandler(type: ContentType): APIRoute {
       }
 
       const item = await createContent(env, type, body);
+      await notifyContentChange(env, type, [item.slug]);
       return Response.json({ item });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Internal server error";
@@ -85,8 +87,9 @@ export function createDetailHandler(type: ContentType): APIRoute {
         return new Response("Missing id", { status: 400 });
       }
 
+      const existingItem = await getContentById(env, type, id);
+
       if (context.request.method === "DELETE") {
-        const existingItem = await getContentById(env, type, id);
         await deleteContent(env, type, id);
 
         if (existingItem?.imageKey) {
@@ -97,6 +100,7 @@ export function createDetailHandler(type: ContentType): APIRoute {
           }
         }
 
+        await notifyContentChange(env, type, [existingItem?.slug]);
         return Response.json({ ok: true });
       }
 
@@ -107,6 +111,7 @@ export function createDetailHandler(type: ContentType): APIRoute {
       }
 
       const item = await updateContent(env, type, id, body);
+      await notifyContentChange(env, type, [existingItem?.slug, item.slug]);
       return Response.json({ item });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Internal server error";

@@ -39,6 +39,7 @@ const isHomepage = Astro.url.pathname === '/';
 const runtimeEnv = getRuntimeEnv(Astro.locals);
 const googleAnalyticsId = runtimeEnv.GOOGLE_ANALYTICS_ID?.trim() ?? '';
 const googleSiteVerification = runtimeEnv.GOOGLE_SITE_VERIFICATION?.trim() ?? '';
+const bingSiteVerification = runtimeEnv.BING_SITE_VERIFICATION?.trim() ?? '';
 const hasGoogleAnalytics = /^G-[A-Z0-9]+$/i.test(googleAnalyticsId);
 const organizationSchema = {
   "@context": "https://schema.org",
@@ -104,6 +105,7 @@ const organizationSchema = {
     <link rel="canonical" href={canonical} />
     <meta name="theme-color" content="#b11623" />
     {googleSiteVerification && <meta name="google-site-verification" content={googleSiteVerification} />}
+    {bingSiteVerification && <meta name="msvalidate.01" content={bingSiteVerification} />}
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />

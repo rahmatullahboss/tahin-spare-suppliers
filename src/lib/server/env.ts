@@ -11,6 +11,8 @@ export type RuntimeEnv = {
   NOTIFICATION_EMAIL?: string;
   GOOGLE_ANALYTICS_ID?: string;
   GOOGLE_SITE_VERIFICATION?: string;
+  BING_SITE_VERIFICATION?: string;
+  INDEXNOW_KEY?: string;
   INVENTORY_VERIFICATION_MAX_AGE_DAYS?: string;
 };
 

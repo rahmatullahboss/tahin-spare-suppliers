@@ -13,11 +13,15 @@
     "NOTIFICATION_EMAIL": "tahinship@gmail.com",
     "GOOGLE_ANALYTICS_ID": "",
     "GOOGLE_SITE_VERIFICATION": "",
+    "BING_SITE_VERIFICATION": "",
+    "INDEXNOW_KEY": "",
     "INVENTORY_VERIFICATION_MAX_AGE_DAYS": "30"
   }
 
   // Set GOOGLE_ANALYTICS_ID to the real GA4 web stream measurement ID (G-...).
   // Set GOOGLE_SITE_VERIFICATION to the real Search Console HTML meta token.
+  // Set BING_SITE_VERIFICATION to the real Bing Webmaster Tools meta verification token.
+  // Set INDEXNOW_KEY only after generating/authorizing a real IndexNow key; the site will expose it at /indexnow-key.txt and notify content create/update/delete events.
   // INVENTORY_VERIFICATION_MAX_AGE_DAYS controls how long positive stock verification remains fresh (default 30 days).
   // Configure DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET,
   // RESEND_API_KEY and RESEND_WEBHOOK_SECRET with `wrangler secret put`.

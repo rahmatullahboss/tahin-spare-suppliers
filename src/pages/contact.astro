@@ -86,6 +86,7 @@ import { BUSINESS_PROFILE } from '../lib/business-profile';
   const form = document.getElementById('contact-form') as HTMLFormElement;
   const statusEl = document.getElementById('contact-form-status') as HTMLElement;
   const submitBtn = document.getElementById('contact-submit-btn') as HTMLButtonElement;
+  const analyticsWindow = window as Window & { gtag?: (...args: unknown[]) => void };
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -102,6 +103,9 @@ import { BUSINESS_PROFILE } from '../lib/business-profile';
       });
 
       if (res.ok) {
+        analyticsWindow.gtag?.('event', 'generate_lead', {
+          lead_source: 'website_contact'
+        });
         statusEl.textContent = 'Your message has been sent successfully! Our team will review it and respond using the contact details you provided.';
         statusEl.className = 'form-status success';
         form.reset();
