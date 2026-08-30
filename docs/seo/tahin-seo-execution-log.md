@@ -296,3 +296,21 @@ Next: Phase 4 landing-page and conversion optimization using truthful buyer evid
 - Resulting enquiry page: 200 with product/brand/category/model context visible and Spare Parts preselected.
 
 Next: latest-origin race reconciliation, explicit Phase 4 staging, commit/push, CI production deploy and custom-domain verification.
+
+## 2026-08-30 — Phase 4 production deployment verified
+
+- Phase 4 commit: `65597da` (`feat: optimize SEO landing conversions`).
+- Git CLI push: `053a818..65597da master -> master`.
+- GitHub Actions run `33300244109`: Verify **PASS**, deployment credential gate **PASS**, Cloudflare production deploy **PASS**, production smoke **PASS**.
+- Current production Worker: `f56ae6ee-fa65-41ef-8463-0396837d9aca`.
+- Direct custom-domain smoke: homepage, Spare Parts and Diesel Generator category **PASS**.
+- Homepage production output: 200 with **88** online inventory listings, named B2B buyer roles, `What to Send for a Faster Quote`, live-listing-derived brand links/counts, no old `MAJOR BRANDS WE CARRY`, no removed static non-live logo set, and no empty `Anchor and Chain` promotion.
+- Spare Parts category: 200 with exact part-number procurement guidance and contextual category RFQ.
+- Diesel Generator category: 200 with kVA/kW, voltage, frequency and RPM buyer-input guidance.
+- Representative MAN B&W product: 200 with mobile quote bar; generated RFQ carries product, canonical brand, category and model context.
+- Resulting enquiry page: 200 with product/brand/category/model context visible and Spare Parts preselected.
+- Successful enquiry analytics remains gated behind a successful API response; no click-only event is promoted as a completed lead.
+
+Phase 4's landing-page and conversion system contract is production-complete.
+
+Next: Phase 5 trust/entity/authority hardening, prioritizing only verifiable business identity, evidence and operational claims.
