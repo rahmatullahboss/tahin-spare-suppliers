@@ -3,11 +3,19 @@ import MainLayout from "../../layouts/MainLayout.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import ProductGrid from "../../components/ProductGrid.astro";
 import { absoluteUrl, toUrlSlug } from "../../lib/seo";
+import { canonicalizeBrand } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { listContent } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
 const brandSlug = Astro.params.brand ?? "";
+const canonicalBrandNameFromPath = canonicalizeBrand(brandSlug.replace(/-/g, " "));
+const canonicalBrandSlug = toUrlSlug(canonicalBrandNameFromPath);
+
+if (canonicalBrandSlug && canonicalBrandSlug !== brandSlug) {
+  return Astro.redirect(`/brands/${canonicalBrandSlug}`, 301);
+}
+
 const products = await listContent(env, "products", { limit: 1000 });
 const brandProducts = products.filter((product) => product.brand && toUrlSlug(product.brand) === brandSlug);
 const brandName = brandProducts[0]?.brand?.trim() ?? "";

@@ -105,8 +105,82 @@ Focused SEO source/regression coverage now checks:
 - `npx wrangler deploy --dry-run`: **PASS**; SESSION KV, MEDIA_BUCKET R2 and ASSETS bindings verified.
 - Release-oriented diffs for sitemap, layout/schema, taxonomy and programmatic inventory routes were reviewed and match the planned SEO scope.
 
-### Production boundary
+### Production boundary — superseded later on 2026-08-30
 
-Production deployment has **not** been performed in this batch. The current Tahin_Spare workspace exposes verification/editing tools but no authorized push/deploy action, and the previously documented repository/Cloudflare delivery credential boundary remains unresolved. The pre-existing untracked `.ai-bridge/`, `.codexpro-cloudflared.yml`, and `.codexpro.env` files were preserved and not used as an implicit credential source.
+At this checkpoint production deployment had not yet been performed. The later sections below supersede this boundary with the completed Git CLI push, rollback-safe production deployment, runtime hotfix, and end-to-end GitHub Actions deployment evidence.
 
-Next after an authorized delivery path is available: deploy the certified release, run production smoke/canonical/404/schema checks, verify Search Console sitemap/indexing, and then begin Phase 2 inventory normalization/freshness work.
+## 2026-08-30 — Production reconciliation completed
+
+### Git and first deployment
+
+- Git CLI remote: `origin = https://github.com/rahmatullahboss/tahin-spare-suppliers.git`.
+- SEO hardening checkpoint committed as `42cc783` and pushed to `master`.
+- GitHub verify job passed, but its deploy job initially skipped because `CLOUDFLARE_API_TOKEN` was not configured in repository secrets.
+- Local Wrangler authentication was valid, so the certified bundle was deployed directly for production verification.
+
+### Production regression, rollback and root cause
+
+The first production SEO deployment returned HTTP 500 on DB-backed routes. The release was immediately rolled back to the previous healthy Worker version `53cfb945-5994-4a68-8175-19ad316f1683`; production smoke then returned green.
+
+Isolated Worker preview diagnostics reproduced the failure without placing production traffic at risk. The exact root cause was Cloudflare's per-invocation subrequest limit: `ensureSchema()` executed every SQL schema statement as a separate Neon HTTP request, and the expanded SEO schema crossed the Worker limit at statement 51.
+
+The runtime fix batches the schema statements into one supported Neon transaction request. Regression test `tests/db-schema-batching.test.ts` permanently guards against reintroducing the per-statement loop. Hotfix commit `e76c5b8` was pushed to `master`.
+
+### Final certification and production proof
+
+- Full suite: **68/68 PASS**.
+- Build: **PASS**.
+- Production dependency audit: **0 vulnerabilities**.
+- Wrangler dry-run: **PASS**.
+- Direct production deploy after the hotfix: **PASS**.
+- Direct production smoke: homepage, Spare Parts and Diesel Generator category **PASS**.
+- Additional production checks: `/products`, `/brands`, `/blog`, `/enquiry`, `/sitemap.xml` return 200; `/marine-pump` returns 301 to `/category/marine-pump`; invalid brand-category inventory returns true 404; empty `/category/anchor-and-chain` returns 200 with `noindex, follow`.
+- Current production Worker after CI deployment: `34a33d39-6005-4505-a490-24db7a2d9125`.
+
+### CI/CD delivery path repaired
+
+- Existing `CLOUDFLARE_ACCOUNT_ID` GitHub secret was retained.
+- Missing `CLOUDFLARE_API_TOKEN` was securely set through GitHub CLI without printing its value.
+- Workflow dispatch `33297862196` completed end-to-end: Verify **PASS**, Deployment credentials **PASS**, Deploy production **PASS**, production smoke **PASS**.
+- Future pushes to `master` now have an authorized Cloudflare deployment path rather than silently skipping deploy.
+
+Unknown/untracked `.ai-bridge/`, `.codexpro-cloudflared.yml`, and `.codexpro.env` remain preserved and uncommitted.
+
+## 2026-08-30 — Phase 2 opened
+
+With production reconciliation and technical indexation hardening verified live, work proceeds to the inventory data-quality contract: canonical brand normalization, product-title hygiene, availability/condition verification dates, and stale-stock downgrade behavior before any large-scale programmatic SEO expansion.
+
+## 2026-08-30 — Phase 2 local release candidate certified
+
+### Production inventory audit
+
+- Public product API audited **88** inventory records before rollout.
+- Confirmed brand fragmentation included Cat/Caterpillar, Yamnar/Yanmar, MAN B&W variants, Daitshu/Diatshu, MacGregor variants, descriptive maker strings and trailing whitespace.
+- Confirmed two product titles carried editorial `Update 24` suffixes.
+- Current production records had no populated condition or availability values, so the rollout does not fabricate positive stock status or verification dates.
+
+### Data-quality implementation
+
+- Added canonical brand normalization on reads and future writes while preserving intentional multi-brand identities.
+- Added conservative product-title cleanup that removes editor update markers without altering legitimate technical terms such as `Test Pump`.
+- Added nullable `availability_verified_at` and `condition_verified_at` product dates and corresponding admin date fields.
+- Added a 30-day default positive-stock freshness contract, configurable through `INVENTORY_VERIFICATION_MAX_AGE_DAYS` (1–365 days).
+- Missing, future or stale positive stock evidence resolves publicly to `Contact to confirm current availability`; terminal states such as Sold/Unavailable remain terminal and never receive a positive green badge.
+- Product visible facts and Product JSON-LD use the same resolved availability evidence.
+- Legacy alias brand URLs permanently redirect to canonical brand authorities (for example `/brands/yamnar` → `/brands/yanmar`, `/brands/cat` → `/brands/caterpillar`).
+- No mass mutation of existing product rows is performed; normalization is read-safe and future-write-safe.
+- Operating policy documented in `docs/seo/inventory-freshness-policy.md`.
+
+### Verification
+
+- Focused inventory-quality tests: **7/7 PASS**.
+- Full suite: **75/75 PASS**.
+- `npm run build`: **PASS**.
+- `npm audit --audit-level=high`: **PASS**, 0 vulnerabilities.
+- `npx wrangler deploy --dry-run`: **PASS**.
+- Isolated Phase 2 Worker preview `b709d634-a0d0-45fa-885b-fce8180f4719`: smoke **PASS** against the real bindings/database.
+- Preview API: 88 products retained, 0 missing verification metadata fields, 0 public `Update N` title markers.
+- Preview alias checks: canonical brand pages return 200; Yamnar/Cat/Caterpillar-CAT/Daitshu aliases return 301 to canonical authority; canonical MAN B&W remains 200.
+- Representative noisy-title product renders cleanly at its existing stable product slug with no `Update 24` in visible/search output.
+
+The batch is locally certified and ready for Git CLI race check, explicit staging, commit, push, CI deployment and production verification.

@@ -344,11 +344,13 @@ current_growth_cycle:
     destructive_git_cleanup_allowed: false
   current_git_state:
     branch: master
-    head: f04a4b1
-    origin_master: 92b5ad5
-    ahead: 1
+    head: e76c5b8
+    origin_master: e76c5b8
+    ahead: 0
     behind: 0
-    seo_commit_message: "feat: implement buyer-intent SEO system"
+    seo_baseline_commit: f04a4b1
+    seo_hardening_commit: 42cc783
+    schema_bootstrap_hotfix_commit: e76c5b8
   current_verification:
     date: 2026-08-30
     focused_seo_tests:
@@ -359,7 +361,7 @@ current_growth_cycle:
     tests:
       command: npm test
       result: pass
-      passed: 67
+      passed: 75
       failed: 0
     build:
       command: npm run build
@@ -376,35 +378,56 @@ current_growth_cycle:
         - SESSION KV
         - MEDIA_BUCKET R2
         - ASSETS
+    production:
+      current_worker_version: 34a33d39-6005-4505-a490-24db7a2d9125
+      direct_smoke: pass
+      seo_contract_checks: pass
+      github_actions_run: 33297862196
+      github_actions_deploy: pass
+      github_actions_smoke: pass
+      ci_cloudflare_credentials_configured: true
+    phase2_preview:
+      worker_version: b709d634-a0d0-45fa-885b-fce8180f4719
+      smoke: pass
+      product_count: 88
+      verification_fields_missing: 0
+      noisy_update_titles_remaining: 0
+      canonical_brand_alias_redirects: pass
+      cleaned_product_page_rendering: pass
   findings:
     - id: SEO-GR-001
       severity: critical
-      status: open_release_blocker
-      summary: Buyer-intent SEO commit is local-only and not reconciled with origin/master/production.
-      next_action: Review release diff, resolve authorized push/deploy route, deploy, then run production verification.
+      status: resolved_production
+      summary: Buyer-intent SEO baseline was previously local-only and not reconciled with origin/master/production.
+      resolution: Git CLI push, Cloudflare production deployment, rollback-safe hotfix, production smoke/SEO verification, and GitHub Actions deployment are all complete.
+    - id: SEO-GR-008
+      severity: critical
+      status: resolved_production
+      summary: The first production SEO deployment hit Cloudflare's per-invocation subrequest limit during schema bootstrap.
+      resolution: Schema statements are now sent as one Neon transaction batch; regression coverage was added and production/CI smoke is green.
     - id: SEO-GR-002
       severity: medium
-      status: resolved_local_pending_release
+      status: resolved_production
       summary: Legacy "Sell Equipments" wording and related unsupported homepage/footer claims were removed.
       resolution: Buyer-facing inventory wording and factual marketing-copy regression coverage are now in place.
     - id: SEO-GR-003
       severity: high
-      status: resolved_local_pending_release
+      status: resolved_production
       summary: Sitemap emitted ignored priority/changefreq fields and fabricated today's date as lastmod fallback.
       resolution: Sitemap now emits canonical useful URLs, real lastmod only when available, and excludes ignored priority/changefreq fields.
     - id: SEO-GR-004
       severity: high
-      status: resolved_local_pending_release
+      status: resolved_production
       summary: Empty/thin taxonomy and arbitrary brand-category pages could become indexable low-value surfaces.
       resolution: Empty taxonomy is noindex and excluded from sitemap; unvalidated brand-category pages are guarded by 404/noindex rules.
     - id: SEO-GR-005
       severity: medium
-      status: resolved_local_pending_release
+      status: resolved_production
       summary: Organization/WebSite schema was emitted globally and included unsupported quote-model priceRange.
       resolution: Primary entity schema is homepage-scoped and unsupported priceRange is removed.
     - id: SEO-GR-006
       severity: medium
-      status: resolved_local_pending_release
+      status: resolved_production
       summary: FAQPage JSON-LD remained implemented although Google deprecated FAQ rich results in May 2026.
       resolution: Useful visible FAQs remain, but FAQPage JSON-LD and its rich-result dependency are removed.
     - id: SEO-GR-007
@@ -415,7 +438,7 @@ current_growth_cycle:
   phases:
     - id: growth-phase-0
       name: production_reconciliation_and_release_gate
-      status: local_release_preparation_complete_external_delivery_blocked
+      status: complete_production_verified
       tasks:
         plan_documented: true
         progress_tracker_updated: true
@@ -425,13 +448,18 @@ current_growth_cycle:
         remaining_sell_equipments_copy_removed: true
         unsupported_public_claims_hardened: true
         release_diff_reviewed: true
-        authorized_push_route_resolved: false
-        production_deployed: false
-        production_smoke_passed: false
-        production_seo_baseline_verified: false
+        authorized_push_route_resolved: true
+        git_cli_push_complete: true
+        production_deployed: true
+        production_smoke_passed: true
+        production_seo_baseline_verified: true
+        rollback_recovery_exercised: true
+        runtime_subrequest_hotfix_deployed: true
+        github_actions_cloudflare_credentials_configured: true
+        github_actions_end_to_end_deploy_verified: true
     - id: growth-phase-1
       name: technical_indexation_and_schema_hardening
-      status: local_complete_pending_production_release
+      status: complete_production_verified
       tasks:
         truthful_sitemap_fields: true
         truthful_lastmod_only: true
@@ -451,7 +479,17 @@ current_growth_cycle:
         wrangler_dry_run_pass: true
     - id: growth-phase-2
       name: inventory_data_quality_and_freshness
-      status: queued
+      status: in_progress
+      tasks:
+        brand_normalization_contract: local_certified_pending_push
+        legacy_brand_alias_redirects: local_certified_pending_push
+        model_title_cleanup_contract: local_certified_pending_push
+        availability_verified_date: local_certified_pending_push
+        condition_verified_date: local_certified_pending_push
+        stale_stock_downgrade_policy: local_certified_pending_push
+        freshness_policy_documented: true
+        production_inventory_audit_completed: true
+        product_evidence_fields_review: existing_core_fields_documented_operational_enrichment_pending
     - id: growth-phase-3
       name: keyword_architecture_and_internal_linking
       status: queued

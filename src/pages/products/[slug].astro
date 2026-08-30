@@ -4,6 +4,7 @@ import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import ProductGrid from "../../components/ProductGrid.astro";
 import { getCategorySlug } from "../../lib/categories";
 import { absoluteUrl, schemaConditionUrl } from "../../lib/seo";
+import { inventoryVerificationMaxAgeDays, resolvePublicAvailability } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { getContentBySlug, listContent, type ContentRecord } from "../../lib/server/repository";
 
@@ -32,7 +33,15 @@ const relatedProducts: ContentRecord[] = [...manualRelated, ...fallbackRelated].
 
 const categorySlug = getCategorySlug(product.category ?? "");
 const condition = product.condition?.trim() || "Contact for condition";
-const availability = product.availability?.trim() || "Contact for current availability";
+const availabilityPolicy = resolvePublicAvailability({
+  availability: product.availability,
+  verifiedAt: product.availabilityVerifiedAt,
+  maxAgeDays: inventoryVerificationMaxAgeDays(env.INVENTORY_VERIFICATION_MAX_AGE_DAYS),
+});
+const availability = availabilityPolicy.label;
+const availabilityBadgeClass = availabilityPolicy.positive
+  ? "stock-badge"
+  : "stock-badge stock-badge-neutral";
 const location = product.location?.trim() || "Chattogram, Bangladesh";
 const canonicalPath = `/products/${product.slug}`;
 const whatsappText = encodeURIComponent(`Hello Tahin Spare Suppliers, I would like a quote for ${product.title}${product.partNumber ? ` (Part ${product.partNumber})` : ""}.`);
@@ -40,6 +49,8 @@ const whatsappUrl = `https://wa.me/8801787429268?text=${whatsappText}`;
 
 const additionalProperty: Array<Record<string, string>> = [];
 if (availability) additionalProperty.push({ "@type": "PropertyValue", "name": "Availability", "value": availability });
+if (availabilityPolicy.verifiedAt) additionalProperty.push({ "@type": "PropertyValue", "name": "Availability checked", "value": availabilityPolicy.verifiedAt });
+if (product.conditionVerifiedAt) additionalProperty.push({ "@type": "PropertyValue", "name": "Condition checked", "value": product.conditionVerifiedAt });
 if (location) additionalProperty.push({ "@type": "PropertyValue", "name": "Location", "value": location });
 if (product.application) additionalProperty.push({ "@type": "PropertyValue", "name": "Application", "value": product.application });
 
@@ -104,7 +115,9 @@ const breadcrumbs = [
             {product.category && <tr><th>Category</th><td>{product.category}</td></tr>}
             {product.subcategory && <tr><th>Sub-category</th><td>{product.subcategory}</td></tr>}
             <tr><th>Condition</th><td>{condition}</td></tr>
-            <tr><th>Availability</th><td><span class="stock-badge">{availability}</span></td></tr>
+            {product.conditionVerifiedAt && <tr><th>Condition Checked</th><td><time datetime={product.conditionVerifiedAt}>{product.conditionVerifiedAt}</time></td></tr>}
+            <tr><th>Availability</th><td><span class={availabilityBadgeClass}>{availability}</span></td></tr>
+            {availabilityPolicy.verifiedAt && <tr><th>Last Stock Check</th><td><time datetime={availabilityPolicy.verifiedAt}>{availabilityPolicy.verifiedAt}</time></td></tr>}
             <tr><th>Location</th><td>{location}</td></tr>
           </tbody>
         </table>
@@ -182,6 +195,7 @@ const breadcrumbs = [
   .specs-table th { background: #f8fafc; font-weight: 700; color: #475569; font-size: 13px; width: 34%; border-right: 1px solid #e5e7eb; }
   .specs-table td { color: #111827; font-size: 15px; }
   .stock-badge { color: #166534; background: #dcfce7; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; display: inline-block; }
+  .stock-badge-neutral { color: #92400e; background: #fef3c7; }
   .excerpt { font-size: 1.15rem; color: #334155; font-weight: 500; line-height: 1.7; margin: 0 0 22px; }
   .content :global(p), .fact-section p { color: #475569; line-height: 1.8; font-size: 1rem; }
   .content :global(h2) { font-size: 1.5rem; margin: 30px 0 12px; color: #111827; }

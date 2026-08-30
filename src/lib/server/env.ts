@@ -11,6 +11,7 @@ export type RuntimeEnv = {
   NOTIFICATION_EMAIL?: string;
   GOOGLE_ANALYTICS_ID?: string;
   GOOGLE_SITE_VERIFICATION?: string;
+  INVENTORY_VERIFICATION_MAX_AGE_DAYS?: string;
 };
 
 export function getRuntimeEnv(locals?: unknown): RuntimeEnv {

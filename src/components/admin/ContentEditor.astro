@@ -110,11 +110,23 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
             <div class="field-row">
               <div class="field">
                 <label>Availability</label>
-                <input type="text" name="availability" placeholder="e.g. In stock / Contact for availability" data-availability />
+                <input type="text" name="availability" placeholder="e.g. Verified in Stock / Sold / Contact for availability" data-availability />
               </div>
               <div class="field">
                 <label>Location</label>
                 <input type="text" name="location" value="Chattogram, Bangladesh" data-location />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Condition Verified Date</label>
+                <input type="date" name="conditionVerifiedAt" data-condition-verified-at />
+                <small class="field-hint">Set only when the listed condition was actually checked.</small>
+              </div>
+              <div class="field">
+                <label>Availability Verified Date</label>
+                <input type="date" name="availabilityVerifiedAt" data-availability-verified-at />
+                <small class="field-hint">Positive stock claims become “Contact to confirm” after the freshness window unless re-verified.</small>
               </div>
             </div>
             <div class="field">
@@ -295,6 +307,10 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
         if (conditionEl) conditionEl.value = item.condition || '';
         const availabilityEl = editor.querySelector("[data-availability]");
         if (availabilityEl) availabilityEl.value = item.availability || '';
+        const conditionVerifiedAtEl = editor.querySelector("[data-condition-verified-at]");
+        if (conditionVerifiedAtEl) conditionVerifiedAtEl.value = item.conditionVerifiedAt || '';
+        const availabilityVerifiedAtEl = editor.querySelector("[data-availability-verified-at]");
+        if (availabilityVerifiedAtEl) availabilityVerifiedAtEl.value = item.availabilityVerifiedAt || '';
         const locationEl = editor.querySelector("[data-location]");
         if (locationEl) locationEl.value = item.location || 'Chattogram, Bangladesh';
         const applicationEl = editor.querySelector("[data-application]");
@@ -687,6 +703,8 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
             partNumber: form.querySelector("[data-part-number]")?.value || "",
             condition: form.querySelector("[data-condition]")?.value || "",
             availability: form.querySelector("[data-availability]")?.value || "",
+            conditionVerifiedAt: form.querySelector("[data-condition-verified-at]")?.value || "",
+            availabilityVerifiedAt: form.querySelector("[data-availability-verified-at]")?.value || "",
             location: form.querySelector("[data-location]")?.value || "",
             application: form.querySelector("[data-application]")?.value || "",
             technicalSpecifications: form.querySelector("[data-technical-specifications]")?.value || "",

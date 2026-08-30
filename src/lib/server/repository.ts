@@ -3,6 +3,7 @@ import { slugify } from "./slug";
 import type { RuntimeEnv } from "./env";
 import { normalizeContentLimit } from "./content-limit";
 import { parseRelatedProductSlugs, resolveProductSeo, stringifyRelatedProductSlugs } from "../seo";
+import { canonicalizeBrand, cleanProductTitle, normalizeVerificationDate } from "../inventory-quality";
 
 const CONTENT_TABLES = {
   products: {
@@ -41,6 +42,8 @@ export type ContentRecord = {
   partNumber?: string;
   condition?: string;
   availability?: string;
+  availabilityVerifiedAt?: string;
+  conditionVerifiedAt?: string;
   location?: string;
   technicalSpecifications?: string;
   application?: string;
@@ -65,6 +68,8 @@ export type ContentInput = {
   partNumber?: string;
   condition?: string;
   availability?: string;
+  availabilityVerifiedAt?: string;
+  conditionVerifiedAt?: string;
   location?: string;
   technicalSpecifications?: string;
   application?: string;
@@ -83,6 +88,8 @@ type NormalizedProductFields = {
   partNumber: string;
   condition: string;
   availability: string;
+  availabilityVerifiedAt: string | null;
+  conditionVerifiedAt: string | null;
   location: string;
   technicalSpecifications: string;
   application: string;
@@ -100,11 +107,13 @@ function asString(value: unknown): string {
 function normalizeProductFields(input: ContentInput): NormalizedProductFields {
   const category = input.category?.trim() || "Uncategorized";
   const subcategory = input.subcategory?.trim() ?? "";
-  const brand = input.brand?.trim() ?? "";
+  const brand = canonicalizeBrand(input.brand);
   const modelNumber = input.model_number?.trim() ?? "";
   const partNumber = input.partNumber?.trim() ?? "";
   const condition = input.condition?.trim() ?? "";
   const availability = input.availability?.trim() ?? "";
+  const availabilityVerifiedAt = normalizeVerificationDate(input.availabilityVerifiedAt) || null;
+  const conditionVerifiedAt = normalizeVerificationDate(input.conditionVerifiedAt) || null;
   const location = input.location?.trim() ?? "";
   const technicalSpecifications = input.technicalSpecifications?.trim() ?? "";
   const application = input.application?.trim() ?? "";
@@ -128,6 +137,8 @@ function normalizeProductFields(input: ContentInput): NormalizedProductFields {
     partNumber,
     condition,
     availability,
+    availabilityVerifiedAt,
+    conditionVerifiedAt,
     location,
     technicalSpecifications,
     application,
@@ -141,7 +152,8 @@ function normalizeProductFields(input: ContentInput): NormalizedProductFields {
 
 function mapRecord(type: ContentType, row: Record<string, unknown>): ContentRecord {
   const config = CONTENT_TABLES[type];
-  const title = asString(row[config.titleColumn]);
+  const rawTitle = asString(row[config.titleColumn]);
+  const title = type === "products" ? cleanProductTitle(rawTitle) : rawTitle;
   const commonRecord: ContentRecord = {
     id: asString(row.id),
     slug: asString(row.slug),
@@ -156,7 +168,7 @@ function mapRecord(type: ContentType, row: Record<string, unknown>): ContentReco
 
   if (type !== "products") return commonRecord;
 
-  const brand = asString(row.brand);
+  const brand = canonicalizeBrand(row.brand);
   const modelNumber = asString(row.model_number);
   const partNumber = asString(row.part_number);
   const location = asString(row.location);
@@ -181,6 +193,8 @@ function mapRecord(type: ContentType, row: Record<string, unknown>): ContentReco
     partNumber,
     condition: asString(row.condition),
     availability: asString(row.availability),
+    availabilityVerifiedAt: normalizeVerificationDate(row.availability_verified_at),
+    conditionVerifiedAt: normalizeVerificationDate(row.condition_verified_at),
     location,
     technicalSpecifications: asString(row.technical_specifications),
     application: asString(row.application),
@@ -271,7 +285,8 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
   const sql = getDb(env);
   const config = CONTENT_TABLES[type];
   const id = crypto.randomUUID();
-  const slug = slugify(input.slug || input.title);
+  const normalizedTitle = type === "products" ? cleanProductTitle(input.title) : input.title.trim();
+  const slug = slugify(input.slug || normalizedTitle);
   const excerpt = input.excerpt ?? "";
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
@@ -282,20 +297,20 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
     const rows = await sql.query(
       `INSERT INTO ${config.table} (
         id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key,
-        category, subcategory, brand, model_number, part_number, condition, availability, location,
-        technical_specifications, application, seo_title, meta_description, focus_keyword, image_alt,
-        related_products, updated_at
+        category, subcategory, brand, model_number, part_number, condition, availability,
+        availability_verified_at, condition_verified_at, location, technical_specifications,
+        application, seo_title, meta_description, focus_keyword, image_alt, related_products, updated_at
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7,
-        $8, $9, $10, $11, $12, $13, $14, $15,
-        $16, $17, $18, $19, $20, $21, $22, NOW()
+        $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+        $18, $19, $20, $21, $22, $23, $24, NOW()
       ) RETURNING *`,
       [
-        id, slug, input.title, excerpt, content, imageUrl, imageKey,
+        id, slug, normalizedTitle, excerpt, content, imageUrl, imageKey,
         product.category, product.subcategory, product.brand, product.modelNumber, product.partNumber,
-        product.condition, product.availability, product.location, product.technicalSpecifications,
-        product.application, product.seoTitle, product.metaDescription, product.focusKeyword,
-        product.imageAlt, product.relatedProducts
+        product.condition, product.availability, product.availabilityVerifiedAt, product.conditionVerifiedAt,
+        product.location, product.technicalSpecifications, product.application, product.seoTitle,
+        product.metaDescription, product.focusKeyword, product.imageAlt, product.relatedProducts
       ]
     );
     return mapRecord(type, rows[0]);
@@ -320,7 +335,8 @@ export async function updateContent(
   await ensureSchema(env);
   const sql = getDb(env);
   const config = CONTENT_TABLES[type];
-  const slug = slugify(input.slug || input.title);
+  const normalizedTitle = type === "products" ? cleanProductTitle(input.title) : input.title.trim();
+  const slug = slugify(input.slug || normalizedTitle);
   const excerpt = input.excerpt ?? "";
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
@@ -343,23 +359,25 @@ export async function updateContent(
            part_number = $11,
            condition = $12,
            availability = $13,
-           location = $14,
-           technical_specifications = $15,
-           application = $16,
-           seo_title = $17,
-           meta_description = $18,
-           focus_keyword = $19,
-           image_alt = $20,
-           related_products = $21,
+           availability_verified_at = $14,
+           condition_verified_at = $15,
+           location = $16,
+           technical_specifications = $17,
+           application = $18,
+           seo_title = $19,
+           meta_description = $20,
+           focus_keyword = $21,
+           image_alt = $22,
+           related_products = $23,
            updated_at = NOW()
-       WHERE id = $22
+       WHERE id = $24
        RETURNING *`,
       [
-        slug, input.title, excerpt, content, imageUrl, imageKey,
+        slug, normalizedTitle, excerpt, content, imageUrl, imageKey,
         product.category, product.subcategory, product.brand, product.modelNumber, product.partNumber,
-        product.condition, product.availability, product.location, product.technicalSpecifications,
-        product.application, product.seoTitle, product.metaDescription, product.focusKeyword,
-        product.imageAlt, product.relatedProducts, id
+        product.condition, product.availability, product.availabilityVerifiedAt, product.conditionVerifiedAt,
+        product.location, product.technicalSpecifications, product.application, product.seoTitle,
+        product.metaDescription, product.focusKeyword, product.imageAlt, product.relatedProducts, id
       ]
     );
     return rows[0] ? mapRecord(type, rows[0]) : null;
