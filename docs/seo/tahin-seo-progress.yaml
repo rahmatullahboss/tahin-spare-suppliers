@@ -344,8 +344,8 @@ current_growth_cycle:
     destructive_git_cleanup_allowed: false
   current_git_state:
     branch: master
-    head: a2ee37b
-    origin_master: a2ee37b
+    head: f21eee8
+    origin_master: f21eee8
     ahead: 0
     behind: 0
     seo_baseline_commit: f04a4b1
@@ -359,6 +359,7 @@ current_growth_cycle:
     phase4_production_docs_commit: f12378b
     trust_authority_commit: c5cc0fd
     phase5_production_docs_commit: a2ee37b
+    ai_discoverability_commit: f21eee8
   current_verification:
     date: 2026-08-30
     focused_seo_tests:
@@ -392,11 +393,11 @@ current_growth_cycle:
         - MEDIA_BUCKET R2
         - ASSETS
     production:
-      current_worker_version: 367a77f6-6df3-46f6-b2d4-9efb816ef17d
+      current_worker_version: 876a4331-86f7-4e08-a057-6ddd3751e3bb
       direct_smoke: pass
       seo_contract_checks: pass
       baseline_github_actions_run: 33297862196
-      latest_github_actions_run: 33301633940
+      latest_github_actions_run: 33301934759
       github_actions_deploy: pass
       github_actions_smoke: pass
       ci_cloudflare_credentials_configured: true
@@ -639,12 +640,12 @@ current_growth_cycle:
         production_contract_checks_pass: true
     - id: growth-phase-6
       name: ai_search_discoverability
-      status: local_certified_pending_push
+      status: system_contract_complete_production_verified
       tasks:
-        visible_product_answer_summary: preview_verified
-        visible_product_verification_boundaries: preview_verified
-        brand_current_inventory_evidence: preview_verified
-        category_current_inventory_evidence: preview_verified
+        visible_product_answer_summary: production_verified
+        visible_product_verification_boundaries: production_verified
+        brand_current_inventory_evidence: production_verified
+        category_current_inventory_evidence: production_verified
         technical_specifications_preserved: true
         descriptive_image_caption_preserved: true
         product_structured_data_preserved: true
@@ -659,6 +660,10 @@ current_growth_cycle:
         dependency_audit_pass: true
         wrangler_dry_run_pass: true
         preview_smoke_pass: true
+        github_actions_run: 33301934759
+        production_worker: 876a4331-86f7-4e08-a057-6ddd3751e3bb
+        production_smoke_pass: true
+        production_contract_checks_pass: true
     - id: growth-phase-7
       name: search_console_ga4_bing_measurement
       status: queued_external_account_actions

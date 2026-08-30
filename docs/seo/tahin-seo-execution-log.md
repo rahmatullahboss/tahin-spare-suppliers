@@ -395,3 +395,19 @@ Next: Phase 6 AI-search discoverability using visible factual procurement conten
 - Phase 5 documentation-only GitHub Actions run `33301633940`: **PASS**; identical production code deployment Worker is `367a77f6-6df3-46f6-b2d4-9efb816ef17d` before Phase 6 release.
 
 Next: latest-origin race reconciliation, Phase 6 staged review, commit/push, CI deploy and custom-domain verification.
+
+## 2026-08-30 — Phase 6 production deployment verified
+
+- Phase 6 commit: `f21eee8` (`feat: improve AI search discoverability`).
+- Git CLI push: `a2ee37b..f21eee8 master -> master`.
+- GitHub Actions run `33301934759`: Verify **PASS**, deployment credential gate **PASS**, Cloudflare production deploy **PASS**, production smoke **PASS**.
+- Current production Worker: `876a4331-86f7-4e08-a057-6ddd3751e3bb`.
+- Direct custom-domain smoke: homepage, Spare Parts and Diesel Generator category **PASS**.
+- Representative MAN B&W product: 200 with `Product at a Glance`, recorded condition, current public availability, quote-based commercial boundary, both verification labels and written-quotation confirmation language.
+- MAN B&W brand hub: 200 with **14** current published listings across **2** live equipment categories.
+- Spare Parts category: 200 with **28** current published listings across **8** listed brands.
+- `/llms.txt`: **404** in production; no AI-only ranking file, duplicate AI content or query-fanout surface was introduced.
+
+Phase 6's code-controlled AI-search discoverability contract is production-complete. Search/AI visibility remains grounded in canonical human-visible facts, first-party evidence, accurate structured data and crawlable internal links.
+
+Next: Phase 7 Search Console / GA4 / Bing measurement support and external-account reconciliation.
