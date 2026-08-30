@@ -35,6 +35,9 @@ const displayBrands = [...new Set(
     .filter((brand) => brand.length > 0)
 )];
 const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
+const featuredInventory = categoryProducts
+  .filter((product) => Boolean(product.model_number || product.partNumber))
+  .slice(0, 8);
 
 ---
 <MainLayout
@@ -129,6 +132,20 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
           ))}
         </div>
       </div>
+
+      {featuredInventory.length > 0 && (
+        <div class="featured-inventory-links">
+          <h3>Find by Model or Part Number</h3>
+          <div class="featured-inventory-grid">
+            {featuredInventory.map((product) => (
+              <a href={`/products/${product.slug}`}>
+                <strong>{[product.brand, product.model_number || (product.partNumber ? `Part ${product.partNumber}` : '')].filter(Boolean).join(' ')}</strong>
+                <span>{product.title}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
       
       <!-- FAQ Section for AI SEO -->
       <div class="faq-section mt-5">
@@ -427,6 +444,13 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
     transition: all 0.2s;
   }
   .brand-tag:hover { background: #b11623; color: #fff; border-color: #b11623; }
+  .featured-inventory-links { margin-top: 32px; padding-top: 30px; border-top: 1px solid #eee; }
+  .featured-inventory-links h3 { font-size: 20px; color: #222; margin-bottom: 18px; }
+  .featured-inventory-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .featured-inventory-grid a { display: flex; flex-direction: column; gap: 5px; padding: 14px 16px; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; background: #fff; }
+  .featured-inventory-grid strong { color: #b11623; }
+  .featured-inventory-grid span { color: #64748b; font-size: 13px; line-height: 1.45; }
+  @media (max-width: 600px) { .featured-inventory-grid { grid-template-columns: 1fr; } }
 
   .faq-section { background: #fafafa; padding: 40px; border-radius: 8px; margin-bottom: 30px; }
   .faq-section h3 { font-size: 24px; color: #222; margin-bottom: 30px; font-weight: 800; }

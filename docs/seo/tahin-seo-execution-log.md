@@ -198,3 +198,53 @@ The batch is locally certified and ready for Git CLI race check, explicit stagin
 - Representative product `connecting-rod-for-man-b-w-5l-16-24` remains on its existing stable URL, returns 200, renders the clean title `Connecting Rod For Man B&W 5L16`, and no longer exposes `Update 24` in the page output.
 
 Phase 2's automated system contract is production-complete. Evidence enrichment (original nameplate/workshop/inspection/packing material for high-value inventory) continues as an operational content-quality discipline rather than fabricated or mass-generated data.
+
+## 2026-08-30 — Phase 3 keyword architecture and internal linking opened
+
+### Live intent/cluster audit
+
+- Production inventory baseline remains **88 products**.
+- Largest category clusters: Spare Parts 28, Diesel & Gas Generator Set 21, Hydraulic Deck Crane Equipment 12, Turbocharger 6, Marine Propulsion Engine 6, Marine Gearbox 5, Auxiliary Engine 4, Marine Pump 4.
+- Strong real brand/category clusters include MAN B&W / Spare Parts 13, Yanmar / Generator 7, Yanmar / Spare Parts 6, Caterpillar / Generator 5, MacGregor / Hydraulic Deck Crane 3 and Sulzer / Spare Parts 3.
+- Production blog API currently returns **0** published posts, so no generic/fabricated procurement guide pages or fake guide links are introduced.
+- Dedicated `parts` inventory currently returns **0** records, exposing a future orphan risk because `/parts/{slug}` was sitemap-capable without a crawlable list hub.
+
+### Canonical keyword ownership
+
+- Tier A exact brand/model/part intent remains owned by product/part detail pages.
+- Tier B brand + category intent uses the existing brand and category authorities first; `/inventory/{brand}-{category}` remains `noindex` rather than becoming mass pSEO.
+- Tier C category/supplier/location intent remains on `/products`, canonical categories and service/company pages.
+- Tier D guides are deferred until first-hand workshop/procurement evidence exists.
+- Full operating contract is documented in `docs/seo/keyword-architecture-and-internal-linking.md`.
+
+### Internal linking implementation
+
+- Product facts now link directly to canonical brand and category authorities.
+- Brand pages derive `Browse {brand} by Equipment Type` links only from categories that contain real current brand inventory, including live item counts.
+- Category pages retain real-brand links and add a concise `Find by Model or Part Number` block that links exact identifier-bearing inventory directly.
+- `/products` now prioritizes only categories that actually contain live products rather than promoting empty/noindex taxonomy in the primary grid.
+- Added `/parts` as a conditional hub: it is `noindex` with zero dedicated parts, becomes crawlable/indexable when parts exist, and links every `/parts/{slug}` detail record.
+- XML sitemap now includes `/parts` and part details only when dedicated parts exist, removing the future sitemap-only orphan path.
+
+### Local verification checkpoint
+
+- Focused Phase 3 internal-link tests: **6/6 PASS**.
+- Full suite: **81/81 PASS**.
+- Astro production build: **PASS**.
+- Brand-category permutation `noindex` guard remains covered.
+
+### Final preview certification
+
+- Final focused internal-linking suite: **7/7 PASS** after adding the sitewide empty-taxonomy guard.
+- Final full suite: **82/82 PASS**.
+- Astro production build: **PASS**.
+- Dependency audit: **0 vulnerabilities**.
+- Wrangler dry-run: **PASS**.
+- Refreshed isolated preview Worker: `1d6f65c9-fe0f-47d6-a2db-1727180a9264`; production-binding smoke **PASS**.
+- `/products` renders **10** live category cards and no longer contains `/category/anchor-and-chain` anywhere in the page HTML; the remaining sitewide footer promotion to that empty/noindex category was removed.
+- MAN B&W brand page exposes the live Spare Parts authority and the verified 13-item count.
+- Representative product links directly to `/brands/man-b-w` and `/category/spare-parts`.
+- Spare Parts category exposes `Find by Model or Part Number` and links the representative inventory detail directly.
+- `/parts` returns 200 with `noindex, follow` while dedicated parts remain empty, and `/sitemap.xml` contains neither the `/parts` hub nor part-detail URLs in that state.
+
+Next: Git CLI race reconciliation, explicit Phase 3 staging, commit/push, CI deployment and custom-domain production verification.

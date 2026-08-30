@@ -74,12 +74,15 @@ export const GET: APIRoute = async (context) => {
     });
   });
 
-  parts.forEach((part) => {
-    dynamicPages.push({
-      url: `/parts/${part.slug}`,
-      lastmod: isoDate(part.updatedAt)
+  if (parts.length > 0) {
+    dynamicPages.push({ url: "/parts" });
+    parts.forEach((part) => {
+      dynamicPages.push({
+        url: `/parts/${part.slug}`,
+        lastmod: isoDate(part.updatedAt)
+      });
     });
-  });
+  }
 
   blogPosts.forEach((post) => {
     dynamicPages.push({

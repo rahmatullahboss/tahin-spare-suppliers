@@ -1,0 +1,81 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { getRuntimeEnv } from "../../lib/server/env";
+import { listContent } from "../../lib/server/repository";
+
+const env = getRuntimeEnv(Astro.locals);
+const parts = await listContent(env, "parts", { limit: 1000 });
+---
+
+<MainLayout
+  title="Marine Spare Parts by Part Number | Tahin Spare Suppliers"
+  description="Browse dedicated marine spare-part listings by exact item and part number. Request current specifications, availability, price and worldwide shipping from Bangladesh."
+  activeNav="products"
+  noindex={parts.length === 0}
+>
+  <section class="page-hero">
+    <div class="overlay"></div>
+    <div class="hero-content">
+      <h1>Marine Spare-Part Listings</h1>
+      <p>Dedicated inventory records for exact parts and identifiers.</p>
+    </div>
+  </section>
+
+  <Breadcrumbs items={[
+    { name: "Home", href: "/" },
+    { name: "Marine Equipment", href: "/products" },
+    { name: "Spare Parts", href: "/category/spare-parts" },
+    { name: "Parts Catalog", href: "/parts" },
+  ]} />
+
+  <section class="section">
+    <div class="container">
+      {parts.length > 0 ? (
+        <div class="parts-grid">
+          {parts.map((part) => (
+            <a class="part-card" href={`/parts/${part.slug}`}>
+              {part.imageUrl && <img src={part.imageUrl} alt={part.title} width="640" height="480" loading="lazy" decoding="async" />}
+              <div>
+                <h2>{part.title}</h2>
+                {part.excerpt && <p>{part.excerpt}</p>}
+                <span>View part details →</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <h2>No dedicated part records are published yet</h2>
+          <p>Browse the live Spare Parts category or send the exact maker, model and part number for an inventory check.</p>
+          <div class="empty-actions">
+            <a href="/category/spare-parts">Browse Spare Parts</a>
+            <a href="/enquiry">Request a Quote</a>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { position: relative; min-height: 280px; background: url('/images/warehouse.webp') center/cover no-repeat; display: grid; place-items: center; text-align: center; }
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,.68); }
+  .hero-content { position: relative; z-index: 1; max-width: 800px; padding: 30px 20px; color: #fff; }
+  .hero-content h1 { margin: 0 0 10px; font-size: clamp(2rem, 5vw, 3.25rem); }
+  .hero-content p { margin: 0; color: #e2e8f0; line-height: 1.65; }
+  .parts-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .part-card { display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; color: inherit; text-decoration: none; }
+  .part-card img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+  .part-card div { padding: 20px; }
+  .part-card h2 { margin: 0 0 8px; color: #111827; font-size: 1.15rem; }
+  .part-card p { margin: 0 0 14px; color: #64748b; line-height: 1.6; }
+  .part-card span { color: #b11623; font-weight: 800; }
+  .empty-state { max-width: 760px; margin: 0 auto; padding: 42px 24px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; }
+  .empty-state h2 { margin: 0 0 10px; color: #111827; }
+  .empty-state p { color: #64748b; line-height: 1.7; }
+  .empty-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+  .empty-actions a { padding: 11px 17px; border-radius: 7px; background: #b11623; color: #fff; text-decoration: none; font-weight: 800; }
+  @media (max-width: 900px) { .parts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 580px) { .parts-grid { grid-template-columns: 1fr; } }
+</style>

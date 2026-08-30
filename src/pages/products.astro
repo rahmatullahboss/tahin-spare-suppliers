@@ -3,8 +3,15 @@ import MainLayout from '../layouts/MainLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
+import { listContent } from '../lib/server/repository';
 
-const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
+const env = getRuntimeEnv(Astro.locals);
+const [categories, products, parts] = await Promise.all([
+  listAllCategories(env),
+  listContent(env, 'products', { limit: 1000 }),
+  listContent(env, 'parts', { limit: 1000 }),
+]);
+const liveCategories = categories.filter((category) => products.some((product) => product.category === category.value));
 ---
 <MainLayout
   title="Marine Engines, Generators & Spare Parts | Tahin Spare Suppliers"
@@ -24,7 +31,7 @@ const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
   <section class="section stock-spares">
     <div class="container">
       <div class="stock-grid reveal-stagger">
-        {categories.map((cat) => (
+        {liveCategories.map((cat) => (
           <a href={`/category/${cat.slug}`} class="stock-card">
             <div class="stock-card-img">
               <img src={cat.imageUrl} alt={`${cat.value} marine equipment category`} width="800" height="600" loading="lazy" decoding="async" />
@@ -36,6 +43,13 @@ const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
           </a>
         ))}
       </div>
+      {parts.length > 0 && (
+        <div class="parts-hub-cta">
+          <h2>Exact Spare-Part Listings</h2>
+          <p>Browse dedicated part records when an OEM or manufacturer part number has its own inventory page.</p>
+          <a href="/parts">Browse Parts Catalog →</a>
+        </div>
+      )}
     </div>
   </section>
 </MainLayout>
@@ -132,6 +146,11 @@ const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
   .stock-card:hover .stock-card-cta {
     color: #c0392b;
   }
+  .parts-hub-cta { margin: 38px auto 0; max-width: 760px; padding: 24px; text-align: center; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
+  .parts-hub-cta h2 { margin: 0 0 8px; color: #111827; font-size: 1.4rem; }
+  .parts-hub-cta p { margin: 0 0 14px; color: #64748b; line-height: 1.65; }
+  .parts-hub-cta a { color: #b11623; font-weight: 800; text-decoration: none; }
+  .parts-hub-cta a:hover { text-decoration: underline; }
 
   @media (max-width: 1024px) {
     .stock-grid { grid-template-columns: repeat(3, 1fr); }

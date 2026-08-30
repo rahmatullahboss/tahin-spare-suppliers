@@ -3,7 +3,7 @@ import MainLayout from "../../layouts/MainLayout.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import ProductGrid from "../../components/ProductGrid.astro";
 import { getCategorySlug } from "../../lib/categories";
-import { absoluteUrl, schemaConditionUrl } from "../../lib/seo";
+import { absoluteUrl, schemaConditionUrl, toUrlSlug } from "../../lib/seo";
 import { inventoryVerificationMaxAgeDays, resolvePublicAvailability } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { getContentBySlug, listContent, type ContentRecord } from "../../lib/server/repository";
@@ -109,10 +109,10 @@ const breadcrumbs = [
 
         <table class="specs-table">
           <tbody>
-            {product.brand && <tr><th>Brand</th><td>{product.brand}</td></tr>}
+            {product.brand && <tr><th>Brand</th><td><a class="authority-link" href={`/brands/${toUrlSlug(product.brand)}`}>{product.brand}</a></td></tr>}
             {product.model_number && <tr><th>Model</th><td>{product.model_number}</td></tr>}
             {product.partNumber && <tr><th>Part Number</th><td>{product.partNumber}</td></tr>}
-            {product.category && <tr><th>Category</th><td>{product.category}</td></tr>}
+            {product.category && categorySlug && <tr><th>Category</th><td><a class="authority-link" href={`/category/${categorySlug}`}>{product.category}</a></td></tr>}
             {product.subcategory && <tr><th>Sub-category</th><td>{product.subcategory}</td></tr>}
             <tr><th>Condition</th><td>{condition}</td></tr>
             {product.conditionVerifiedAt && <tr><th>Condition Checked</th><td><time datetime={product.conditionVerifiedAt}>{product.conditionVerifiedAt}</time></td></tr>}
@@ -194,6 +194,8 @@ const breadcrumbs = [
   .specs-table tr:last-child th, .specs-table tr:last-child td { border-bottom: none; }
   .specs-table th { background: #f8fafc; font-weight: 700; color: #475569; font-size: 13px; width: 34%; border-right: 1px solid #e5e7eb; }
   .specs-table td { color: #111827; font-size: 15px; }
+  .authority-link { color: #b11623; font-weight: 750; text-decoration: none; }
+  .authority-link:hover { text-decoration: underline; }
   .stock-badge { color: #166534; background: #dcfce7; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; display: inline-block; }
   .stock-badge-neutral { color: #92400e; background: #fef3c7; }
   .excerpt { font-size: 1.15rem; color: #334155; font-weight: 500; line-height: 1.7; margin: 0 0 22px; }
