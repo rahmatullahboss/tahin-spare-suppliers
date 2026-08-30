@@ -184,3 +184,17 @@ With production reconciliation and technical indexation hardening verified live,
 - Representative noisy-title product renders cleanly at its existing stable product slug with no `Update 24` in visible/search output.
 
 The batch is locally certified and ready for Git CLI race check, explicit staging, commit, push, CI deployment and production verification.
+
+## 2026-08-30 — Phase 2 production deployment verified
+
+- Phase 2 commit: `444b794` (`feat: enforce inventory SEO freshness`).
+- Git CLI push: `e76c5b8..444b794 master -> master`.
+- GitHub Actions run `33298675172`: Verify **PASS**, deployment credential gate **PASS**, Cloudflare production deploy **PASS**, production smoke **PASS**.
+- Current production Worker after the Phase 2 deployment: `fd8befd4-9fa2-46df-9b39-dc6834ecc318`.
+- Direct custom-domain smoke after CI: homepage, Spare Parts category and Diesel Generator category **PASS**.
+- Production brand authority checks: `/brands/yanmar`, `/brands/caterpillar`, `/brands/daihatsu`, `/brands/man-b-w` return 200; legacy `/brands/yamnar`, `/brands/cat`, `/brands/caterpillar-cat`, `/brands/daitshu` return 301 to canonical authorities.
+- Production API still returns **88** products, with **0** missing verification metadata fields and **0** public `Update N` title markers.
+- Canonical public brands verified in live output include Yanmar, MAN B&W, Daihatsu, Caterpillar and MacGregor.
+- Representative product `connecting-rod-for-man-b-w-5l-16-24` remains on its existing stable URL, returns 200, renders the clean title `Connecting Rod For Man B&W 5L16`, and no longer exposes `Update 24` in the page output.
+
+Phase 2's automated system contract is production-complete. Evidence enrichment (original nameplate/workshop/inspection/packing material for high-value inventory) continues as an operational content-quality discipline rather than fabricated or mass-generated data.
