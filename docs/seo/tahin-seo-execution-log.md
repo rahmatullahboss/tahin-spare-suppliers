@@ -247,4 +247,20 @@ Phase 2's automated system contract is production-complete. Evidence enrichment 
 - Spare Parts category exposes `Find by Model or Part Number` and links the representative inventory detail directly.
 - `/parts` returns 200 with `noindex, follow` while dedicated parts remain empty, and `/sitemap.xml` contains neither the `/parts` hub nor part-detail URLs in that state.
 
-Next: Git CLI race reconciliation, explicit Phase 3 staging, commit/push, CI deployment and custom-domain production verification.
+## 2026-08-30 — Phase 3 production deployment verified
+
+- Phase 3 commit: `e5fc7b8` (`feat: strengthen SEO internal linking`).
+- Git CLI push: `61fc1e0..e5fc7b8 master -> master`.
+- GitHub Actions run `33299366294`: Verify **PASS**, deployment credential gate **PASS**, Cloudflare production deploy **PASS**, production smoke **PASS**.
+- Current production Worker: `61f2f25e-fad8-4156-9e42-504fca410df0`.
+- Direct custom-domain smoke: homepage, Spare Parts and Diesel Generator category **PASS**.
+- `/products`: 200, **10** live category cards, and no `/category/anchor-and-chain` link anywhere in rendered HTML.
+- `/brands/man-b-w`: 200, live equipment-type navigation present, Spare Parts authority linked, verified 13-item cluster surfaced.
+- Representative product `connecting-rod-for-man-b-w-5l-16-24`: 200 with canonical MAN B&W brand and Spare Parts category links.
+- `/category/spare-parts`: 200 with `Find by Model or Part Number` and direct representative product link.
+- `/parts`: 200 with `noindex, follow` while dedicated parts remain empty.
+- `/sitemap.xml`: 200 and correctly excludes both `/parts` hub and `/parts/*` while the dedicated parts collection is empty.
+
+Phase 3's automated keyword ownership/internal-linking system contract is production-complete. First-party guide creation remains intentionally deferred until genuine technical/procurement material exists rather than manufacturing generic SEO content.
+
+Next: Phase 4 landing-page and conversion optimization using truthful buyer evidence, clear RFQ paths and mobile-first conversion behavior.
