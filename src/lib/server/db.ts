@@ -17,8 +17,8 @@ export async function ensureSchema(env: RuntimeEnv) {
         .map((statement) => statement.trim())
         .filter(Boolean);
 
-      for (const statement of statements) {
-        await sql.query(statement);
+      if (statements.length > 0) {
+        await sql.transaction(statements.map((statement) => sql`${sql.unsafe(statement)}`));
       }
     })();
 
