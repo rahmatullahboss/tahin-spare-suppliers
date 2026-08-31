@@ -603,3 +603,17 @@ The client requested that the visible UI changes from the 2026-08-30 growth work
 - `git diff --check`: **PASS**.
 
 This batch is ready for explicit staged review, fresh-origin race reconciliation, push, CI production deployment and custom-domain verification of both the restored UI markers and the existing SEO crawl contract.
+
+## 2026-08-31 — Client UI restoration production verified
+
+- Implementation commit: `55a60c9` (`fix: restore client-approved UI`).
+- Fresh-origin race check showed no remote advance before push; only intended project files were committed and the local `.ai-bridge/`, `.codexpro-cloudflared.yml` and `.codexpro.env` paths remained excluded.
+- GitHub Actions run `33365250398`: Verify **PASS**, dependency audit/build/Wrangler gate **PASS**, Cloudflare credential gate **PASS**, production deploy **PASS**, production smoke **PASS**.
+- Production Worker from the implementation deployment: `9eea698b-0747-487f-934e-2600a356df4a` at 100% traffic.
+- Direct production smoke: homepage, Spare Parts category and Diesel Generator category **PASS**.
+- Live UI checks confirm the previous brand marquee and category FAQ presentation are present, while the later buyer-proof strip, quote-preparation block, buyer-guidance cards, brand equipment-type grid, `Product at a Glance`, fixed mobile quote bar and enquiry quote-context card are absent.
+- The restored brand marquee remains evidence-safe: its old visual presentation is retained but logos are derived from current inventory rather than an unsupported static maker list.
+- Post-restoration SEO snapshot at `2026-08-31T06:43:40.643Z`: `healthy: true`, **149** sitemap URLs, **0** non-200, **0** sitemap noindex, **0** canonical mismatch, **0** missing canonical, **0** off-host and **0** fetch errors.
+- Homepage, robots and sitemap remain 200; IndexNow key remains deliberate 404 while unconfigured, and no placeholder GA4/Google/Bing verification value is emitted.
+
+The client-visible UI restoration is production complete. Technical SEO/backend hardening remains active rather than being rolled back with the visual layer.
