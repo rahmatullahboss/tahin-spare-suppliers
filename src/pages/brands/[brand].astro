@@ -5,7 +5,6 @@ import ProductGrid from "../../components/ProductGrid.astro";
 import { absoluteUrl, toUrlSlug } from "../../lib/seo";
 import { canonicalizeBrand } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
-import { listAllCategories } from "../../lib/server/categories";
 import { listProductSummaries } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
@@ -17,10 +16,7 @@ if (canonicalBrandSlug && canonicalBrandSlug !== brandSlug) {
   return Astro.redirect(`/brands/${canonicalBrandSlug}`, 301);
 }
 
-const [products, categories] = await Promise.all([
-  listProductSummaries(env, { limit: 1000 }),
-  listAllCategories(env),
-]);
+const products = await listProductSummaries(env, { limit: 1000 });
 const brandProducts = products.filter((product) => product.brand && toUrlSlug(product.brand) === brandSlug);
 const brandName = brandProducts[0]?.brand?.trim() ?? "";
 
@@ -34,15 +30,6 @@ if (!brandName || brandProducts.length === 0) {
 const title = `${brandName} Marine Engines & Spare Parts | Tahin Spare Suppliers`;
 const description = `Browse ${brandName} marine engine, generator and spare-parts inventory from Tahin Spare Suppliers, Bangladesh. Request specifications, current availability, price and worldwide shipping.`;
 const canonicalPath = `/brands/${brandSlug}`;
-const brandCategoryCounts = new Map<string, number>();
-brandProducts.forEach((product) => {
-  if (!product.category) return;
-  brandCategoryCounts.set(product.category, (brandCategoryCounts.get(product.category) ?? 0) + 1);
-});
-const brandCategories = categories
-  .map((category) => ({ ...category, count: brandCategoryCounts.get(category.value) ?? 0 }))
-  .filter((category) => category.count > 0)
-  .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
 ---
 
 <MainLayout
@@ -69,23 +56,9 @@ const brandCategories = categories
     <div class="container">
       <div class="intro">
         <h2>Browse {brandName} Inventory</h2>
-        <p class="inventory-answer"><strong>Current online inventory:</strong> {brandProducts.length} published listings across {brandCategories.length} live equipment {brandCategories.length === 1 ? "category" : "categories"}. These counts come from Tahin Spare Suppliers' current published inventory and can change as listings are added, sold, reserved or reverified.</p>
         <p>Use the model, part number, condition and availability shown on each product page to identify the right item. If your required {brandName} item is not listed, send the exact model or part number for an inventory check.</p>
         <a class="quote-link" href={`/enquiry?brand=${encodeURIComponent(brandName)}`}>Request unlisted {brandName} equipment →</a>
       </div>
-      {brandCategories.length > 0 && (
-        <section class="brand-category-links" aria-labelledby="brand-category-title">
-          <h2 id="brand-category-title">Browse {brandName} by Equipment Type</h2>
-          <div class="brand-category-grid">
-            {brandCategories.map((category) => (
-              <a href={`/category/${category.slug}`}>
-                <strong>{category.value}</strong>
-                <span>{category.count} listed {category.count === 1 ? "item" : "items"}</span>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
       <ProductGrid products={brandProducts} basePath="/products" />
     </div>
   </section>
@@ -100,14 +73,6 @@ const brandCategories = categories
   .intro { max-width: 850px; margin: 0 auto 36px; text-align: center; }
   .intro h2 { color: #111827; font-size: 1.8rem; margin: 0 0 12px; }
   .intro p { color: #475569; line-height: 1.8; margin: 0 0 14px; }
-  .inventory-answer { padding: 14px 16px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; }
   .quote-link { color: #b11623; font-weight: 800; text-decoration: none; }
   .quote-link:hover { text-decoration: underline; }
-  .brand-category-links { margin: 0 auto 40px; max-width: 980px; }
-  .brand-category-links h2 { margin: 0 0 16px; text-align: center; color: #111827; font-size: 1.45rem; }
-  .brand-category-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-  .brand-category-grid a { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid #e2e8f0; border-radius: 10px; color: #111827; text-decoration: none; background: #fff; }
-  .brand-category-grid a:hover { border-color: #b11623; }
-  .brand-category-grid span { color: #64748b; font-size: .9rem; white-space: nowrap; }
-  @media (max-width: 760px) { .brand-category-grid { grid-template-columns: 1fr; } }
 </style>

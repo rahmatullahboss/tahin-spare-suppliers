@@ -567,3 +567,39 @@ External Search Console/GA4/Bing/IndexNow account values, GitHub workflow-instal
 - GA4 runtime tag, Google verification meta and Bing verification meta remain absent rather than emitting fake values.
 
 Phase 9's code/system operating contract is production-verified. The remaining blockers are genuinely external: authorized GA4/Search Console/Bing/IndexNow values, Google/Bing profile and legitimate authority work, plus a GitHub credential with workflow-write authorization to install `docs/seo/seo-monitor.github-actions.yml` as an active scheduled workflow. Until that GitHub authorization exists, `npm run seo:snapshot` is the certified manual weekly monitor.
+
+## 2026-08-31 — Client-approved UI restoration release candidate
+
+The client requested that the visible UI changes from the 2026-08-30 growth work be reverted while keeping the SEO/backend improvements. The restoration uses the post-Phase-2 UI as the visual reference instead of reverting the repository wholesale, because a wholesale rollback would also reintroduce unsafe fabricated stock/condition claims and remove later technical SEO/performance fixes.
+
+### Visual layers restored
+
+- Homepage returns to the previous hero, category-card, brand-marquee, services, export/logistics, shipment, product/services and why-choose-us presentation. The later buyer-proof strip, live-brand card grid and quote-preparation block are removed.
+- The brand marquee keeps its previous visual form but is populated only from brands actually present in current inventory and having an available logo, avoiding the old unsupported static maker claim.
+- Products hub returns to the previous category-card presentation while continuing to exclude empty categories using lightweight inventory summaries.
+- Category pages return to the previous FAQ/card presentation; the later buyer-guidance cards, featured model/part block and contextual quote block are removed.
+- Brand detail returns to the simpler previous presentation; the later equipment-type/count UI blocks are removed.
+- Product detail returns to the previous main presentation; the later fixed mobile quote bar and `Product at a Glance` UI are removed.
+- Enquiry returns to the previous form presentation; the later visible quote-context card is removed while product/brand prefill and successful `generate_lead` tracking remain.
+- Footer returns to the previous visual layout. Contact/social values still resolve through the normalized `BUSINESS_PROFILE`; trust/privacy/terms pages remain crawlable through the sitemap.
+
+### Technical contracts deliberately preserved
+
+- canonical/meta/Product structured data and true 404/indexability behavior;
+- truthful inventory condition/availability freshness and verification metadata;
+- legacy canonical redirects and thin/empty taxonomy noindex behavior;
+- GA4/Search Console/Bing hooks and successful lead event semantics;
+- IndexNow support and non-blocking `waitUntil` delivery;
+- sitemap single-Neon-transaction collection and schema-bootstrap batching;
+- lightweight public inventory summary reads and current live-category/brand filtering;
+- trust/business pages and normalized business identity source.
+
+### Verification before release
+
+- Full suite: **108/108 PASS**.
+- Astro production build: **PASS**.
+- Dependency audit: **0 vulnerabilities**.
+- Wrangler dry-run: **PASS**.
+- `git diff --check`: **PASS**.
+
+This batch is ready for explicit staged review, fresh-origin race reconciliation, push, CI production deployment and custom-domain verification of both the restored UI markers and the existing SEO crawl contract.

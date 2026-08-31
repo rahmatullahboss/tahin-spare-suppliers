@@ -3,13 +3,12 @@ import MainLayout from '../layouts/MainLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
-import { countContent, listProductSummaries } from '../lib/server/repository';
+import { listProductSummaries } from '../lib/server/repository';
 
 const env = getRuntimeEnv(Astro.locals);
-const [categories, products, partsCount] = await Promise.all([
+const [categories, products] = await Promise.all([
   listAllCategories(env),
   listProductSummaries(env, { limit: 1000 }),
-  countContent(env, 'parts'),
 ]);
 const liveCategories = categories.filter((category) => products.some((product) => product.category === category.value));
 ---
@@ -43,13 +42,6 @@ const liveCategories = categories.filter((category) => products.some((product) =
           </a>
         ))}
       </div>
-      {partsCount > 0 && (
-        <div class="parts-hub-cta">
-          <h2>Exact Spare-Part Listings</h2>
-          <p>Browse dedicated part records when an OEM or manufacturer part number has its own inventory page.</p>
-          <a href="/parts">Browse Parts Catalog →</a>
-        </div>
-      )}
     </div>
   </section>
 </MainLayout>
@@ -146,11 +138,6 @@ const liveCategories = categories.filter((category) => products.some((product) =
   .stock-card:hover .stock-card-cta {
     color: #c0392b;
   }
-  .parts-hub-cta { margin: 38px auto 0; max-width: 760px; padding: 24px; text-align: center; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
-  .parts-hub-cta h2 { margin: 0 0 8px; color: #111827; font-size: 1.4rem; }
-  .parts-hub-cta p { margin: 0 0 14px; color: #64748b; line-height: 1.65; }
-  .parts-hub-cta a { color: #b11623; font-weight: 800; text-decoration: none; }
-  .parts-hub-cta a:hover { text-decoration: underline; }
 
   @media (max-width: 1024px) {
     .stock-grid { grid-template-columns: repeat(3, 1fr); }

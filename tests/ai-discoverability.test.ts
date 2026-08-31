@@ -4,34 +4,32 @@ import test from "node:test";
 
 const source = async (path: string) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("product pages expose a concise visible factual summary with verification boundaries", async () => {
+test("product pages keep truthful SEO facts without the later AI-summary UI block", async () => {
   const product = await source("src/pages/products/[slug].astro");
 
-  assert.match(product, /Product at a Glance/);
-  assert.match(product, /Recorded condition:/);
-  assert.match(product, /Current availability:/);
-  assert.match(product, /Price is quote-based/);
-  assert.match(product, /Availability last checked/);
-  assert.match(product, /Condition last checked/);
-  assert.match(product, /confirm.*written quotation/i);
+  assert.match(product, /resolvePublicAvailability/);
+  assert.match(product, /Technical Specifications/);
+  assert.match(product, /application\/ld\+json/);
+  assert.match(product, /canonicalUrl=\{absoluteUrl\(canonicalPath\)\}/);
+  assert.match(product, /Availability checked/);
+  assert.match(product, /Condition checked/);
+  assert.doesNotMatch(product, /Product at a Glance/);
 });
 
-test("brand hubs state current first-party inventory evidence in visible text", async () => {
+test("brand and category pages keep canonical inventory SEO without added dashboard-style count UI", async () => {
   const brand = await source("src/pages/brands/[brand].astro");
-
-  assert.match(brand, /Current online inventory:/);
-  assert.match(brand, /brandProducts\.length/);
-  assert.match(brand, /brandCategories\.length/);
-  assert.match(brand, /published listings/i);
-});
-
-test("category hubs state current listing and brand counts in visible text", async () => {
   const category = await source("src/pages/category/[category].astro");
 
-  assert.match(category, /Current online inventory:/);
-  assert.match(category, /categoryProducts\.length/);
-  assert.match(category, /displayBrands\.length/);
-  assert.match(category, /published listings/i);
+  assert.match(brand, /canonicalizeBrand/);
+  assert.match(brand, /canonicalUrl=\{absoluteUrl\(canonicalPath\)\}/);
+  assert.match(brand, /listProductSummaries/);
+  assert.doesNotMatch(brand, /Current online inventory:/);
+  assert.doesNotMatch(brand, /brand-category-links/);
+
+  assert.match(category, /noindex=\{categoryProducts\.length === 0\}/);
+  assert.match(category, /listProductSummaries/);
+  assert.doesNotMatch(category, /Current online inventory:/);
+  assert.doesNotMatch(category, /buyer-guidance/);
 });
 
 test("AI discoverability stays on canonical human-visible pages instead of AI-only hacks", async () => {
@@ -43,7 +41,7 @@ test("AI discoverability stays on canonical human-visible pages instead of AI-on
   await assert.rejects(access(new URL("../src/pages/llms.txt.ts", import.meta.url)));
 });
 
-test("existing first-party evidence and structured data remain visible and truthful", async () => {
+test("first-party evidence and technical structured data remain available after UI restoration", async () => {
   const product = await source("src/pages/products/[slug].astro");
   const business = await source("src/pages/business-info.astro");
   const category = await source("src/pages/category/[category].astro");
@@ -52,5 +50,5 @@ test("existing first-party evidence and structured data remain visible and truth
   assert.match(product, /figcaption/);
   assert.match(product, /application\/ld\+json/);
   assert.match(business, /Evidence & Condition Approach/);
-  assert.match(category, /What to Send for a Faster Quote/);
+  assert.match(category, /Frequently Asked Questions/);
 });

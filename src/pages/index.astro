@@ -13,15 +13,21 @@ const [categories, products] = await Promise.all([
   listProductSummaries(env, { limit: 1000 }),
 ]);
 const liveCategories = categories.filter((category) => products.some((product) => product.category === category.value));
-const liveBrandCounts = new Map<string, number>();
-products.forEach((product) => {
-  if (!product.brand) return;
-  liveBrandCounts.set(product.brand, (liveBrandCounts.get(product.brand) ?? 0) + 1);
-});
-const liveBrands = [...liveBrandCounts.entries()]
-  .map(([name, count]) => ({ name, count, slug: toUrlSlug(name) }))
-  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
-  .slice(0, 12);
+const brandLogoBySlug: Record<string, string> = {
+  'yanmar': '/images/brands/yanmar-1.svg',
+  'caterpillar': '/images/brands/caterpillar-logo2.svg',
+  'man-b-w': '/images/brands/man-logo.svg',
+  'wartsila': '/images/brands/wartsila.svg',
+  'rolls-royce': '/images/brands/rolls-royce.svg',
+  'mtu': '/images/brands/mtu-friedrichshafen-logo.svg',
+  'cummins': '/images/brands/cummins.svg',
+  'mitsubishi': '/images/brands/mitsubishi-1.svg',
+  'daihatsu': '/images/brands/daihatsu-3.svg',
+  'detroit-diesel': '/images/brands/detroit-diesel-logo.svg',
+};
+const liveBrandLogos = [...new Set(products.map((product) => product.brand?.trim()).filter(Boolean))]
+  .map((name) => ({ name: String(name), slug: toUrlSlug(String(name)) }))
+  .filter((brand) => Boolean(brandLogoBySlug[brand.slug]));
 
 const shipmentImages = [
   '/images/shipments/shipment-01.webp',
@@ -45,11 +51,7 @@ const shipmentImages = [
           <span class="text-dark">SUPPLIER & EXPORTER<br/>FROM BANGLADESH</span>
         </h1>
         <p class="hero-desc">Tahin Spare Suppliers supplies and exports marine engines, generator sets, hydraulic equipment and spare parts from Chattogram, Bangladesh.</p>
-        <p class="hero-buyers">For ship owners, ship managers, technical superintendents, chief engineers, shipyards and marine procurement teams.</p>
-        <div class="hero-actions">
-          <a href="/enquiry" class="btn btn-quote-solid" data-ga-event="request_quote_click" data-ga-item="homepage-hero">REQUEST A QUOTE</a>
-          <a href="/products" class="hero-inventory-link">Browse Current Listings →</a>
-        </div>
+        <a href="/enquiry" class="btn btn-quote-solid" data-ga-event="request_quote_click" data-ga-item="homepage-hero">REQUEST A QUOTE</a>
       </div>
       <div class="hero-right">
         <div class="hero-slider" id="heroSlider">
@@ -74,26 +76,7 @@ const shipmentImages = [
     </div>
   </section>
 
-  <section class="buyer-proof" aria-label="Tahin Spare Suppliers buyer proof">
-    <div class="container buyer-proof-grid">
-      <a href="/products" class="buyer-proof-item">
-        <strong>{products.length}</strong>
-        <span>Online Inventory Listings</span>
-      </a>
-      <div class="buyer-proof-item">
-        <strong>Chattogram</strong>
-        <span>Bangladesh marine-sourcing location</span>
-      </div>
-      <div class="buyer-proof-item">
-        <strong>Since 1990</strong>
-        <span>Marine supply experience</span>
-      </div>
-      <a href="#recent-shipments" class="buyer-proof-item">
-        <strong>{shipmentImages.length}</strong>
-        <span>Recent shipment photos published</span>
-      </a>
-    </div>
-  </section>
+
 
   <!-- Slider Initialization Script -->
   <script>
@@ -166,39 +149,23 @@ const shipmentImages = [
     </div>
   </section>
 
-  <!-- Brands represented by current database listings -->
-  <section class="brands-section live-brands-section">
+  <!-- Previous marquee UI, populated only from brands present in current inventory -->
+  <section class="brands-section">
     <div class="container">
-      <h2 class="brands-title reveal">Brands in Current Listings</h2>
-      <p class="brands-subtitle reveal">These brand links are generated from the equipment and spare parts currently published in our online inventory.</p>
-      <div class="live-brand-grid reveal-stagger">
-        {liveBrands.map((brand) => (
-          <a href={`/brands/${brand.slug}`} class="live-brand-card">
-            <strong>{brand.name}</strong>
-            <span>{brand.count} listed {brand.count === 1 ? 'item' : 'items'}</span>
+      <h2 class="brands-title reveal">BRANDS IN CURRENT LISTINGS</h2>
+    </div>
+    <div class="brands-marquee">
+      <div class="brands-track">
+        {liveBrandLogos.map((brand) => (
+          <a href={`/brands/${brand.slug}`} aria-label={`Browse ${brand.name} listings`}>
+            <img src={brandLogoBySlug[brand.slug]} alt={brand.name} class="brand-logo" loading="lazy" />
           </a>
         ))}
-      </div>
-      <div class="brands-all-link"><a href="/brands">Browse all listed brands →</a></div>
-    </div>
-  </section>
-
-  <section class="section quote-prep-section">
-    <div class="container quote-prep-shell">
-      <div class="quote-prep-copy reveal">
-        <span class="quote-prep-kicker">Procurement-ready enquiry</span>
-        <h2>What to Send for a Faster Quote</h2>
-        <p>For the quickest item check, share the identifiers your technical or procurement team already has. If something is unknown, a clear nameplate or equipment photo can help narrow the requirement.</p>
-      </div>
-      <ol class="quote-prep-list reveal-stagger">
-        <li><strong>Maker &amp; model</strong><span>Engine, generator, gearbox, crane, pump or other equipment identification.</span></li>
-        <li><strong>Part / serial reference</strong><span>OEM part number, serial, nameplate or existing unit reference when available.</span></li>
-        <li><strong>Technical requirement</strong><span>Quantity, application and the key specification that must be matched.</span></li>
-        <li><strong>Delivery destination</strong><span>Country or port so packing and shipping requirements can be discussed.</span></li>
-      </ol>
-      <div class="quote-prep-actions reveal">
-        <a href="/enquiry" class="btn btn-quote-solid" data-ga-event="request_quote_click" data-ga-item="homepage-quote-prep">Send Your Requirement</a>
-        <a href={BUSINESS_PROFILE.whatsapp.primary.href} target="_blank" rel="noopener" class="quote-whatsapp" data-ga-event="whatsapp_contact_click" data-ga-item="homepage-quote-prep">WhatsApp Sales →</a>
+        {liveBrandLogos.map((brand) => (
+          <a href={`/brands/${brand.slug}`} aria-hidden="true" tabindex="-1">
+            <img src={brandLogoBySlug[brand.slug]} alt="" class="brand-logo" loading="lazy" />
+          </a>
+        ))}
       </div>
     </div>
   </section>
@@ -274,7 +241,7 @@ const shipmentImages = [
   </section>
 
   <!-- Our Recent Shipment -->
-  <section class="recent-shipments" id="recent-shipments">
+  <section class="recent-shipments">
     <div class="container">
       <h2 class="recent-shipments-title reveal" style="text-transform: none; font-size: 24px; font-weight: 500;">Recent Marine Equipment Shipments</h2>
     </div>
@@ -414,14 +381,10 @@ const shipmentImages = [
     font-size: 16px;
     color: #333;
     line-height: 1.6;
-    margin-bottom: 10px;
+    margin-bottom: 30px;
     max-width: 90%;
     margin-top: 20px;
   }
-  .hero-buyers { max-width: 92%; margin: 0 0 24px; color: #64748b; line-height: 1.6; font-size: 14px; }
-  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-  .hero-inventory-link { color: #b11623; font-weight: 800; text-decoration: none; }
-  .hero-inventory-link:hover { text-decoration: underline; }
   .btn-quote-solid {
     display: inline-block;
     padding: 14px 32px;
@@ -437,13 +400,6 @@ const shipmentImages = [
     background-color: #8c0f1a;
     transform: translateY(-2px);
   }
-  .buyer-proof { background: #111827; color: #fff; }
-  .buyer-proof-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .buyer-proof-item { min-height: 108px; padding: 22px; display: flex; flex-direction: column; justify-content: center; gap: 6px; color: inherit; text-decoration: none; border-right: 1px solid rgba(255,255,255,.12); }
-  .buyer-proof-item:last-child { border-right: 0; }
-  .buyer-proof-item strong { font-size: 22px; color: #fff; }
-  .buyer-proof-item span { color: #cbd5e1; font-size: 13px; line-height: 1.5; }
-  .buyer-proof-item[href]:hover { background: rgba(255,255,255,.05); }
   
   /* Slider */
   .hero-slider {
@@ -550,22 +506,12 @@ const shipmentImages = [
     .hero-container { flex-direction: column; text-align: center; justify-content: center; padding-top: 40px; padding-bottom: 40px; }
     .hero-left, .hero-right { flex: 0 0 auto; width: 100%; padding: 0; }
     .hero-left { margin-bottom: 20px; z-index: 5;}
-    .hero-desc { margin: 20px auto 10px; }
-    .hero-buyers { margin: 0 auto 24px; }
-    .hero-actions { justify-content: center; }
+    .hero-desc { margin: 20px auto; }
     .hero.redesigned-hero { height: auto; min-height: 700px; }
-    .buyer-proof-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .buyer-proof-item:nth-child(2) { border-right: 0; }
-    .live-brand-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .quote-prep-list { grid-template-columns: 1fr; }
     .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 15px; }
   }
   @media (max-width: 576px) {
     .hero-title { font-size: 28px; }
-    .buyer-proof-item { min-height: 92px; padding: 16px; }
-    .buyer-proof-item strong { font-size: 18px; }
-    .live-brand-grid { grid-template-columns: 1fr; }
-    .quote-prep-actions > a { width: 100%; box-sizing: border-box; text-align: center; }
     .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px; }
     .cat-img { height: 110px; }
     .cat-card span { font-size: 12px; padding: 8px; }
@@ -611,30 +557,51 @@ const shipmentImages = [
     margin-bottom: 40px;
     letter-spacing: 2px;
   }
-  .brands-subtitle { max-width: 760px; margin: -24px auto 28px; text-align: center; color: #64748b; line-height: 1.65; }
-  .live-brand-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-  .live-brand-card { display: flex; flex-direction: column; gap: 5px; padding: 16px 18px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; color: #111827; text-decoration: none; transition: transform .2s ease, border-color .2s ease; }
-  .live-brand-card:hover { transform: translateY(-2px); border-color: #b11623; }
-  .live-brand-card strong { font-size: 15px; }
-  .live-brand-card span { color: #64748b; font-size: 12px; }
-  .brands-all-link { margin-top: 22px; text-align: center; }
-  .brands-all-link a { color: #b11623; font-weight: 800; text-decoration: none; }
-  .brands-all-link a:hover { text-decoration: underline; }
-  .quote-prep-section { background: #f8fafc; }
-  .quote-prep-shell { max-width: 1040px; }
-  .quote-prep-copy { max-width: 820px; margin-bottom: 24px; }
-  .quote-prep-kicker { color: #b11623; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
-  .quote-prep-copy h2 { margin: 8px 0 10px; color: #111827; font-size: clamp(1.8rem, 4vw, 2.4rem); }
-  .quote-prep-copy p { color: #475569; line-height: 1.75; }
-  .quote-prep-list { list-style: none; counter-reset: quote-step; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .quote-prep-list li { counter-increment: quote-step; position: relative; padding: 18px 18px 18px 56px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; }
-  .quote-prep-list li::before { content: counter(quote-step); position: absolute; left: 18px; top: 18px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #b11623; color: #fff; font-size: 12px; font-weight: 800; }
-  .quote-prep-list strong, .quote-prep-list span { display: block; }
-  .quote-prep-list strong { color: #111827; margin-bottom: 5px; }
-  .quote-prep-list span { color: #64748b; font-size: 13px; line-height: 1.55; }
-  .quote-prep-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 24px; }
-  .quote-whatsapp { color: #166534; font-weight: 800; text-decoration: none; }
-  .quote-whatsapp:hover { text-decoration: underline; }
+  .brands-marquee {
+    overflow: hidden;
+    position: relative;
+    padding: 10px 0;
+  }
+  .brands-marquee::before,
+  .brands-marquee::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 150px;
+    z-index: 2;
+  }
+  .brands-marquee::before {
+    left: 0;
+    background: linear-gradient(to right, #fff, transparent);
+  }
+  .brands-marquee::after {
+    right: 0;
+    background: linear-gradient(to left, #fff, transparent);
+  }
+  .brands-track {
+    display: flex;
+    gap: 80px;
+    animation: marquee-scroll 35s linear infinite;
+    width: max-content;
+    align-items: center;
+  }
+  .brand-logo {
+    height: 45px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    opacity: 0.9;
+    transition: all 0.4s ease;
+  }
+  .brand-logo:hover {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  @keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 
   .stock-spares {
     background: #f9f9f9;

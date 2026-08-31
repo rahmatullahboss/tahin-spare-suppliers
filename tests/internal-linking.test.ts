@@ -4,58 +4,54 @@ import test from "node:test";
 
 const source = async (path: string) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("product detail links canonical brand and category authorities", async () => {
+test("product detail keeps canonical category context and canonical URL metadata", async () => {
   const productPage = await source("src/pages/products/[slug].astro");
 
-  assert.match(productPage, /toUrlSlug/);
-  assert.match(productPage, /href=\{`\/brands\/\$\{toUrlSlug\(product\.brand\)/);
-  assert.match(productPage, /href=\{`\/category\/\$\{categorySlug\}`\}/);
+  assert.match(productPage, /getCategorySlug/);
+  assert.match(productPage, /canonicalPath/);
+  assert.match(productPage, /canonicalUrl=\{absoluteUrl\(canonicalPath\)\}/);
+  assert.match(productPage, /Breadcrumbs/);
 });
 
-test("brand hub exposes only live canonical category links", async () => {
+test("brand hub keeps canonical brand normalization without the later equipment-type UI grid", async () => {
   const brandPage = await source("src/pages/brands/[brand].astro");
 
-  assert.match(brandPage, /listAllCategories/);
-  assert.match(brandPage, /brandCategories/);
-  assert.match(brandPage, /Browse .* by Equipment Type/);
-  assert.match(brandPage, /href=\{`\/category\/\$\{category\.slug\}`\}/);
+  assert.match(brandPage, /canonicalizeBrand/);
+  assert.match(brandPage, /Astro\.redirect\(`\/brands\/\$\{canonicalBrandSlug\}`/);
+  assert.match(brandPage, /listProductSummaries/);
+  assert.doesNotMatch(brandPage, /Browse .* by Equipment Type/);
+  assert.doesNotMatch(brandPage, /brand-category-grid/);
 });
 
-test("category hub links exact model or part-number inventory directly", async () => {
+test("category hub keeps real-brand canonical links in the earlier presentation", async () => {
   const categoryPage = await source("src/pages/category/[category].astro");
 
-  assert.match(categoryPage, /featuredInventory/);
-  assert.match(categoryPage, /Find by Model or Part Number/);
-  assert.match(categoryPage, /href=\{`\/products\/\$\{product\.slug\}`\}/);
+  assert.match(categoryPage, /Browse \{currentCategory\.value\} by Brand/);
+  assert.match(categoryPage, /href=\{`\/brands\/\$\{toUrlSlug\(brand\)\}`\}/);
+  assert.match(categoryPage, /listProductSummaries/);
+  assert.doesNotMatch(categoryPage, /Find by Model or Part Number/);
 });
 
-test("products hub prioritizes live categories and conditionally links a parts catalog", async () => {
+test("products hub uses its earlier category-card UI while dedicated parts remain crawl-governed", async () => {
   const productsPage = await source("src/pages/products.astro");
-
-  assert.match(productsPage, /liveCategories/);
-  assert.match(productsPage, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
-  assert.match(productsPage, /countContent\(env, ['"]parts['"]\)/);
-  assert.match(productsPage, /partsCount > 0/);
-  assert.match(productsPage, /href="\/parts"/);
-});
-
-test("parts get a crawlable hub only when inventory exists", async () => {
   const partsPage = await source("src/pages/parts/index.astro");
   const sitemap = await source("src/pages/sitemap.xml.ts");
 
-  assert.match(partsPage, /listContent\(env, "parts"/);
+  assert.match(productsPage, /liveCategories\.map/);
+  assert.match(productsPage, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
+  assert.doesNotMatch(productsPage, /parts-hub-cta/);
   assert.match(partsPage, /noindex=\{parts\.length === 0\}/);
-  assert.match(partsPage, /href=\{`\/parts\/\$\{part\.slug\}`\}/);
   assert.match(sitemap, /if \(parts\.length > 0\).*\/parts/s);
 });
 
-test("sitewide footer does not promote known empty noindex taxonomy", async () => {
+test("sitewide footer preserves the previous visual item without linking the known empty noindex taxonomy", async () => {
   const footer = await source("src/components/Footer.astro");
 
+  assert.match(footer, />Anchor and Chain<\/a>/);
   assert.doesNotMatch(footer, /\/category\/anchor-and-chain/);
 });
 
-test("phase 3 keeps brand-category permutations non-indexable", async () => {
+test("brand-category permutations remain non-indexable", async () => {
   const programmatic = await source("src/pages/inventory/[brand]-[category].astro");
 
   assert.match(programmatic, /noindex/);
