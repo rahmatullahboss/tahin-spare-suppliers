@@ -160,7 +160,7 @@ test("schema scope and thin taxonomy indexation stay truthful", async () => {
   assert.match(subcategoryPage, /Frequently Asked Questions/);
 });
 
-test("navigation and structured-content hubs match buyer intent", async () => {
+test("client-approved navigation and structured-content hubs preserve SEO reach", async () => {
   const header = await source("src/components/Header.astro");
   const footer = await source("src/components/Footer.astro");
   const homepage = await source("src/pages/index.astro");
@@ -169,13 +169,12 @@ test("navigation and structured-content hubs match buyer intent", async () => {
   const brandPage = await source("src/pages/brands/[brand].astro");
   const blog = await source("src/pages/blog/[slug].astro");
 
-  assert.match(header, />Engines<\/a>/);
-  assert.match(header, />Gensets<\/a>/);
-  assert.match(header, />Spare Parts<\/a>/);
-  assert.match(header, />Hydraulics<\/a>/);
-  assert.match(header, />Brands<\/a>/);
-  assert.match(header, />Resources<\/a>/);
-  assert.match(header, />Request Quote<\/a>/);
+  assert.match(header, />About Us<\/a>/);
+  assert.match(header, />Sell Equipments<\/a>/);
+  assert.match(header, />Our Services<\/a>/);
+  assert.match(header, />Enquiry<\/a>/);
+  assert.match(header, />Blog<\/a>/);
+  assert.match(header, />Contact Us<\/a>/);
   assert.match(productsHub, /Marine Engines, Generators & Spare Parts/);
   assert.doesNotMatch(productsHub, /Sell Equipments/);
   assert.doesNotMatch(homepage, /Sell Equipments/);

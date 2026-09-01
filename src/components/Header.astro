@@ -4,12 +4,6 @@ interface Props {
   activeNav?: string;
 }
 const { activeNav = 'home' } = Astro.props;
-const pathname = Astro.url.pathname;
-const enginesActive = pathname.startsWith('/category/marine-propulsion-engine') || pathname.startsWith('/category/auxiliary-engine');
-const gensetsActive = pathname.startsWith('/category/diesel-generator-set');
-const sparePartsActive = pathname.startsWith('/category/spare-parts') || pathname.startsWith('/parts/');
-const hydraulicsActive = pathname.startsWith('/category/hydraulic-deck-crane-equipment');
-const brandsActive = pathname.startsWith('/brands');
 ---
 <header class="top-header">
   <div class="header-container">
@@ -26,13 +20,12 @@ const brandsActive = pathname.startsWith('/brands');
     <nav class="header-nav">
       <ul class="nav-links" id="main-nav">
         <li><a href="/" class:list={[{ active: activeNav === 'home' }]}>Home</a></li>
-        <li><a href="/category/marine-propulsion-engine" class:list={[{ active: enginesActive }]} title="Marine Engines">Engines</a></li>
-        <li><a href="/category/diesel-generator-set" class:list={[{ active: gensetsActive }]} title="Marine Generators and Gensets">Gensets</a></li>
-        <li><a href="/category/spare-parts" class:list={[{ active: sparePartsActive }]} title="Marine and Ship Spare Parts">Spare Parts</a></li>
-        <li><a href="/category/hydraulic-deck-crane-equipment" class:list={[{ active: hydraulicsActive }]} title="Deck Crane and Hydraulic Equipment">Hydraulics</a></li>
-        <li><a href="/brands" class:list={[{ active: brandsActive }]}>Brands</a></li>
-        <li><a href="/blog" class:list={[{ active: activeNav === 'blog' }]}>Resources</a></li>
-        <li><a href="/enquiry" class:list={[{ active: activeNav === 'enquiry' }]}>Request Quote</a></li>
+        <li><a href="/about" class:list={[{ active: activeNav === 'about' }]}>About Us</a></li>
+        <li><a href="/products" class:list={[{ active: activeNav === 'products' }]}>Sell Equipments</a></li>
+        <li><a href="/services" class:list={[{ active: activeNav === 'services' }]}>Our Services</a></li>
+        <li><a href="/enquiry" class:list={[{ active: activeNav === 'enquiry' }]}>Enquiry</a></li>
+        <li><a href="/blog" class:list={[{ active: activeNav === 'blog' }]}>Blog</a></li>
+        <li><a href="/contact" class:list={[{ active: activeNav === 'contact' }]}>Contact Us</a></li>
       </ul>
     </nav>
 
