@@ -4,6 +4,7 @@ import type { RuntimeEnv } from "./env";
 import { normalizeContentLimit } from "./content-limit";
 import { parseRelatedProductSlugs, resolveProductSeo, stringifyRelatedProductSlugs } from "../seo";
 import { canonicalizeBrand, cleanProductTitle, normalizeVerificationDate } from "../inventory-quality";
+import { ensureBrandExists } from "./brands";
 
 const CONTENT_TABLES = {
   products: {
@@ -335,6 +336,7 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
         product.metaDescription, product.focusKeyword, product.imageAlt, product.relatedProducts
       ]
     );
+    if (product.brand) await ensureBrandExists(env, product.brand);
     return mapRecord(type, rows[0]);
   }
 
@@ -402,6 +404,7 @@ export async function updateContent(
         product.metaDescription, product.focusKeyword, product.imageAlt, product.relatedProducts, id
       ]
     );
+    if (rows[0] && product.brand) await ensureBrandExists(env, product.brand);
     return rows[0] ? mapRecord(type, rows[0]) : null;
   }
 

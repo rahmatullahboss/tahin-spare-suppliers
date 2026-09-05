@@ -6,6 +6,7 @@ import { absoluteUrl, toUrlSlug } from "../../lib/seo";
 import { canonicalizeBrand } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { listProductSummaries } from "../../lib/server/repository";
+import { getBrandBySlug } from "../../lib/server/brands";
 
 const env = getRuntimeEnv(Astro.locals);
 const brandSlug = Astro.params.brand ?? "";
@@ -16,9 +17,12 @@ if (canonicalBrandSlug && canonicalBrandSlug !== brandSlug) {
   return Astro.redirect(`/brands/${canonicalBrandSlug}`, 301);
 }
 
-const products = await listProductSummaries(env, { limit: 1000 });
+const [products, managedBrand] = await Promise.all([
+  listProductSummaries(env, { limit: 1000 }),
+  getBrandBySlug(env, brandSlug)
+]);
 const brandProducts = products.filter((product) => product.brand && toUrlSlug(product.brand) === brandSlug);
-const brandName = brandProducts[0]?.brand?.trim() ?? "";
+const brandName = managedBrand?.name || brandProducts[0]?.brand?.trim() || "";
 
 if (!brandName || brandProducts.length === 0) {
   return new Response("Brand inventory not found", {
@@ -41,6 +45,7 @@ const canonicalPath = `/brands/${brandSlug}`;
   <section class="page-hero">
     <div class="overlay"></div>
     <div class="hero-content">
+      {managedBrand?.displayLogoUrl && <img class="brand-hero-logo" src={managedBrand.displayLogoUrl} alt={`${brandName} logo`} />}
       <h1>{brandName} Marine Equipment & Spare Parts</h1>
       <p>Current listed models and components available for direct quote and worldwide export.</p>
     </div>
@@ -68,6 +73,7 @@ const canonicalPath = `/brands/${brandSlug}`;
   .page-hero { position: relative; min-height: 300px; background: url('/images/warehouse-yard.jpg') center/cover no-repeat; display: grid; place-items: center; text-align: center; }
   .overlay { position: absolute; inset: 0; background: rgba(0,0,0,.68); }
   .hero-content { position: relative; z-index: 1; max-width: 820px; padding: 30px 20px; color: white; }
+  .brand-hero-logo { display: block; max-width: 150px; max-height: 76px; object-fit: contain; margin: 0 auto 18px; padding: 10px 14px; border-radius: 10px; background: rgba(255,255,255,.94); }
   .hero-content h1 { margin: 0 0 12px; font-size: clamp(2rem, 5vw, 3.35rem); }
   .hero-content p { margin: 0; color: #e2e8f0; line-height: 1.7; }
   .intro { max-width: 850px; margin: 0 auto 36px; text-align: center; }

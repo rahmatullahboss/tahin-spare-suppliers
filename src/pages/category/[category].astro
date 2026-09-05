@@ -6,6 +6,7 @@ import { toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listProductSummaries } from '../../lib/server/repository';
 import { findCategoryBySlug, listSubcategories } from '../../lib/server/categories';
+import { listBrands } from '../../lib/server/brands';
 
 const { category } = Astro.params;
 const env = getRuntimeEnv(Astro.locals);
@@ -18,12 +19,12 @@ if (!currentCategory) {
   });
 }
 
-// Fetch subcategories if this is a custom category with an ID
-const subcategories = currentCategory.id
-  ? await listSubcategories(env, currentCategory.id)
-  : [];
-
-const categoryProducts = await listProductSummaries(env, { category: currentCategory.value, limit: 1000 });
+const [subcategories, categoryProducts, managedBrands] = await Promise.all([
+  currentCategory.id ? listSubcategories(env, currentCategory.id) : Promise.resolve([]),
+  listProductSummaries(env, { category: currentCategory.value, limit: 1000 }),
+  listBrands(env)
+]);
+const managedBrandBySlug = new Map(managedBrands.map((brand) => [brand.slug, brand] as const));
 const PRODUCT_PAGE_SIZE = 12;
 const totalProductPages = Math.max(1, Math.ceil(categoryProducts.length / PRODUCT_PAGE_SIZE));
 
@@ -55,12 +56,19 @@ const brandModelDirectory = [...categoryProducts.reduce((groups, product) => {
   }
   return groups;
 }, new Map<string, { brand: string; models: Map<string, { label: string; slug: string }> }>()).values()]
-  .map((group) => ({
-    brand: group.brand,
-    brandSlug: toUrlSlug(group.brand),
-    logo: getBrandLogoAsset(group.brand),
-    models: [...group.models.values()].sort((a, b) => a.label.localeCompare(b.label))
-  }))
+  .map((group) => {
+    const brandSlug = toUrlSlug(group.brand);
+    const managedBrand = managedBrandBySlug.get(brandSlug);
+    const fallbackLogo = getBrandLogoAsset(group.brand);
+    return {
+      brand: group.brand,
+      brandSlug,
+      logo: managedBrand?.displayLogoUrl
+        ? { url: managedBrand.displayLogoUrl, alt: `${group.brand} logo` }
+        : fallbackLogo,
+      models: [...group.models.values()].sort((a, b) => a.label.localeCompare(b.label))
+    };
+  })
   .sort((a, b) => a.brand.localeCompare(b.brand));
 
 ---

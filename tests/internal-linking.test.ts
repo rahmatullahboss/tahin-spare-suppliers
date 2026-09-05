@@ -27,7 +27,7 @@ test("category hub keeps real-brand canonical links in the category brand-model 
   const categoryPage = await source("src/pages/category/[category].astro");
 
   assert.match(categoryPage, /Browse \{currentCategory\.value\} by Brand & Model/);
-  assert.match(categoryPage, /brandSlug: toUrlSlug\(group\.brand\)/);
+  assert.match(categoryPage, /const brandSlug = toUrlSlug\(group\.brand\)/);
   assert.match(categoryPage, /href=\{`\/brands\/\$\{group\.brandSlug\}`\}/);
   assert.match(categoryPage, /getBrandLogoAsset\(group\.brand\)/);
   assert.match(categoryPage, /listProductSummaries/);

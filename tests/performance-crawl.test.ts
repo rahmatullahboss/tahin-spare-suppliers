@@ -22,7 +22,8 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   assert.match(productsHub, /listAllCategories\(env\)/);
   assert.doesNotMatch(productsHub, /listProductSummaries/);
   assert.doesNotMatch(productsHub, /countContent\(env, 'parts'\)/);
-  assert.match(brandsHub, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
+  assert.match(brandsHub, /listBrands\(env\)/);
+  assert.doesNotMatch(brandsHub, /listProductSummaries/);
   assert.match(category, /listProductSummaries\(env, \{ category: currentCategory\.value, limit: 1000 \}\)/);
   assert.match(subcategory, /listProductSummaries\(env, \{ category: parent\.value, limit: 1000 \}\)/);
   assert.match(brand, /listProductSummaries\(env, \{ limit: 1000 \}\)/);

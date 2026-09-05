@@ -11,9 +11,10 @@ interface Props {
   excerptLabel: string;
   categories?: DisplayCategory[];
   subcategories?: { id: string; name: string; parentId: string }[];
+  brands?: { id: string; name: string }[];
 }
 
-const { type, title, itemLabel, titleLabel, excerptLabel, categories = [], subcategories = [] } = Astro.props;
+const { type, title, itemLabel, titleLabel, excerptLabel, categories = [], subcategories = [], brands = [] } = Astro.props;
 const categoryOptions = categories.length > 0 ? categories : mergeCategories();
 ---
 <section class="editor-shell" data-content-editor data-type={type}>
@@ -89,8 +90,13 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
             <div class="field-row">
               <div class="field">
                 <label>Brand</label>
-                <input type="text" name="brand" placeholder="e.g. Cummins" data-brand list="brand-list" />
-                <datalist id="brand-list"></datalist>
+                <input type="text" name="brand" placeholder="Select or type a new brand" data-brand list="brand-options" />
+                <datalist id="brand-options">
+                  {brands.map((brand) => (
+                    <option value={brand.name}></option>
+                  ))}
+                </datalist>
+                <small class="field-hint">New names are added to the canonical brand list on save. <a href="/admin/brands">Manage brand names & logos</a></small>
               </div>
               <div class="field">
                 <label>Model</label>
@@ -487,13 +493,6 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
 
         if (countEl) countEl.textContent = String(data.total || allItems.length);
 
-        if (type === 'products') {
-          const brandList = document.getElementById("brand-list");
-          if (brandList) {
-            const uniqueBrands = [...new Set(allItems.map((i) => i.brand).filter(Boolean))].sort();
-            brandList.innerHTML = uniqueBrands.map((b) => `<option value="${esc(b)}">`).join("");
-          }
-        }
       } catch (err) {
         console.error("loadItems failed:", err);
         const row = document.createElement("tr");

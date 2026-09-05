@@ -4,6 +4,7 @@ import ContentEditor from "../../components/admin/ContentEditor.astro";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { isAuthenticated } from "../../lib/server/session";
 import { listAllCategories, listAllSubcategories } from "../../lib/server/categories";
+import { listBrands } from "../../lib/server/brands";
 
 const env = getRuntimeEnv(Astro.locals);
 const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
@@ -12,8 +13,11 @@ if (!authenticated) {
   return Astro.redirect("/admin/login");
 }
 
-const categories = await listAllCategories(env);
-const subcategories = await listAllSubcategories(env);
+const [categories, subcategories, brands] = await Promise.all([
+  listAllCategories(env),
+  listAllSubcategories(env),
+  listBrands(env)
+]);
 ---
 <AdminLayout title="Manage Products" active="products">
   <ContentEditor
@@ -24,5 +28,6 @@ const subcategories = await listAllSubcategories(env);
     excerptLabel="Short Description"
     categories={categories}
     subcategories={subcategories}
+    brands={brands}
   />
 </AdminLayout>
