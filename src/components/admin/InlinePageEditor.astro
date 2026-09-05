@@ -1,0 +1,444 @@
+---
+interface Props {
+  pageKey: string;
+}
+
+const { pageKey } = Astro.props;
+---
+<div class="cms-admin-bar" data-cms-admin-bar>
+  <strong>Website Edit Mode</strong>
+  <span>Click an Edit button on the page to change text or images.</span>
+  <a href="/admin/products">Products</a>
+  <a href="/admin/categories">Categories</a>
+  <a href="/admin">Dashboard</a>
+</div>
+
+<div class="cms-modal" data-cms-modal hidden>
+  <div class="cms-backdrop" data-cms-close></div>
+  <section class="cms-panel" role="dialog" aria-modal="true" aria-labelledby="cms-modal-title">
+    <header class="cms-panel-header">
+      <div>
+        <span class="cms-eyebrow">Inline CMS</span>
+        <h2 id="cms-modal-title" data-cms-title>Edit section</h2>
+      </div>
+      <button type="button" class="cms-icon-btn" data-cms-close aria-label="Close editor">×</button>
+    </header>
+    <form data-cms-form>
+      <div class="cms-fields" data-cms-fields></div>
+      <p class="cms-status" data-cms-status></p>
+      <footer class="cms-actions">
+        <button type="button" class="cms-btn cms-btn-secondary" data-cms-close>Cancel</button>
+        <button type="submit" class="cms-btn cms-btn-primary">Save & refresh</button>
+      </footer>
+    </form>
+  </section>
+</div>
+
+<script define:vars={{ pageKey }}>
+  const modal = document.querySelector('[data-cms-modal]');
+  const form = modal?.querySelector('[data-cms-form]');
+  const fields = modal?.querySelector('[data-cms-fields]');
+  const title = modal?.querySelector('[data-cms-title]');
+  const status = modal?.querySelector('[data-cms-status]');
+  let activeSection = '';
+  let state = null;
+  let originalKeys = new Set();
+  let uploadedKeys = new Set();
+
+  const labelize = (key) => key
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const collectKeys = (value, output = new Set()) => {
+    if (!value || typeof value !== 'object') return output;
+    if (Array.isArray(value)) {
+      value.forEach((item) => collectKeys(item, output));
+      return output;
+    }
+    if (typeof value.key === 'string' && value.key) output.add(value.key);
+    Object.values(value).forEach((child) => collectKeys(child, output));
+    return output;
+  };
+
+  const deleteUpload = async (key) => {
+    if (!key) return;
+    await fetch('/api/upload/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key })
+    }).catch(() => null);
+  };
+
+  const compressImageToWebp = async (file) => {
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement('canvas');
+    const maxDimension = 1800;
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Image compression is unavailable in this browser.');
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 0.82));
+    if (!blob) throw new Error('Could not compress image.');
+    const base = file.name.replace(/\.[^.]+$/, '') || 'image';
+    return new File([blob], `${base}.webp`, { type: 'image/webp' });
+  };
+
+  const uploadImage = async (file) => {
+    const compressed = await compressImageToWebp(file);
+    const data = new FormData();
+    data.append('file', compressed);
+    const response = await fetch('/api/upload', { method: 'POST', body: data });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || 'Image upload failed.');
+    if (payload.key) uploadedKeys.add(payload.key);
+    return payload;
+  };
+
+  const setStatus = (message, isError = false) => {
+    if (!status) return;
+    status.textContent = message;
+    status.dataset.error = isError ? 'true' : 'false';
+  };
+
+  const createTextField = (parent, key, value, holder) => {
+    if (key === 'key' || key === 'icon') return;
+    const wrap = document.createElement('label');
+    wrap.className = 'cms-field';
+    const label = document.createElement('span');
+    label.textContent = labelize(key);
+    wrap.appendChild(label);
+    const longField = /body|description|subtitle|headlineMain/i.test(key) || String(value).length > 90;
+    const input = document.createElement(longField ? 'textarea' : 'input');
+    if (input instanceof HTMLInputElement) input.type = /url$/i.test(key) ? 'url' : 'text';
+    input.value = value ?? '';
+    if (input instanceof HTMLTextAreaElement) input.rows = 4;
+    input.addEventListener('input', () => { holder[key] = input.value; });
+    wrap.appendChild(input);
+    parent.appendChild(wrap);
+  };
+
+  const renderImageObject = (parent, image, rerender) => {
+    const box = document.createElement('div');
+    box.className = 'cms-image-editor';
+    if (image.url) {
+      const preview = document.createElement('img');
+      preview.src = image.url;
+      preview.alt = image.alt || '';
+      box.appendChild(preview);
+    }
+
+    const altWrap = document.createElement('label');
+    altWrap.className = 'cms-field';
+    altWrap.innerHTML = '<span>Alt Text</span>';
+    const altInput = document.createElement('input');
+    altInput.type = 'text';
+    altInput.value = image.alt || '';
+    altInput.addEventListener('input', () => { image.alt = altInput.value; });
+    altWrap.appendChild(altInput);
+    box.appendChild(altWrap);
+
+    const actionRow = document.createElement('div');
+    actionRow.className = 'cms-image-actions';
+    const uploadLabel = document.createElement('label');
+    uploadLabel.className = 'cms-btn cms-btn-secondary cms-file-btn';
+    uploadLabel.textContent = image.url ? 'Replace image' : 'Upload image';
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.hidden = true;
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      setStatus('Compressing to WebP and uploading…');
+      uploadLabel.setAttribute('aria-busy', 'true');
+      try {
+        const uploaded = await uploadImage(file);
+        image.url = uploaded.url || '';
+        image.key = uploaded.key || '';
+        setStatus('Image uploaded. Save the section to publish it.');
+        rerender();
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : 'Image upload failed.', true);
+      } finally {
+        uploadLabel.removeAttribute('aria-busy');
+      }
+    });
+    uploadLabel.appendChild(input);
+    actionRow.appendChild(uploadLabel);
+
+    if (image.url) {
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'cms-btn cms-btn-danger';
+      remove.textContent = 'Remove';
+      remove.addEventListener('click', () => {
+        image.url = '';
+        image.key = '';
+        rerender();
+      });
+      actionRow.appendChild(remove);
+    }
+    box.appendChild(actionRow);
+    parent.appendChild(box);
+  };
+
+  const blankLike = (template, key) => {
+    if (template && typeof template === 'object' && !Array.isArray(template)) {
+      const output = {};
+      for (const [childKey, childValue] of Object.entries(template)) {
+        if (childKey === 'icon') output[childKey] = childValue;
+        else if (childKey === 'image') output[childKey] = { url: '', key: '', alt: '' };
+        else if (typeof childValue === 'string') output[childKey] = '';
+        else output[childKey] = blankLike(childValue, childKey);
+      }
+      return output;
+    }
+    if (/images|slides/i.test(key)) return { url: '', key: '', alt: '' };
+    return {};
+  };
+
+  const renderValue = (parent, key, value, holder, rerender) => {
+    if (key === 'key' || key === 'icon') return;
+    if (Array.isArray(value)) {
+      const group = document.createElement('fieldset');
+      group.className = 'cms-array-group';
+      const legend = document.createElement('legend');
+      legend.textContent = labelize(key);
+      group.appendChild(legend);
+      value.forEach((item, index) => {
+        const itemBox = document.createElement('div');
+        itemBox.className = 'cms-array-item';
+        const itemHeader = document.createElement('div');
+        itemHeader.className = 'cms-array-header';
+        const heading = document.createElement('strong');
+        heading.textContent = `${labelize(key)} ${index + 1}`;
+        itemHeader.appendChild(heading);
+        const controls = document.createElement('div');
+        for (const [text, delta] of [['↑', -1], ['↓', 1]]) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'cms-mini-btn';
+          button.textContent = text;
+          button.disabled = index + delta < 0 || index + delta >= value.length;
+          button.addEventListener('click', () => {
+            const target = index + delta;
+            [value[index], value[target]] = [value[target], value[index]];
+            rerender();
+          });
+          controls.appendChild(button);
+        }
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'cms-mini-btn cms-mini-danger';
+        remove.textContent = 'Remove';
+        remove.addEventListener('click', () => { value.splice(index, 1); rerender(); });
+        controls.appendChild(remove);
+        itemHeader.appendChild(controls);
+        itemBox.appendChild(itemHeader);
+
+        if (item && typeof item === 'object' && !Array.isArray(item) && 'url' in item) {
+          renderImageObject(itemBox, item, rerender);
+        } else if (item && typeof item === 'object' && !Array.isArray(item)) {
+          Object.entries(item).forEach(([childKey, childValue]) => renderValue(itemBox, childKey, childValue, item, rerender));
+        }
+        group.appendChild(itemBox);
+      });
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'cms-btn cms-btn-secondary';
+      add.textContent = `+ Add ${labelize(key).replace(/s$/, '')}`;
+      add.addEventListener('click', () => {
+        value.push(blankLike(value[0], key));
+        rerender();
+      });
+      group.appendChild(add);
+      parent.appendChild(group);
+      return;
+    }
+    if (value && typeof value === 'object') {
+      if ('url' in value) {
+        const wrap = document.createElement('fieldset');
+        wrap.className = 'cms-array-group';
+        const legend = document.createElement('legend');
+        legend.textContent = labelize(key);
+        wrap.appendChild(legend);
+        renderImageObject(wrap, value, rerender);
+        parent.appendChild(wrap);
+      } else {
+        const group = document.createElement('fieldset');
+        group.className = 'cms-array-group';
+        const legend = document.createElement('legend');
+        legend.textContent = labelize(key);
+        group.appendChild(legend);
+        Object.entries(value).forEach(([childKey, childValue]) => renderValue(group, childKey, childValue, value, rerender));
+        parent.appendChild(group);
+      }
+      return;
+    }
+    createTextField(parent, key, value, holder);
+  };
+
+  const renderForm = () => {
+    if (!fields || !state) return;
+    fields.replaceChildren();
+    Object.entries(state).forEach(([key, value]) => renderValue(fields, key, value, state, renderForm));
+  };
+
+  const closeModal = async () => {
+    if (!modal || modal.hidden) return;
+    for (const key of uploadedKeys) {
+      if (!originalKeys.has(key)) await deleteUpload(key);
+    }
+    uploadedKeys = new Set();
+    modal.hidden = true;
+    document.documentElement.classList.remove('cms-modal-open');
+  };
+
+  document.querySelectorAll('[data-cms-close]').forEach((button) => button.addEventListener('click', closeModal));
+
+  document.querySelectorAll('[data-cms-edit]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const section = button.getAttribute('data-cms-edit');
+      if (!section || !modal) return;
+      activeSection = section;
+      setStatus('Loading…');
+      modal.hidden = false;
+      document.documentElement.classList.add('cms-modal-open');
+      if (title) title.textContent = `Edit ${labelize(section)}`;
+      try {
+        const response = await fetch(`/api/page-content/${encodeURIComponent(pageKey)}/${encodeURIComponent(section)}`);
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Could not load section.');
+        state = structuredClone(payload.content);
+        originalKeys = collectKeys(state);
+        uploadedKeys = new Set();
+        renderForm();
+        setStatus('');
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : 'Could not load section.', true);
+      }
+    });
+  });
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!activeSection || !state) return;
+    setStatus('Saving…');
+    const saveButton = form.querySelector('[type="submit"]');
+    saveButton?.setAttribute('disabled', '');
+    try {
+      const response = await fetch(`/api/page-content/${encodeURIComponent(pageKey)}/${encodeURIComponent(activeSection)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: state })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Save failed.');
+      const nextKeys = collectKeys(payload.content);
+      for (const key of originalKeys) {
+        if (!nextKeys.has(key)) await deleteUpload(key);
+      }
+      uploadedKeys = new Set([...uploadedKeys].filter((key) => !nextKeys.has(key)));
+      for (const key of uploadedKeys) await deleteUpload(key);
+      uploadedKeys = new Set();
+      setStatus('Saved. Refreshing…');
+      window.location.reload();
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Save failed.', true);
+    } finally {
+      saveButton?.removeAttribute('disabled');
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal && !modal.hidden) closeModal();
+  });
+</script>
+
+<style>
+  :global(.cms-editable) { position: relative; }
+  :global(.cms-edit-button) {
+    position: absolute;
+    z-index: 30;
+    top: 10px;
+    right: 10px;
+    border: 0;
+    border-radius: 999px;
+    padding: 8px 12px;
+    background: #111;
+    color: #fff;
+    font: 700 12px/1 system-ui, sans-serif;
+    box-shadow: 0 3px 14px rgba(0,0,0,.2);
+    cursor: pointer;
+  }
+  :global(.cms-edit-button:hover) { transform: translateY(-1px); }
+  .cms-admin-bar {
+    position: fixed;
+    z-index: 1000;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(17,17,17,.96);
+    color: #fff;
+    font: 13px/1.35 system-ui, sans-serif;
+    box-shadow: 0 10px 35px rgba(0,0,0,.25);
+  }
+  .cms-admin-bar span { color: #d8d8d8; margin-right: auto; }
+  .cms-admin-bar a { color: #fff; font-weight: 700; text-decoration: none; }
+  .cms-modal[hidden] { display: none; }
+  .cms-modal { position: fixed; inset: 0; z-index: 2000; }
+  .cms-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+  .cms-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(620px, 96vw);
+    height: 100%;
+    overflow: auto;
+    background: #fff;
+    box-shadow: -12px 0 40px rgba(0,0,0,.2);
+    color: #191919;
+    font-family: system-ui, sans-serif;
+  }
+  .cms-panel-header { display:flex; justify-content:space-between; gap:20px; align-items:center; padding:22px 24px; border-bottom:1px solid #e8e8e8; position:sticky; top:0; background:#fff; z-index:2; }
+  .cms-panel-header h2 { margin:3px 0 0; font-size:22px; }
+  .cms-eyebrow { color:#c0392b; text-transform:uppercase; letter-spacing:.08em; font-size:11px; font-weight:800; }
+  .cms-icon-btn { width:40px; height:40px; border:0; border-radius:50%; font-size:26px; background:#f1f1f1; cursor:pointer; }
+  .cms-fields { display:grid; gap:18px; padding:24px; }
+  .cms-field { display:grid; gap:7px; font-size:13px; font-weight:700; }
+  .cms-field input, .cms-field textarea { width:100%; box-sizing:border-box; border:1px solid #d8d8d8; border-radius:9px; padding:11px 12px; font:14px/1.45 system-ui,sans-serif; color:#111; background:#fff; }
+  .cms-array-group { display:grid; gap:14px; border:1px solid #dedede; border-radius:12px; padding:15px; min-width:0; }
+  .cms-array-group legend { padding:0 7px; font-size:13px; font-weight:800; }
+  .cms-array-item { display:grid; gap:12px; background:#f8f8f8; border-radius:10px; padding:13px; }
+  .cms-array-header { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .cms-array-header > div { display:flex; gap:5px; }
+  .cms-mini-btn { border:1px solid #d0d0d0; background:#fff; border-radius:7px; padding:6px 8px; cursor:pointer; }
+  .cms-mini-danger { color:#a11; }
+  .cms-image-editor { display:grid; gap:12px; }
+  .cms-image-editor img { width:100%; max-height:220px; object-fit:contain; border-radius:8px; background:#eee; }
+  .cms-image-actions { display:flex; flex-wrap:wrap; gap:8px; }
+  .cms-btn { border:0; border-radius:9px; padding:10px 14px; font-weight:800; cursor:pointer; text-decoration:none; }
+  .cms-btn-primary { background:#c0392b; color:#fff; }
+  .cms-btn-secondary { background:#ececec; color:#111; }
+  .cms-btn-danger { background:#fff0f0; color:#9a1c1c; }
+  .cms-file-btn { display:inline-flex; align-items:center; }
+  .cms-status { min-height:20px; margin:0; padding:0 24px; color:#444; font:13px/1.4 system-ui,sans-serif; }
+  .cms-status[data-error="true"] { color:#b00020; }
+  .cms-actions { display:flex; justify-content:flex-end; gap:10px; padding:20px 24px 28px; }
+  :global(html.cms-modal-open) { overflow:hidden; }
+  @media (max-width: 720px) {
+    .cms-admin-bar { left:8px; right:8px; bottom:8px; flex-wrap:wrap; gap:8px 12px; }
+    .cms-admin-bar span { width:100%; order:3; }
+    .cms-panel { width:100%; }
+    :global(.cms-edit-button) { top:6px; right:6px; padding:7px 10px; }
+  }
+</style>

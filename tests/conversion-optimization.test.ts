@@ -7,15 +7,20 @@ import { getCategoryBuyingGuidance } from "../src/lib/category-buying-guidance.t
 const source = async (path: string) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("homepage keeps the pre-phase-4 visual structure while safe SEO copy remains", async () => {
-  const homepage = await source("src/pages/index.astro");
+  const [homepage, cmsDefaults] = await Promise.all([
+    source("src/pages/index.astro"),
+    source("src/lib/page-content.ts")
+  ]);
 
   assert.match(homepage, /brands-marquee/);
-  assert.match(homepage, /BRANDS IN CURRENT LISTINGS/i);
+  assert.match(homepage, /getHomepageContent/);
+  assert.match(homepage, /homeContent\.brands\.title/);
   assert.match(homepage, /listProductSummaries/);
   assert.match(homepage, /liveCategories/);
   assert.match(homepage, /liveBrandLogos/);
-  assert.match(homepage, /REQUEST A QUOTE/);
-  assert.match(homepage, /MARINE ENGINE & SPARE PARTS/);
+  assert.match(cmsDefaults, /BRANDS IN CURRENT LISTINGS/i);
+  assert.match(cmsDefaults, /REQUEST A QUOTE/);
+  assert.match(cmsDefaults, /MARINE ENGINE & SPARE PARTS/);
   assert.doesNotMatch(homepage, /MAJOR BRANDS WE CARRY/i);
   assert.doesNotMatch(homepage, /buyer-proof/);
   assert.doesNotMatch(homepage, /live-brand-grid/);

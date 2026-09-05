@@ -148,3 +148,13 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS related_products TEXT NOT NULL DEF
 CREATE INDEX IF NOT EXISTS idx_products_brand ON products(brand);
 CREATE INDEX IF NOT EXISTS idx_products_model_number ON products(model_number);
 CREATE INDEX IF NOT EXISTS idx_products_part_number ON products(part_number);
+
+CREATE TABLE IF NOT EXISTS page_sections (
+  page_key TEXT NOT NULL,
+  section_key TEXT NOT NULL,
+  content_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (page_key, section_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_page_sections_page_key ON page_sections(page_key);

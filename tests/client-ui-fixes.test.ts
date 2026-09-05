@@ -47,10 +47,15 @@ test("generic warehouse hero is removed from client-facing public page backgroun
     "src/pages/products/[slug].astro",
   ];
 
-  const pages = await Promise.all(paths.map(source));
+  const [pages, homepageDefaults] = await Promise.all([
+    Promise.all(paths.map(source)),
+    source("src/lib/page-content.ts")
+  ]);
   for (const page of pages) assert.doesNotMatch(page, /warehouse\.webp/);
+  assert.doesNotMatch(homepageDefaults, /warehouse\.webp/);
 
-  assert.match(pages[0], /team-workshop.webp/);
+  assert.match(pages[0], /homeContent\["equipment-cta"\]\.backgroundImage\.url/);
+  assert.match(homepageDefaults, /team-workshop.webp/);
   assert.match(pages[1], /team-workshop.webp/);
   assert.match(pages[2], /warehouse-yard.jpg/);
   assert.match(pages[3], /warehouse-yard.jpg/);

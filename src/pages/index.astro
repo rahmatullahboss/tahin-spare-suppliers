@@ -1,75 +1,77 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
+import InlinePageEditor from '../components/admin/InlinePageEditor.astro';
 import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { toUrlSlug } from '../lib/seo';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
 import { listProductSummaries } from '../lib/server/repository';
+import { getHomepageContent } from '../lib/server/page-content';
+import { isAuthenticated } from '../lib/server/session';
 
 const env = getRuntimeEnv(Astro.locals);
-const [categories, products] = await Promise.all([
+const [categories, products, homeContent, authenticated] = await Promise.all([
   listAllCategories(env),
   listProductSummaries(env, { limit: 1000 }),
+  getHomepageContent(env),
+  isAuthenticated(Astro.cookies, env.SESSION_SECRET),
 ]);
 const liveCategories = categories.filter((category) => products.some((product) => product.category === category.value));
-const brandLogoBySlug: Record<string, string> = {
-  'yanmar': '/images/brands/yanmar-1.svg',
-  'caterpillar': '/images/brands/caterpillar-logo2.svg',
-  'man-b-w': '/images/brands/man-logo.svg',
-  'wartsila': '/images/brands/wartsila.svg',
-  'rolls-royce': '/images/brands/rolls-royce.svg',
-  'mtu': '/images/brands/mtu-friedrichshafen-logo.svg',
-  'cummins': '/images/brands/cummins.svg',
-  'mitsubishi': '/images/brands/mitsubishi-1.svg',
-  'daihatsu': '/images/brands/daihatsu-3.svg',
-  'detroit-diesel': '/images/brands/detroit-diesel-logo.svg',
-};
+const brandLogoBySlug = new Map(
+  homeContent.brands.logos
+    .filter((entry) => entry.brand.trim() && entry.image.url)
+    .map((entry) => [toUrlSlug(entry.brand), entry.image] as const)
+);
 const liveBrandLogos = [...new Set(products.map((product) => product.brand?.trim()).filter(Boolean))]
   .map((name) => ({ name: String(name), slug: toUrlSlug(String(name)) }))
-  .filter((brand) => Boolean(brandLogoBySlug[brand.slug]));
+  .map((brand) => ({ ...brand, image: brandLogoBySlug.get(brand.slug) }))
+  .filter((brand) => Boolean(brand.image?.url));
 
-const shipmentImages = [
-  '/images/shipments/shipment-01.webp',
-  '/images/shipments/shipment-02.webp',
-  '/images/shipments/shipment-03.webp',
-  '/images/shipments/shipment-04.webp',
-  '/images/shipments/shipment-05.webp',
-  '/images/shipments/shipment-06.webp',
-  '/images/shipments/shipment-07.webp',
-  '/images/shipments/shipment-08.webp'
-];
+const modelDirectory = [...products.reduce((groups, product) => {
+  const brand = product.brand?.trim();
+  const model = product.model_number?.trim();
+  if (!brand || !model) return groups;
+  const brandKey = brand.toLowerCase();
+  if (!groups.has(brandKey)) groups.set(brandKey, { brand, models: new Map<string, { name: string; slug: string }>() });
+  const group = groups.get(brandKey)!;
+  const modelKey = model.toLowerCase();
+  if (!group.models.has(modelKey)) group.models.set(modelKey, { name: model, slug: product.slug });
+  return groups;
+}, new Map<string, { brand: string; models: Map<string, { name: string; slug: string }> }>()).values()]
+  .map((group) => ({ brand: group.brand, models: [...group.models.values()].sort((a, b) => a.name.localeCompare(b.name)).slice(0, 16) }))
+  .filter((group) => group.models.length > 0)
+  .sort((a, b) => a.brand.localeCompare(b.brand))
+  .slice(0, 16);
+
 ---
 <MainLayout activeNav="home" preloadImage="/images/hero-bg-new.webp">
   <!-- Redesigned Hero Section -->
-  <section class="hero redesigned-hero">
+  <section class:list={["hero redesigned-hero", authenticated && "cms-editable"]}>
+    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="hero">✎ Edit</button>}
     <div class="hero-bg-accent"></div>
     <div class="hero-container container">
       <div class="hero-left">
         <h1 class="hero-title">
-          <span class="text-primary-red">MARINE ENGINE & SPARE PARTS</span><br/>
-          <span class="text-dark">SUPPLIER & EXPORTER<br/>FROM BANGLADESH</span>
+          <span class="text-primary-red">{homeContent.hero.headlineAccent}</span><br/>
+          <span class="text-dark">{homeContent.hero.headlineMain.split('\n').map((line, index) => <>{index > 0 && <br/>}{line}</>)}</span>
         </h1>
-        <p class="hero-desc">Tahin Spare Suppliers supplies and exports marine engines, generator sets, hydraulic equipment and spare parts from Chattogram, Bangladesh.</p>
-        <a href="/enquiry" class="btn btn-quote-solid" data-ga-event="request_quote_click" data-ga-item="homepage-hero">REQUEST A QUOTE</a>
+        <p class="hero-desc">{homeContent.hero.description}</p>
+        <a href={homeContent.hero.ctaUrl} class="btn btn-quote-solid" data-ga-event="request_quote_click" data-ga-item="homepage-hero">{homeContent.hero.ctaText}</a>
       </div>
       <div class="hero-right">
         <div class="hero-slider" id="heroSlider">
           <div class="slider-track" id="sliderTrack">
-            <div class="slide slide-active">
-              <img src="/images/slider/hero-slide-1.webp" alt="Marine Engine" fetchpriority="high" loading="eager" class="blend-multiply" />
-            </div>
-            <div class="slide">
-              <img src="/images/slider/parts-slide.png" alt="Marine Spare Parts" class="blend-multiply" loading="lazy" />
-            </div>
-            <div class="slide">
-              <img src="/images/slider/caterpillar-slide.png" alt="Caterpillar Diesel Generator" class="blend-multiply" loading="lazy" />
-            </div>
+            {homeContent.hero.slides.filter((slide) => slide.url).map((slide, index) => (
+              <div class:list={["slide", index === 0 && "slide-active"]}>
+                <img src={slide.url} alt={slide.alt || `Homepage slide ${index + 1}`} fetchpriority={index === 0 ? "high" : undefined} loading={index === 0 ? "eager" : "lazy"} class="blend-multiply" />
+              </div>
+            ))}
           </div>
           <div class="slider-dots" id="sliderDots">
-            <button class="dot dot-active" aria-label="Slide 1"></button>
-            <button class="dot" aria-label="Slide 2"></button>
-            <button class="dot" aria-label="Slide 3"></button>
+            {homeContent.hero.slides.filter((slide) => slide.url).map((_, index) => (
+              <button class:list={["dot", index === 0 && "dot-active"]} aria-label={`Slide ${index + 1}`}></button>
+            ))}
           </div>
         </div>
       </div>
@@ -115,22 +117,22 @@ const shipmentImages = [
   </script>
 
   <!-- Who We Are -->
-  <section class="section about-preview">
+  <section class:list={["section about-preview", authenticated && "cms-editable"]}>
+    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="who-we-are">✎ Edit</button>}
     <div class="container">
       <div class="who-we-are-box reveal-scale">
-        <h2 class="section-title">WHO WE ARE</h2>
-        <p class="who-desc">
-          Tahin Spare Suppliers has served the marine industry since 1990, supplying marine engines, spare parts, generator sets, hydraulic components and related equipment. Located near the Chattogram ship-recycling and marine-sourcing area in Bangladesh, we help vessel operators and procurement teams source equipment and request current condition, availability, specifications and export support.
-        </p>
+        <h2 class="section-title">{homeContent["who-we-are"].title}</h2>
+        <p class="who-desc">{homeContent["who-we-are"].body}</p>
       </div>
     </div>
   </section>
 
   <!-- Marine Equipment & Spare Parts -->
-  <section class="section stock-spares">
+  <section class:list={["section stock-spares", authenticated && "cms-editable"]}>
+    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="stock">✎ Edit</button>}
     <div class="container">
-      <h2 class="stock-title reveal">Marine Equipment & Spare Parts</h2>
-      <p class="stock-subtitle reveal">Browse current marine machinery and spare-parts categories, then request model-specific availability and specifications.</p>
+      <h2 class="stock-title reveal">{homeContent.stock.title}</h2>
+      <p class="stock-subtitle reveal">{homeContent.stock.subtitle}</p>
       <div class="stock-grid reveal-stagger">
         {liveCategories.map((cat) => (
           <a href={`/category/${cat.slug}`} class="stock-card">
@@ -150,136 +152,125 @@ const shipmentImages = [
   </section>
 
   <!-- Previous marquee UI, populated only from brands present in current inventory -->
-  <section class="brands-section">
+  <section class:list={["brands-section", authenticated && "cms-editable"]}>
+    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="brands">✎ Edit</button>}
     <div class="container">
-      <h2 class="brands-title reveal">BRANDS IN CURRENT LISTINGS</h2>
+      <h2 class="brands-title reveal">{homeContent.brands.title}</h2>
     </div>
     <div class="brands-marquee">
       <div class="brands-track">
         {liveBrandLogos.map((brand) => (
           <a href={`/brands/${brand.slug}`} aria-label={`Browse ${brand.name} listings`}>
-            <img src={brandLogoBySlug[brand.slug]} alt={brand.name} class="brand-logo" loading="lazy" />
+            <img src={brand.image!.url} alt={brand.image!.alt || brand.name} class="brand-logo" loading="lazy" />
           </a>
         ))}
         {liveBrandLogos.map((brand) => (
           <a href={`/brands/${brand.slug}`} aria-hidden="true" tabindex="-1">
-            <img src={brandLogoBySlug[brand.slug]} alt="" class="brand-logo" loading="lazy" />
+            <img src={brand.image!.url} alt="" class="brand-logo" loading="lazy" />
           </a>
         ))}
       </div>
     </div>
+    {modelDirectory.length > 0 && (
+      <div class="container model-directory-wrap">
+        <div class="model-directory-heading">
+          <h3>{homeContent.brands.directoryTitle}</h3>
+          <p>{homeContent.brands.directorySubtitle}</p>
+        </div>
+        <div class="model-directory-grid">
+          {modelDirectory.map((group) => (
+            <article class="model-directory-card">
+              <a class="model-brand-link" href={`/brands/${toUrlSlug(group.brand)}`}>{group.brand}</a>
+              <div class="model-links">
+                {group.models.map((model) => (
+                  <a href={`/products/${model.slug}`}>{model.name}<span aria-hidden="true">→</span></a>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    )}
   </section>
 
   <!-- Our Services -->
-  <section class="section services-section">
+  <section class:list={["section services-section", authenticated && "cms-editable"]}>
+    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="services">✎ Edit</button>}
     <div class="container">
-      <h2 class="section-title reveal" style="color:#222;">OUR SERVICES</h2>
-      <p class="section-subtitle reveal">Supplying quality marine engine parts & equipment worldwide</p>
+      <h2 class="section-title reveal" style="color:#222;">{homeContent.services.title}</h2>
+      <p class="section-subtitle reveal">{homeContent.services.subtitle}</p>
       <div class="services-grid reveal-stagger">
-        <a href="/services" class="service-card">
-          <div class="service-icon"><Icon name="layer-group" size={40} /></div>
-          <h3>Marine Engine Parts Supply</h3>
-          <p>Supply and export of marine engine spare parts including pistons, liners, bearings, valves, gaskets, turbochargers, fuel pumps and related components.</p>
-        </a>
-        <a href="/services" class="service-card">
-          <div class="service-icon"><Icon name="tools" size={40} /></div>
-          <h3>Engine Overhaul & Reconditioning</h3>
-          <p>Engine disassembly, inspection, cleaning, reconditioning and testing services for supported marine engine models, with scope confirmed for each job.</p>
-        </a>
-        <a href="/services" class="service-card">
-          <div class="service-icon"><Icon name="globe" size={40} /></div>
-          <h3>Worldwide Parts Export</h3>
-          <p>Worldwide export support for marine engines, generator sets, hydraulic equipment and engine spare parts from Chattogram, Bangladesh.</p>
-        </a>
+        {homeContent.services.items.map((item) => (
+          <a href="/services" class="service-card">
+            <div class="service-icon"><Icon name={item.icon as any} size={40} /></div>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </a>
+        ))}
       </div>
     </div>
   </section>
 
   <!-- Global Export & Logistics -->
-  <section class="export-logistics redesigned-export">
+  <section class:list={["export-logistics redesigned-export", authenticated && "cms-editable"]}>
+    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="export-logistics">✎ Edit</button>}
     <div class="export-bg-accent"></div>
     <div class="container relative-z">
       <div class="export-shell">
         <div class="export-header reveal">
-          <span class="export-kicker">Worldwide Marine Supply Chain</span>
-          <h2 class="export-title">GLOBAL EXPORT &amp; LOGISTICS</h2>
-          <p class="export-subtitle">
-            Supporting international marine-equipment orders with crating, stock checks and export documentation from Chattogram, Bangladesh.
-          </p>
+          <span class="export-kicker">{homeContent["export-logistics"].kicker}</span>
+          <h2 class="export-title">{homeContent["export-logistics"].title}</h2>
+          <p class="export-subtitle">{homeContent["export-logistics"].subtitle}</p>
         </div>
         <div class="export-grid reveal-stagger">
-          <article class="export-card">
-            <img src="/images/export-crating.webp" alt="Professional crating of marine engine" loading="lazy" width="900" height="900" />
-            <div class="export-card-content">
-              <h3>Professional Crating &amp;<br/>Secure Packaging.</h3>
-            </div>
-          </article>
-          <article class="export-card">
-            <img src="/images/export-stock.webp" alt="Marine equipment stock handling" loading="lazy" width="900" height="900" />
-            <div class="export-card-content">
-              <h3>Current Stock &amp;<br/>Availability Checks.</h3>
-            </div>
-          </article>
-          <article class="export-card">
-            <img src="/images/export-spare-parts.webp" alt="Wood-crated secure spare parts supply" loading="lazy" width="900" height="900" />
-            <div class="export-card-content">
-              <h3>Secure Wood-Crated<br/>Spare Parts Supply.</h3>
-            </div>
-          </article>
-          <article class="export-card">
-            <img src="/images/export-docs.webp" alt="Export documentation support" loading="lazy" width="900" height="900" />
-            <div class="export-card-content">
-              <h3>Export Documentation<br/>&amp; Shipment Support.</h3>
-            </div>
-          </article>
+          {homeContent["export-logistics"].items.filter((item) => item.image.url).map((item) => (
+            <article class="export-card">
+              <img src={item.image.url} alt={item.image.alt || item.title} loading="lazy" width="900" height="900" />
+              <div class="export-card-content">
+                <h3>{item.title}</h3>
+              </div>
+            </article>
+          ))}
         </div>
         <div class="export-cta reveal">
-          <a href="/enquiry" class="btn btn-quote-solid">REQUEST A QUOTE</a>
+          <a href={homeContent["export-logistics"].ctaUrl} class="btn btn-quote-solid">{homeContent["export-logistics"].ctaText}</a>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Our Recent Shipment -->
-  <section class="recent-shipments">
+  <section class:list={["recent-shipments", authenticated && "cms-editable"]}>
+    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="shipments">✎ Edit</button>}
     <div class="container">
-      <h2 class="recent-shipments-title reveal" style="text-transform: none; font-size: 24px; font-weight: 500;">Recent Marine Equipment Shipments</h2>
+      <h2 class="recent-shipments-title reveal" style="text-transform: none; font-size: 24px; font-weight: 500;">{homeContent.shipments.title}</h2>
     </div>
     <div class="recent-shipments-marquee">
       <div class="recent-shipments-track">
-        {shipmentImages.map((image, index) => (
-          <img src={image} alt={`Recent marine shipment ${index + 1}`} class="shipment-marquee-image" loading="lazy" width="960" height="1280" />
+        {homeContent.shipments.images.filter((image) => image.url).map((image, index) => (
+          <img src={image.url} alt={image.alt || `Recent marine shipment ${index + 1}`} class="shipment-marquee-image" loading="lazy" width="960" height="1280" />
         ))}
-        {shipmentImages.map((image, index) => (
-          <img src={image} alt="" class="shipment-marquee-image" loading="lazy" width="960" height="1280" aria-hidden="true" />
+        {homeContent.shipments.images.filter((image) => image.url).map((image) => (
+          <img src={image.url} alt="" class="shipment-marquee-image" loading="lazy" width="960" height="1280" aria-hidden="true" />
         ))}
       </div>
     </div>
   </section>
 
   <!-- Equipments & Services CTA -->
-  <section class="product-services">
+  <section class:list={["product-services", authenticated && "cms-editable"]} style={`background-image: url('${homeContent["equipment-cta"].backgroundImage.url}')`}>
+    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="equipment-cta">✎ Edit</button>}
     <div class="ps-overlay"></div>
     <div class="container ps-content">
-      <h2 class="ps-title reveal-scale">Looking for Marine Equipment?</h2>
-      <p class="ps-contact reveal">Call us: {BUSINESS_PROFILE.whatsapp.primary.display} / {BUSINESS_PROFILE.phone.display} or Email: {BUSINESS_PROFILE.email}</p>
+      <h2 class="ps-title reveal-scale">{homeContent["equipment-cta"].title}</h2>
+      <p class="ps-contact reveal">{homeContent["equipment-cta"].contactPrefix} {BUSINESS_PROFILE.whatsapp.primary.display} / {BUSINESS_PROFILE.phone.display} or Email: {BUSINESS_PROFILE.email}</p>
       <div class="ps-carousel reveal">
         <div class="ps-carousel-track">
-          <div class="ps-card">
-            <img src="/images/marine-engine.webp" alt="Marine Engine" loading="lazy" />
-          </div>
-          <div class="ps-card">
-            <img src="/images/diesel-generator.webp" alt="Diesel Generator" loading="lazy" />
-          </div>
-          <div class="ps-card">
-            <img src="/images/turbocharger.webp" alt="Turbocharger" loading="lazy" />
-          </div>
-          <div class="ps-card">
-            <img src="/images/hydraulic-crane.webp" alt="Hydraulic Crane" loading="lazy" />
-          </div>
-          <div class="ps-card">
-            <img src="/images/spare-parts.webp" alt="Spare Parts" loading="lazy" />
-          </div>
+          {homeContent["equipment-cta"].images.filter((image) => image.url).map((image) => (
+            <div class="ps-card">
+              <img src={image.url} alt={image.alt || "Marine equipment"} loading="lazy" />
+            </div>
+          ))}
         </div>
         <button class="ps-nav ps-prev" aria-label="Previous"><Icon name="chevron-left" size={16} /></button>
         <button class="ps-nav ps-next" aria-label="Next"><Icon name="chevron-right" size={16} /></button>
@@ -288,33 +279,22 @@ const shipmentImages = [
   </section>
 
   <!-- Why Choose Us -->
-  <section class="section why-choose-us">
+  <section class:list={["section why-choose-us", authenticated && "cms-editable"]}>
+    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="why-choose-us">✎ Edit</button>}
     <div class="container">
-      <h2 class="section-title reveal" style="text-transform: capitalize;">Why Choose Us</h2>
+      <h2 class="section-title reveal" style="text-transform: capitalize;">{homeContent["why-choose-us"].title}</h2>
       <div class="features-grid">
-        <div class="feature-card reveal-scale">
-          <div class="feature-icon"><Icon name="award" size={40} /></div>
-          <h3>Established 1990</h3>
-          <p>Marine equipment and spare-parts supply experience dating back to 1990.</p>
-        </div>
-        <div class="feature-card reveal-scale">
-          <div class="feature-icon"><Icon name="layer-group" size={40} /></div>
-          <h3>Marine Inventory Access</h3>
-          <p>Browse listed equipment and spare parts, then confirm current stock for your required model or part number.</p>
-        </div>
-        <div class="feature-card reveal-scale">
-          <div class="feature-icon"><Icon name="globe" size={40} /></div>
-          <h3>Worldwide Export Support</h3>
-          <p>Request packing, documentation and shipping support for international marine-equipment orders.</p>
-        </div>
-        <div class="feature-card reveal-scale">
-          <div class="feature-icon"><Icon name="headset" size={40} /></div>
-          <h3>Direct Sales Support</h3>
-          <p>Send your brand, model or part number directly to our team for a sourcing and quotation response.</p>
-        </div>
+        {homeContent["why-choose-us"].items.map((item) => (
+          <div class="feature-card reveal-scale">
+            <div class="feature-icon"><Icon name={item.icon as any} size={40} /></div>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
+  {authenticated && <InlinePageEditor pageKey="home" />}
 </MainLayout>
 
 <style>
@@ -598,6 +578,60 @@ const shipmentImages = [
     opacity: 1;
     transform: scale(1.05);
   }
+  .model-directory-wrap {
+    margin-top: 52px;
+  }
+  .model-directory-heading {
+    max-width: 760px;
+    margin: 0 auto 28px;
+    text-align: center;
+  }
+  .model-directory-heading h3 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    color: #1c1c1c;
+  }
+  .model-directory-heading p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+  }
+  .model-directory-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .model-directory-card {
+    min-width: 0;
+    border: 1px solid #ececec;
+    background: #fafafa;
+    padding: 18px;
+  }
+  .model-brand-link {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #111;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 800;
+  }
+  .model-brand-link:hover { color: #b11623; }
+  .model-links {
+    display: grid;
+    gap: 7px;
+  }
+  .model-links a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: #e56f22;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 4px 0;
+  }
+  .model-links a:hover { color: #b11623; }
   @keyframes marquee-scroll {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
@@ -905,7 +939,10 @@ const shipmentImages = [
   /* Product & Services CTA */
   .product-services {
     position: relative;
-    background: url('/images/team-workshop.webp') center/cover no-repeat;
+    background-color: #2b143d;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
     padding: 60px 0;
   }
   .ps-overlay {
@@ -1093,6 +1130,7 @@ const shipmentImages = [
   }
   @media (max-width: 900px) {
     .stock-grid { grid-template-columns: repeat(2, 1fr); }
+    .model-directory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .services-grid { flex-direction: column; align-items: center; }
     .service-card { width: 100%; max-width: 500px; }
     .export-title { font-size: 34px; }
@@ -1106,6 +1144,8 @@ const shipmentImages = [
   @media (max-width: 600px) {
     .features-grid { grid-template-columns: 1fr; }
     .stock-grid { grid-template-columns: 1fr; }
+    .model-directory-grid { grid-template-columns: 1fr; }
+    .model-directory-wrap { margin-top: 38px; }
     .hero { min-height: 550px; }
     .hero-title { font-size: 28px; }
     .hero-content { padding: 40px 20px; }
