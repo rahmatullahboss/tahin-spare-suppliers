@@ -181,9 +181,10 @@ test("client-approved navigation and structured-content hubs preserve SEO reach"
   assert.doesNotMatch(footer, /Sell Equipments/);
   assert.match(homepage, /Marine Equipment & Spare Parts/);
   assert.match(footer, /Products & Inventory/);
+  assert.match(footer, /listAllCategories/);
+  assert.match(footer, /footerCategories\.map/);
+  assert.match(footer, /href=\{`\/category\/\$\{category\.slug\}`\}/);
   assert.doesNotMatch(footer, /href="\/(marine-propulsion-engines|marine-gearbox|marine-auxillary-engines|diesel-generator-sets|marine-spare-parts|hydraulic-crane-equipment|anchor-and-chain|marine-pump)"/);
-  assert.match(footer, /href="\/category\/marine-propulsion-engine"/);
-  assert.match(footer, /href="\/category\/spare-parts"/);
   assert.match(brands, /Marine Equipment Brands/);
   assert.match(brandPage, /Brand inventory not found/);
   assert.match(blog, /"@type": "BlogPosting"/);

@@ -34,23 +34,26 @@ test("category hub keeps real-brand canonical links in the category brand-model 
   assert.doesNotMatch(categoryPage, /Find by Model or Part Number/);
 });
 
-test("products hub uses its earlier category-card UI while dedicated parts remain crawl-governed", async () => {
+test("products hub renders every configured top-level category while dedicated parts remain crawl-governed", async () => {
   const productsPage = await source("src/pages/products.astro");
   const partsPage = await source("src/pages/parts/index.astro");
   const sitemap = await source("src/pages/sitemap.xml.ts");
 
-  assert.match(productsPage, /liveCategories\.map/);
-  assert.match(productsPage, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
+  assert.match(productsPage, /categories\.map/);
+  assert.match(productsPage, /listAllCategories/);
+  assert.doesNotMatch(productsPage, /liveCategories/);
+  assert.doesNotMatch(productsPage, /listProductSummaries/);
   assert.doesNotMatch(productsPage, /parts-hub-cta/);
   assert.match(partsPage, /noindex=\{parts\.length === 0\}/);
   assert.match(sitemap, /if \(parts\.length > 0\).*\/parts/s);
 });
 
-test("sitewide footer preserves the previous visual item without linking the known empty noindex taxonomy", async () => {
+test("sitewide footer renders the canonical configured category list dynamically", async () => {
   const footer = await source("src/components/Footer.astro");
 
-  assert.match(footer, />Anchor and Chain<\/a>/);
-  assert.doesNotMatch(footer, /\/category\/anchor-and-chain/);
+  assert.match(footer, /listAllCategories/);
+  assert.match(footer, /footerCategories\.map/);
+  assert.match(footer, /href=\{`\/category\/\$\{category\.slug\}`\}/);
 });
 
 test("brand-category permutations remain non-indexable", async () => {

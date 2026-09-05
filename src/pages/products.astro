@@ -3,14 +3,9 @@ import MainLayout from '../layouts/MainLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
-import { listProductSummaries } from '../lib/server/repository';
 
 const env = getRuntimeEnv(Astro.locals);
-const [categories, products] = await Promise.all([
-  listAllCategories(env),
-  listProductSummaries(env, { limit: 1000 }),
-]);
-const liveCategories = categories.filter((category) => products.some((product) => product.category === category.value));
+const categories = await listAllCategories(env);
 ---
 <MainLayout
   title="Marine Engines, Generators & Spare Parts | Tahin Spare Suppliers"
@@ -30,7 +25,7 @@ const liveCategories = categories.filter((category) => products.some((product) =
   <section class="section stock-spares">
     <div class="container">
       <div class="stock-grid reveal-stagger">
-        {liveCategories.map((cat) => (
+        {categories.map((cat) => (
           <a href={`/category/${cat.slug}`} class="stock-card">
             <div class="stock-card-img">
               <img src={cat.imageUrl} alt={`${cat.value} marine equipment category`} width="800" height="600" loading="lazy" decoding="async" />

@@ -5,18 +5,15 @@ import InlinePageEditor from '../components/admin/InlinePageEditor.astro';
 import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
-import { listProductSummaries } from '../lib/server/repository';
 import { getHomepageContent } from '../lib/server/page-content';
 import { isAuthenticated } from '../lib/server/session';
 
 const env = getRuntimeEnv(Astro.locals);
-const [categories, products, homeContent, authenticated] = await Promise.all([
+const [categories, homeContent, authenticated] = await Promise.all([
   listAllCategories(env),
-  listProductSummaries(env, { limit: 1000 }),
   getHomepageContent(env),
   isAuthenticated(Astro.cookies, env.SESSION_SECRET),
 ]);
-const liveCategories = categories.filter((category) => products.some((product) => product.category === category.value));
 
 ---
 <MainLayout activeNav="home" preloadImage="/images/hero-bg-new.webp">
@@ -108,7 +105,7 @@ const liveCategories = categories.filter((category) => products.some((product) =
       <h2 class="stock-title reveal">{homeContent.stock.title}</h2>
       <p class="stock-subtitle reveal">{homeContent.stock.subtitle}</p>
       <div class="stock-grid reveal-stagger">
-        {liveCategories.map((cat) => (
+        {categories.map((cat) => (
           <a href={`/category/${cat.slug}`} class="stock-card">
             <div class="stock-card-img">
               <img src={cat.imageUrl} alt={cat.value} loading="lazy" />

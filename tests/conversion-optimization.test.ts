@@ -13,8 +13,10 @@ test("homepage keeps the client content structure without the category-specific 
   ]);
 
   assert.match(homepage, /getHomepageContent/);
-  assert.match(homepage, /listProductSummaries/);
-  assert.match(homepage, /liveCategories/);
+  assert.match(homepage, /listAllCategories/);
+  assert.match(homepage, /categories\.map/);
+  assert.doesNotMatch(homepage, /liveCategories/);
+  assert.doesNotMatch(homepage, /listProductSummaries/);
   assert.match(cmsDefaults, /REQUEST A QUOTE/);
   assert.match(cmsDefaults, /MARINE ENGINE & SPARE PARTS/);
   assert.doesNotMatch(homepage, /brands-marquee/);

@@ -1,6 +1,10 @@
 ---
 import Icon from './Icon.astro';
 import { BUSINESS_PROFILE } from '../lib/business-profile';
+import { getRuntimeEnv } from '../lib/server/env';
+import { listAllCategories } from '../lib/server/categories';
+
+const footerCategories = await listAllCategories(getRuntimeEnv(Astro.locals));
 ---
 <footer class="site-footer">
   <div class="footer-top">
@@ -15,14 +19,9 @@ import { BUSINESS_PROFILE } from '../lib/business-profile';
       <div class="footer-col">
         <h3>Products & Inventory</h3>
         <ul>
-          <li><a href="/category/marine-propulsion-engine">Marine Propulsion Engine</a></li>
-          <li><a href="/category/marine-gearbox">Marine Gearbox</a></li>
-          <li><a href="/category/auxiliary-engine">Auxiliary Engine</a></li>
-          <li><a href="/category/diesel-generator-set">Diesel & Gas Generator Set</a></li>
-          <li><a href="/category/spare-parts">Spare Parts</a></li>
-          <li><a href="/category/hydraulic-deck-crane-equipment">Hydraulic Deck Crane Equipment</a></li>
-          <li><a href="/enquiry">Anchor and Chain</a></li>
-          <li><a href="/category/marine-pump">Marine Pump</a></li>
+          {footerCategories.map((category) => (
+            <li><a href={`/category/${category.slug}`}>{category.value}</a></li>
+          ))}
         </ul>
       </div>
       <div class="footer-col">
