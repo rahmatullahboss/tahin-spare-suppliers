@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { getBrandLogoAsset } from '../../lib/brand-logos';
 import { toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listProductSummaries } from '../../lib/server/repository';
@@ -33,6 +34,34 @@ const displayBrands = [...new Set(
     .filter((brand) => brand.length > 0)
 )];
 const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
+
+const brandModelDirectory = [...categoryProducts.reduce((groups, product) => {
+  const brand = product.brand?.trim();
+  if (!brand) return groups;
+
+  const key = brand.toLowerCase();
+  if (!groups.has(key)) {
+    groups.set(key, {
+      brand,
+      models: new Map<string, { label: string; slug: string }>()
+    });
+  }
+
+  const group = groups.get(key)!;
+  const label = product.model_number?.trim() || product.title;
+  const modelKey = label.toLowerCase();
+  if (!group.models.has(modelKey)) {
+    group.models.set(modelKey, { label, slug: product.slug });
+  }
+  return groups;
+}, new Map<string, { brand: string; models: Map<string, { label: string; slug: string }> }>()).values()]
+  .map((group) => ({
+    brand: group.brand,
+    brandSlug: toUrlSlug(group.brand),
+    logo: getBrandLogoAsset(group.brand),
+    models: [...group.models.values()].sort((a, b) => a.label.localeCompare(b.label))
+  }))
+  .sort((a, b) => a.brand.localeCompare(b.brand));
 
 ---
 <MainLayout
@@ -80,6 +109,42 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
     </section>
   )}
 
+  {brandModelDirectory.length > 0 && (
+    <section class="section category-brand-directory">
+      <div class="container">
+        <div class="category-brand-heading">
+          <span class="category-brand-kicker">Browse by maker</span>
+          <h2>Browse {currentCategory.value} by Brand & Model</h2>
+          <p>Choose a brand, then open the exact model or listing available in this category.</p>
+        </div>
+        <div class="category-brand-grid">
+          {brandModelDirectory.map((group) => (
+            <article class="category-brand-card">
+              <a href={`/brands/${group.brandSlug}`} class="category-brand-top" aria-label={`Browse ${group.brand} listings`}>
+                <div class="category-brand-logo-wrap">
+                  {group.logo ? (
+                    <img src={group.logo.url} alt={group.logo.alt} class="category-brand-logo" loading="lazy" />
+                  ) : (
+                    <span class="category-brand-fallback" aria-hidden="true">{group.brand.slice(0, 2).toUpperCase()}</span>
+                  )}
+                </div>
+                <strong>{group.brand}</strong>
+              </a>
+              <div class="category-model-links">
+                {group.models.map((model) => (
+                  <a href={`/products/${model.slug}`}>
+                    <span>{model.label}</span>
+                    <span aria-hidden="true">→</span>
+                  </a>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
   <section class="section">
     <div class="container">
       <div class="mb-5">
@@ -116,18 +181,6 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
         </>
       )}
 
-      <!-- Programmatic SEO Brand Links -->
-      <div class="brand-seo-links">
-        <h3>Browse {currentCategory.value} by Brand</h3>
-        <div class="tags-container">
-          {displayBrands.map((brand) => (
-            <a href={`/brands/${toUrlSlug(brand)}`} class="brand-tag">
-              {brand} {currentCategory.value}
-            </a>
-          ))}
-        </div>
-      </div>
-      
       <!-- FAQ Section for AI SEO -->
       <div class="faq-section mt-5">
         <h3 class="reveal">Frequently Asked Questions</h3>
@@ -323,6 +376,117 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
     letter-spacing: 0.5px;
   }
 
+  .category-brand-directory {
+    background: #f8fafc;
+    border-top: 1px solid #eef1f4;
+    border-bottom: 1px solid #eef1f4;
+  }
+  .category-brand-heading {
+    max-width: 760px;
+    margin: 0 auto 32px;
+    text-align: center;
+  }
+  .category-brand-kicker {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #b11623;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+  }
+  .category-brand-heading h2 {
+    margin: 0 0 10px;
+    color: #111827;
+    font-size: 28px;
+    line-height: 1.25;
+  }
+  .category-brand-heading p {
+    margin: 0;
+    color: #667085;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .category-brand-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .category-brand-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #e3e7eb;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+  }
+  .category-brand-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-bottom: 1px solid #eef1f4;
+    color: #111827;
+    text-decoration: none;
+  }
+  .category-brand-top:hover strong { color: #b11623; }
+  .category-brand-logo-wrap {
+    display: flex;
+    flex: 0 0 84px;
+    align-items: center;
+    justify-content: center;
+    width: 84px;
+    height: 52px;
+    padding: 6px;
+    border: 1px solid #edf0f2;
+    border-radius: 9px;
+    background: #fff;
+  }
+  .category-brand-logo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .category-brand-fallback {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 50%;
+    background: #f2f4f7;
+    color: #475467;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .category-brand-top strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 17px;
+    line-height: 1.25;
+  }
+  .category-model-links {
+    display: grid;
+    padding: 10px 18px 14px;
+  }
+  .category-model-links a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    padding: 9px 0;
+    border-bottom: 1px solid #f0f1f3;
+    color: #df6b21;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-decoration: none;
+  }
+  .category-model-links a:last-child { border-bottom: 0; }
+  .category-model-links a:hover { color: #b11623; }
+  .category-model-links a span:first-child { min-width: 0; overflow-wrap: anywhere; }
+
   .products-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -411,20 +575,6 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
   }
 
   .mt-5 { margin-top: 50px; }
-  .brand-seo-links { margin-top: 50px; padding-top: 30px; border-top: 1px solid #eee; }
-  .brand-seo-links h3 { font-size: 20px; color: #222; margin-bottom: 20px; }
-  .tags-container { display: flex; flex-wrap: wrap; gap: 10px; }
-  .brand-tag {
-    background: #fdfdfd;
-    border: 1px solid #ddd;
-    color: #444;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 14px;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-  .brand-tag:hover { background: #b11623; color: #fff; border-color: #b11623; }
 
   .faq-section { background: #fafafa; padding: 40px; border-radius: 8px; margin-bottom: 30px; }
   .faq-section h3 { font-size: 24px; color: #222; margin-bottom: 30px; font-weight: 800; }
@@ -460,9 +610,16 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
   @media (max-width: 768px) {
     .products-grid { grid-template-columns: repeat(2, 1fr); }
     .subcategory-grid { grid-template-columns: repeat(2, 1fr); }
+    .category-brand-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 480px) {
     .products-grid { grid-template-columns: 1fr; }
     .subcategory-grid { grid-template-columns: 1fr; }
+    .category-brand-grid { grid-template-columns: 1fr; }
+    .category-brand-heading { margin-bottom: 24px; }
+    .category-brand-heading h2 { font-size: 23px; }
+    .category-brand-top { padding: 14px; }
+    .category-brand-logo-wrap { flex-basis: 76px; width: 76px; height: 48px; }
+    .category-model-links { padding: 8px 14px 12px; }
   }
 </style>

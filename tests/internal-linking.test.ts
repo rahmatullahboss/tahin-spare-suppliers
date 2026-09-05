@@ -23,11 +23,13 @@ test("brand hub keeps canonical brand normalization without the later equipment-
   assert.doesNotMatch(brandPage, /brand-category-grid/);
 });
 
-test("category hub keeps real-brand canonical links in the earlier presentation", async () => {
+test("category hub keeps real-brand canonical links in the category brand-model directory", async () => {
   const categoryPage = await source("src/pages/category/[category].astro");
 
-  assert.match(categoryPage, /Browse \{currentCategory\.value\} by Brand/);
-  assert.match(categoryPage, /href=\{`\/brands\/\$\{toUrlSlug\(brand\)\}`\}/);
+  assert.match(categoryPage, /Browse \{currentCategory\.value\} by Brand & Model/);
+  assert.match(categoryPage, /brandSlug: toUrlSlug\(group\.brand\)/);
+  assert.match(categoryPage, /href=\{`\/brands\/\$\{group\.brandSlug\}`\}/);
+  assert.match(categoryPage, /getBrandLogoAsset\(group\.brand\)/);
   assert.match(categoryPage, /listProductSummaries/);
   assert.doesNotMatch(categoryPage, /Find by Model or Part Number/);
 });

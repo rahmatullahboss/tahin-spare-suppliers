@@ -3,7 +3,6 @@ import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
 import InlinePageEditor from '../components/admin/InlinePageEditor.astro';
 import { BUSINESS_PROFILE } from '../lib/business-profile';
-import { toUrlSlug } from '../lib/seo';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
 import { listProductSummaries } from '../lib/server/repository';
@@ -18,31 +17,6 @@ const [categories, products, homeContent, authenticated] = await Promise.all([
   isAuthenticated(Astro.cookies, env.SESSION_SECRET),
 ]);
 const liveCategories = categories.filter((category) => products.some((product) => product.category === category.value));
-const brandLogoBySlug = new Map(
-  homeContent.brands.logos
-    .filter((entry) => entry.brand.trim() && entry.image.url)
-    .map((entry) => [toUrlSlug(entry.brand), entry.image] as const)
-);
-const liveBrandLogos = [...new Set(products.map((product) => product.brand?.trim()).filter(Boolean))]
-  .map((name) => ({ name: String(name), slug: toUrlSlug(String(name)) }))
-  .map((brand) => ({ ...brand, image: brandLogoBySlug.get(brand.slug) }))
-  .filter((brand) => Boolean(brand.image?.url));
-
-const modelDirectory = [...products.reduce((groups, product) => {
-  const brand = product.brand?.trim();
-  const model = product.model_number?.trim();
-  if (!brand || !model) return groups;
-  const brandKey = brand.toLowerCase();
-  if (!groups.has(brandKey)) groups.set(brandKey, { brand, models: new Map<string, { name: string; slug: string }>() });
-  const group = groups.get(brandKey)!;
-  const modelKey = model.toLowerCase();
-  if (!group.models.has(modelKey)) group.models.set(modelKey, { name: model, slug: product.slug });
-  return groups;
-}, new Map<string, { brand: string; models: Map<string, { name: string; slug: string }> }>()).values()]
-  .map((group) => ({ brand: group.brand, models: [...group.models.values()].sort((a, b) => a.name.localeCompare(b.name)).slice(0, 16) }))
-  .filter((group) => group.models.length > 0)
-  .sort((a, b) => a.brand.localeCompare(b.brand))
-  .slice(0, 16);
 
 ---
 <MainLayout activeNav="home" preloadImage="/images/hero-bg-new.webp">
@@ -149,48 +123,6 @@ const modelDirectory = [...products.reduce((groups, product) => {
 
 
     </div>
-  </section>
-
-  <!-- Previous marquee UI, populated only from brands present in current inventory -->
-  <section class:list={["brands-section", authenticated && "cms-editable"]}>
-    {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="brands">✎ Edit</button>}
-    <div class="container">
-      <h2 class="brands-title reveal">{homeContent.brands.title}</h2>
-    </div>
-    <div class="brands-marquee">
-      <div class="brands-track">
-        {liveBrandLogos.map((brand) => (
-          <a href={`/brands/${brand.slug}`} aria-label={`Browse ${brand.name} listings`}>
-            <img src={brand.image!.url} alt={brand.image!.alt || brand.name} class="brand-logo" loading="lazy" />
-          </a>
-        ))}
-        {liveBrandLogos.map((brand) => (
-          <a href={`/brands/${brand.slug}`} aria-hidden="true" tabindex="-1">
-            <img src={brand.image!.url} alt="" class="brand-logo" loading="lazy" />
-          </a>
-        ))}
-      </div>
-    </div>
-    {modelDirectory.length > 0 && (
-      <div class="container model-directory-wrap">
-        <div class="model-directory-heading">
-          <h3>{homeContent.brands.directoryTitle}</h3>
-          <p>{homeContent.brands.directorySubtitle}</p>
-        </div>
-        <div class="model-directory-grid">
-          {modelDirectory.map((group) => (
-            <article class="model-directory-card">
-              <a class="model-brand-link" href={`/brands/${toUrlSlug(group.brand)}`}>{group.brand}</a>
-              <div class="model-links">
-                {group.models.map((model) => (
-                  <a href={`/products/${model.slug}`}>{model.name}<span aria-hidden="true">→</span></a>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    )}
   </section>
 
   <!-- Our Services -->
@@ -521,122 +453,6 @@ const modelDirectory = [...products.reduce((groups, product) => {
   }
 
   /* Stock Spares / Products — Premium Overlay Cards */
-  /* Brands Marquee */
-  .brands-section {
-    padding: 60px 0 50px;
-    background: #fff;
-    overflow: hidden;
-    border-bottom: 1px solid #eee;
-    border-top: 1px solid #eee;
-  }
-  .brands-title {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 40px;
-    letter-spacing: 2px;
-  }
-  .brands-marquee {
-    overflow: hidden;
-    position: relative;
-    padding: 10px 0;
-  }
-  .brands-marquee::before,
-  .brands-marquee::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 150px;
-    z-index: 2;
-  }
-  .brands-marquee::before {
-    left: 0;
-    background: linear-gradient(to right, #fff, transparent);
-  }
-  .brands-marquee::after {
-    right: 0;
-    background: linear-gradient(to left, #fff, transparent);
-  }
-  .brands-track {
-    display: flex;
-    gap: 80px;
-    animation: marquee-scroll 35s linear infinite;
-    width: max-content;
-    align-items: center;
-  }
-  .brand-logo {
-    height: 45px;
-    width: auto;
-    max-width: 160px;
-    object-fit: contain;
-    opacity: 0.9;
-    transition: all 0.4s ease;
-  }
-  .brand-logo:hover {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-  .model-directory-wrap {
-    margin-top: 52px;
-  }
-  .model-directory-heading {
-    max-width: 760px;
-    margin: 0 auto 28px;
-    text-align: center;
-  }
-  .model-directory-heading h3 {
-    margin: 0 0 8px;
-    font-size: 26px;
-    color: #1c1c1c;
-  }
-  .model-directory-heading p {
-    margin: 0;
-    color: #666;
-    line-height: 1.6;
-  }
-  .model-directory-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
-  }
-  .model-directory-card {
-    min-width: 0;
-    border: 1px solid #ececec;
-    background: #fafafa;
-    padding: 18px;
-  }
-  .model-brand-link {
-    display: inline-block;
-    margin-bottom: 12px;
-    color: #111;
-    text-decoration: none;
-    font-size: 18px;
-    font-weight: 800;
-  }
-  .model-brand-link:hover { color: #b11623; }
-  .model-links {
-    display: grid;
-    gap: 7px;
-  }
-  .model-links a {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    color: #e56f22;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 4px 0;
-  }
-  .model-links a:hover { color: #b11623; }
-  @keyframes marquee-scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
   .stock-spares {
     background: #f9f9f9;
   }
@@ -1130,7 +946,6 @@ const modelDirectory = [...products.reduce((groups, product) => {
   }
   @media (max-width: 900px) {
     .stock-grid { grid-template-columns: repeat(2, 1fr); }
-    .model-directory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .services-grid { flex-direction: column; align-items: center; }
     .service-card { width: 100%; max-width: 500px; }
     .export-title { font-size: 34px; }
@@ -1144,8 +959,6 @@ const modelDirectory = [...products.reduce((groups, product) => {
   @media (max-width: 600px) {
     .features-grid { grid-template-columns: 1fr; }
     .stock-grid { grid-template-columns: 1fr; }
-    .model-directory-grid { grid-template-columns: 1fr; }
-    .model-directory-wrap { margin-top: 38px; }
     .hero { min-height: 550px; }
     .hero-title { font-size: 28px; }
     .hero-content { padding: 40px 20px; }

@@ -74,11 +74,29 @@ test("inline image replacement compresses browser uploads to WebP before authent
   assert.match(uploadApi, /MEDIA_BUCKET\.put/);
 });
 
-test("homepage brand-model directory is generated from current product records and links to canonical product pages", async () => {
-  const homepage = await source("src/pages/index.astro");
+test("brand-model directory lives inside category pages and uses real brand logos when available", async () => {
+  const [homepage, categoryPage, brandLogos] = await Promise.all([
+    source("src/pages/index.astro"),
+    source("src/pages/category/[category].astro"),
+    source("src/lib/brand-logos.ts")
+  ]);
 
-  assert.match(homepage, /const modelDirectory = \[\.\.\.products\.reduce/);
-  assert.match(homepage, /product\.model_number/);
-  assert.match(homepage, /href=\{`\/products\/\$\{model\.slug\}`\}/);
-  assert.match(homepage, /homeContent\.brands\.directoryTitle/);
+  assert.doesNotMatch(homepage, /modelDirectory|category-brand-directory/);
+  assert.match(categoryPage, /const brandModelDirectory = \[\.\.\.categoryProducts\.reduce/);
+  assert.match(categoryPage, /product\.model_number/);
+  assert.match(categoryPage, /getBrandLogoAsset\(group\.brand\)/);
+  assert.match(categoryPage, /class="category-brand-logo"/);
+  assert.match(categoryPage, /href=\{`\/products\/\$\{model\.slug\}`\}/);
+  assert.match(brandLogos, /Cummins/);
+  assert.match(brandLogos, /caterpillar-logo2\.svg/);
+});
+
+test("inline CMS styles dynamic controls globally and keeps mobile fields full-width", async () => {
+  const inlineEditor = await source("src/components/admin/InlinePageEditor.astro");
+
+  assert.match(inlineEditor, /<style is:global>/);
+  assert.match(inlineEditor, /\.cms-field input, \.cms-field textarea \{[^}]*width:100%/s);
+  assert.match(inlineEditor, /font-size:16px/);
+  assert.match(inlineEditor, /height:100dvh/);
+  assert.match(inlineEditor, /\.cms-actions \{[^}]*position:sticky/s);
 });
