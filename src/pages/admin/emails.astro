@@ -32,10 +32,13 @@ const unreadCount = Number(unreadResult[0]?.total ?? 0);
           {unreadCount} unread · {inboundTotal} messages
         </p>
       </div>
-      <a href="/admin/emails/send" class="compose-btn">
-        <span aria-hidden="true" class="compose-plus">+</span>
-        Compose
-      </a>
+      <div class="mailbox-header-actions">
+        <a href="/admin/emails/signature" class="signature-btn">Signature</a>
+        <a href="/admin/emails/send" class="compose-btn">
+          <span aria-hidden="true" class="compose-plus">+</span>
+          Compose
+        </a>
+      </div>
     </header>
 
     <div class="mailbox-panel">
@@ -142,6 +145,31 @@ const unreadCount = Number(unreadResult[0]?.total ?? 0);
     color: #687386;
     font-size: 13px;
   }
+
+  .admin-main .mailbox-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .admin-main .signature-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    border: 1px solid #d9dee5;
+    border-radius: 10px;
+    background: #fff;
+    color: #5b6473;
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
+  }
+
+  .admin-main .signature-btn:hover { background: #f8fafc; color: #a16207; }
 
   .admin-main .compose-btn {
     min-height: 44px;
@@ -650,6 +678,14 @@ const unreadCount = Number(unreadResult[0]?.total ?? 0);
       margin-bottom: 16px;
     }
 
+    .admin-main .mailbox-header-actions {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .admin-main .signature-btn,
     .admin-main .compose-btn {
       width: 100%;
       min-height: 44px;

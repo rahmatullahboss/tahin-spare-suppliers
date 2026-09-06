@@ -1,0 +1,195 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import ImageUploader from "../../../components/admin/ImageUploader.astro";
+import { getRuntimeEnv } from "../../../lib/server/env";
+import { isAuthenticated } from "../../../lib/server/session";
+import { getEmailSignatureSettings } from "../../../lib/server/email-signature";
+
+const env = getRuntimeEnv(Astro.locals);
+const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
+if (!authenticated) return Astro.redirect("/admin/login");
+const settings = await getEmailSignatureSettings(env);
+---
+
+<AdminLayout title="Email Signature" active="emails">
+  <main class="signature-page">
+    <nav class="signature-nav"><a href="/admin/emails">← Back to mailbox</a><a href="/admin/emails/send">Compose email</a></nav>
+    <header>
+      <p class="eyebrow">Sales mailbox</p>
+      <h1>Email Signature</h1>
+      <p>This signature is automatically appended to every email and reply sent from the admin mailbox.</p>
+    </header>
+
+    <div class="signature-grid">
+      <form id="signature-form" class="settings-card">
+        <div class="field"><label for="closing">Closing</label><input id="closing" value={settings.closing} /></div>
+        <div class="two-col">
+          <div class="field"><label for="person-name">Name</label><input id="person-name" value={settings.personName} /></div>
+          <div class="field"><label for="role">Role</label><input id="role" value={settings.role} /></div>
+        </div>
+        <div class="field"><label for="company-name">Company</label><input id="company-name" value={settings.companyName} /></div>
+        <div class="two-col">
+          <div class="field"><label for="phone">Phone</label><input id="phone" value={settings.phone} /></div>
+          <div class="field"><label for="email">Email</label><input id="email" value={settings.email} /></div>
+        </div>
+        <div class="field"><label for="website">Website</label><input id="website" value={settings.website} /></div>
+        <div class="field"><label for="address">Address</label><textarea id="address" rows="3">{settings.address}</textarea></div>
+        <ImageUploader label="Signature Logo" />
+        <div class="logo-preview" data-logo-preview>
+          {settings.logoUrl && <img src={settings.logoUrl} alt="Signature logo preview" />}
+        </div>
+        <div class="actions"><button type="submit">Save signature</button></div>
+        <p id="signature-status" role="status"></p>
+      </form>
+
+      <aside class="preview-card">
+        <h2>Preview</h2>
+        <div class="email-preview" data-signature-preview></div>
+      </aside>
+    </div>
+  </main>
+
+  <script define:vars={{ settings }}>
+    const form = document.getElementById('signature-form');
+    const imageInput = document.querySelector('[data-image-input]');
+    const imageRemove = document.querySelector('[data-image-remove-btn]');
+    const imageUrlInput = document.querySelector('[data-image-url]');
+    const imageKeyInput = document.querySelector('[data-image-key]');
+    const uploadStatus = document.querySelector('[data-upload-status]');
+    const logoPreview = document.querySelector('[data-logo-preview]');
+    const preview = document.querySelector('[data-signature-preview]');
+    const status = document.getElementById('signature-status');
+    let currentLogoUrl = settings.logoUrl || '';
+    let currentLogoKey = settings.logoKey || '';
+    let selectedFile = null;
+    let removed = false;
+
+    if (imageUrlInput) imageUrlInput.value = currentLogoUrl;
+    if (imageKeyInput) imageKeyInput.value = currentLogoKey;
+
+    const value = (id) => document.getElementById(id)?.value?.trim() || '';
+    const escapeHtml = (input) => String(input || '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+
+    const collect = () => ({
+      closing: value('closing'), personName: value('person-name'), role: value('role'), companyName: value('company-name'),
+      phone: value('phone'), email: value('email'), website: value('website'), address: value('address'),
+      logoUrl: currentLogoUrl, logoKey: currentLogoKey
+    });
+
+    const render = () => {
+      if (!preview) return;
+      const s = collect();
+      preview.innerHTML = `
+        <p class="sample-copy">Hello, this is a sample message.</p>
+        <div class="signature-sample">
+          <p class="closing">${escapeHtml(s.closing)}</p>
+          <div class="signature-row">
+            ${s.logoUrl ? `<div class="signature-logo"><img src="${escapeHtml(s.logoUrl)}" alt=""></div>` : ''}
+            <div class="signature-info">
+              ${s.personName ? `<strong>${escapeHtml(s.personName)}</strong>` : ''}
+              ${s.role ? `<span>${escapeHtml(s.role)}</span>` : ''}
+              ${s.companyName ? `<strong class="company">${escapeHtml(s.companyName)}</strong>` : ''}
+              ${s.phone ? `<span>${escapeHtml(s.phone)}</span>` : ''}
+              ${s.email ? `<span>${escapeHtml(s.email)}</span>` : ''}
+              ${s.website ? `<span>${escapeHtml(s.website)}</span>` : ''}
+              ${s.address ? `<span>${escapeHtml(s.address)}</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    };
+
+    form?.querySelectorAll('input,textarea').forEach((input) => input.addEventListener('input', render));
+    render();
+
+    const compressToWebp = async (file) => {
+      const bitmap = await createImageBitmap(file);
+      const canvas = document.createElement('canvas');
+      const scale = Math.min(1, 1200 / bitmap.width, 800 / bitmap.height);
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Image compression is unavailable.');
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close?.();
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', .86));
+      if (!blob) throw new Error('Logo compression failed.');
+      return new File([blob], `${file.name.replace(/\.[^.]+$/, '') || 'signature-logo'}.webp`, { type: 'image/webp' });
+    };
+
+    const upload = async (file) => {
+      const data = new FormData(); data.append('file', file);
+      const response = await fetch('/api/upload', { method: 'POST', body: data });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || 'Logo upload failed.');
+      return body;
+    };
+    const deleteUpload = async (key) => key && fetch('/api/upload/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key}) }).catch(() => null);
+
+    imageInput?.addEventListener('change', () => {
+      selectedFile = imageInput.files?.[0] || null; removed = false;
+      if (uploadStatus) uploadStatus.textContent = selectedFile ? 'Logo selected. It will be compressed to WebP and uploaded on save.' : '';
+      if (selectedFile && logoPreview) {
+        const url = URL.createObjectURL(selectedFile);
+        logoPreview.innerHTML = `<img src="${url}" alt="Signature logo preview">`;
+      }
+    });
+    imageRemove?.addEventListener('click', () => {
+      selectedFile = null; removed = true; currentLogoUrl = ''; currentLogoKey = '';
+      if (imageInput) imageInput.value = '';
+      if (logoPreview) logoPreview.innerHTML = '';
+      if (uploadStatus) uploadStatus.textContent = 'Logo will be removed on save.';
+      render();
+    });
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const oldKey = settings.logoKey || '';
+      let uploadedKey = '';
+      if (status) { status.textContent = 'Saving…'; status.className = ''; }
+      try {
+        if (selectedFile) {
+          if (uploadStatus) uploadStatus.textContent = 'Compressing logo to WebP…';
+          const compressed = await compressToWebp(selectedFile);
+          if (uploadStatus) uploadStatus.textContent = 'Uploading logo to R2…';
+          const uploaded = await upload(compressed);
+          currentLogoUrl = uploaded.url || '';
+          currentLogoKey = uploaded.key || '';
+          uploadedKey = currentLogoKey;
+        }
+        if (removed) { currentLogoUrl = ''; currentLogoKey = ''; }
+        const response = await fetch('/api/admin/email-signature', {
+          method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({settings: collect()})
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.error || 'Failed to save signature.');
+        if (oldKey && oldKey !== currentLogoKey) await deleteUpload(oldKey);
+        if (status) { status.textContent = 'Signature saved.'; status.className = 'success'; }
+        setTimeout(() => location.reload(), 500);
+      } catch (error) {
+        if (uploadedKey) await deleteUpload(uploadedKey);
+        if (status) { status.textContent = error instanceof Error ? error.message : 'Failed to save signature.'; status.className = 'error'; }
+      }
+    });
+  </script>
+
+  <style>
+    .signature-page { max-width: 1080px; margin: 0 auto; }
+    .signature-nav { display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap; }
+    .signature-nav a { color:#b11623;text-decoration:none;font-weight:700; }
+    .signature-page>header { margin-bottom:22px; }
+    .eyebrow { margin:0 0 6px;color:#b11623;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em; }
+    h1 { margin:0;color:#111827;font-size:30px; } header>p:last-child { color:#64748b; }
+    .signature-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.8fr);gap:22px;align-items:start; }
+    .settings-card,.preview-card { background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:22px;box-shadow:0 2px 8px rgba(15,23,42,.04); }
+    .settings-card { display:grid;gap:15px; }
+    .field { display:grid;gap:6px; } .field label { font-size:13px;font-weight:800;color:#334155; }
+    .field input,.field textarea { width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:11px 12px;font-size:15px; }
+    .two-col { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+    .logo-preview img { display:block;max-width:220px;max-height:110px;object-fit:contain;border:1px solid #e2e8f0;border-radius:10px;padding:10px;background:#fff; }
+    .actions button { min-height:44px;border:0;border-radius:8px;padding:0 20px;background:#b11623;color:#fff;font-weight:800;cursor:pointer; }
+    #signature-status { min-height:20px;margin:0;font-weight:700; }.success{color:#15803d}.error{color:#dc2626}
+    .preview-card h2 { margin:0 0 16px;color:#111827; }.email-preview{font-family:Arial,sans-serif;color:#374151;background:#f8fafc;padding:18px;border-radius:10px;}
+    .sample-copy{margin:0 0 26px}.closing{font-weight:600;margin:0 0 16px}.signature-row{display:flex;gap:18px;align-items:flex-start}.signature-logo{padding-right:18px;border-right:1px solid #d1d5db}.signature-logo img{max-width:130px;max-height:84px;object-fit:contain}.signature-info{display:grid;gap:3px;font-size:13px;line-height:1.45}.signature-info .company{color:#b11623}
+    @media(max-width:780px){.signature-grid{grid-template-columns:1fr}.two-col{grid-template-columns:1fr}.settings-card,.preview-card{padding:16px}.signature-row{flex-direction:column}.signature-logo{border-right:0;border-bottom:1px solid #d1d5db;padding:0 0 12px}}
+  </style>
+</AdminLayout>

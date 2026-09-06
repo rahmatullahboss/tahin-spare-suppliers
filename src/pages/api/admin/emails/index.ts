@@ -11,6 +11,11 @@ import {
   deleteStoredSentEmailAttachments,
   storeSentEmailAttachments,
 } from "../../../../lib/server/sent-email-attachments";
+import {
+  appendEmailSignature,
+  getEmailSignatureSettings,
+  renderEmailSignatureHtml,
+} from "../../../../lib/server/email-signature";
 
 export const prerender = false;
 
@@ -142,6 +147,10 @@ export const POST: APIRoute = async (context) => {
       );
     }
 
+    const signatureSettings = await getEmailSignatureSettings(env);
+    const signatureHtml = renderEmailSignatureHtml(signatureSettings);
+    const signedEmailBody = appendEmailSignature(emailBody, signatureHtml);
+
     let replyHeaders: Record<string, string> | undefined = undefined;
     if (inReplyToId) {
       const inboundResult = await sql.query(
@@ -160,7 +169,7 @@ export const POST: APIRoute = async (context) => {
     const result = await sendEmail(env, {
       to,
       subject,
-      html: emailBody,
+      html: signedEmailBody,
       headers: replyHeaders,
       inlineImages: referencedInlineImages,
       fileAttachments,
@@ -198,7 +207,7 @@ export const POST: APIRoute = async (context) => {
           to,
           "sales@tahinspare.com",
           subject,
-          emailBody,
+          signedEmailBody,
           JSON.stringify(storedAttachments),
           result.resendId,
           inReplyToId,

@@ -171,3 +171,11 @@ CREATE TABLE IF NOT EXISTS page_sections (
 );
 
 CREATE INDEX IF NOT EXISTS idx_page_sections_page_key ON page_sections(page_key);
+
+CREATE TABLE IF NOT EXISTS page_overrides (
+  page_key TEXT PRIMARY KEY,
+  overrides_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_page_overrides_updated ON page_overrides(updated_at DESC);

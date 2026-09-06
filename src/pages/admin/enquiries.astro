@@ -38,6 +38,21 @@ const total = countResult[0]?.total ?? 0;
 
     <div class="pagination" id="pagination"></div>
   </div>
+
+  <div class="enquiry-modal" id="enquiry-modal" hidden>
+    <button type="button" class="enquiry-modal-backdrop" data-enquiry-close aria-label="Close enquiry"></button>
+    <section class="enquiry-modal-panel" role="dialog" aria-modal="true" aria-labelledby="enquiry-modal-title">
+      <header>
+        <div><span>Product enquiry</span><h2 id="enquiry-modal-title">Enquiry details</h2></div>
+        <button type="button" class="modal-close" data-enquiry-close aria-label="Close">×</button>
+      </header>
+      <div class="enquiry-modal-body" data-enquiry-detail></div>
+      <footer>
+        <a href="#" class="reply-enquiry-btn" data-enquiry-reply>Reply by email</a>
+        <button type="button" data-enquiry-close>Close</button>
+      </footer>
+    </section>
+  </div>
 </AdminLayout>
 
 <style is:global>
@@ -107,6 +122,24 @@ const total = countResult[0]?.total ?? 0;
   .admin-main .pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
   .admin-main .pagination .page-info { padding: 0.35rem 0.4rem; color: #94a3b8; font-size: 0.8rem; }
 
+  .enquiry-modal[hidden] { display: none; }
+  .enquiry-modal { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 16px; }
+  .enquiry-modal-backdrop { position: absolute; inset: 0; border: 0; background: rgba(15,23,42,.62); }
+  .enquiry-modal-panel { position: relative; width: min(680px, 100%); max-height: 88vh; overflow: auto; border-radius: 14px; background: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.3); }
+  .enquiry-modal-panel header { display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid #e2e8f0; }
+  .enquiry-modal-panel header span { color:#b11623;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em; }
+  .enquiry-modal-panel h2 { margin:3px 0 0;color:#111827;font-size:22px; }
+  .modal-close { width:42px;height:42px;border:0;border-radius:50%;background:#f1f5f9;font-size:25px;cursor:pointer; }
+  .enquiry-modal-body { padding:20px;display:grid;gap:14px; }
+  .enquiry-detail-row { display:grid;gap:4px; }
+  .enquiry-detail-row strong { color:#475569;font-size:12px;text-transform:uppercase;letter-spacing:.05em; }
+  .enquiry-detail-row span,.enquiry-detail-row a,.enquiry-detail-message { color:#0f172a;overflow-wrap:anywhere; }
+  .enquiry-detail-message { white-space:pre-wrap;line-height:1.7;padding:14px;border:1px solid #e2e8f0;border-radius:9px;background:#f8fafc; }
+  .enquiry-modal-panel footer { position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #e2e8f0;background:#fff; }
+  .enquiry-modal-panel footer a,.enquiry-modal-panel footer button { min-height:44px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:8px;padding:0 16px;font-weight:800;text-decoration:none;cursor:pointer; }
+  .reply-enquiry-btn { background:#b11623;color:#fff; }.enquiry-modal-panel footer button { background:#e2e8f0;color:#0f172a; }
+  html.enquiry-modal-open { overflow:hidden; }
+
   @media (max-width: 600px) {
     .admin-main .page-header { margin-bottom: 16px; }
     .admin-main .card-toolbar { padding: 12px; }
@@ -153,6 +186,7 @@ const total = countResult[0]?.total ?? 0;
   let currentPage = 1;
   let searchQuery = "";
   let totalPages = 1;
+  let currentEnquiries = [];
 
   const listEl = document.getElementById("enquiries-list");
   const paginationEl = document.getElementById("pagination");
@@ -198,13 +232,14 @@ const total = countResult[0]?.total ?? 0;
   }
 
   function renderEnquiries(enquiries) {
+    currentEnquiries = enquiries;
     if (enquiries.length === 0) {
       listEl.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h2>No enquiries found</h2><p>${searchQuery ? 'Try a different search term' : 'Enquiry form submissions will appear here.'}</p></div>`;
       return;
     }
 
-    listEl.innerHTML = enquiries.map(eq => `
-      <article class="enquiry-card">
+    listEl.innerHTML = enquiries.map((eq, index) => `
+      <article class="enquiry-card" data-enquiry-index="${index}" tabindex="0" role="button" aria-label="Open enquiry from ${escapeHtml(eq.name)}">
         <header class="enquiry-header">
           <div class="enquiry-from">
             <div class="avatar">${getInitials(eq.name)}</div>
@@ -225,6 +260,55 @@ const total = countResult[0]?.total ?? 0;
       </article>
     `).join('');
   }
+
+  const enquiryModal = document.getElementById('enquiry-modal');
+  const enquiryDetail = enquiryModal?.querySelector('[data-enquiry-detail]');
+  const enquiryReply = enquiryModal?.querySelector('[data-enquiry-reply]');
+
+  function closeEnquiryModal() {
+    if (!enquiryModal) return;
+    enquiryModal.hidden = true;
+    document.documentElement.classList.remove('enquiry-modal-open');
+  }
+
+  function openEnquiry(index) {
+    const enquiry = currentEnquiries[index];
+    if (!enquiry || !enquiryModal || !enquiryDetail) return;
+    enquiryDetail.innerHTML = `
+      <div class="enquiry-detail-row"><strong>Name</strong><span>${escapeHtml(enquiry.name || '')}</span></div>
+      <div class="enquiry-detail-row"><strong>Email</strong><a href="mailto:${escapeHtml(enquiry.email || '')}">${escapeHtml(enquiry.email || '')}</a></div>
+      ${enquiry.phone ? `<div class="enquiry-detail-row"><strong>Phone</strong><span>${escapeHtml(enquiry.phone)}</span></div>` : ''}
+      ${enquiry.equipment ? `<div class="enquiry-detail-row"><strong>Equipment</strong><span>${escapeHtml(enquiry.equipment)}</span></div>` : ''}
+      <div class="enquiry-detail-row"><strong>Date</strong><span>${formatDate(enquiry.created_at)}</span></div>
+      <div class="enquiry-detail-row"><strong>Message</strong><div class="enquiry-detail-message">${escapeHtml(enquiry.message || '')}</div></div>
+    `;
+    if (enquiryReply) {
+      const subject = enquiry.equipment ? `Re: Enquiry — ${enquiry.equipment}` : 'Re: Product Enquiry';
+      enquiryReply.href = `/admin/emails/send?replyTo=${encodeURIComponent(enquiry.email || '')}&subject=${encodeURIComponent(subject)}`;
+    }
+    enquiryModal.hidden = false;
+    document.documentElement.classList.add('enquiry-modal-open');
+  }
+
+  listEl.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest('a')) return;
+    const card = target.closest('[data-enquiry-index]');
+    if (!card) return;
+    openEnquiry(Number(card.getAttribute('data-enquiry-index') || '-1'));
+  });
+  listEl.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const card = target.closest('[data-enquiry-index]');
+    if (!card) return;
+    event.preventDefault();
+    openEnquiry(Number(card.getAttribute('data-enquiry-index') || '-1'));
+  });
+  enquiryModal?.querySelectorAll('[data-enquiry-close]').forEach((button) => button.addEventListener('click', closeEnquiryModal));
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && enquiryModal && !enquiryModal.hidden) closeEnquiryModal(); });
 
   function renderPagination() {
     if (totalPages <= 1) { paginationEl.textContent = ""; return; }

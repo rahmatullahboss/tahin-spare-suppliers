@@ -259,16 +259,31 @@ export async function getReceivedEmailAttachment(
   attachmentId: string
 ) {
   const resend = getResendClient(env);
-  const result = await resend.emails.receiving.attachments.get({
-    emailId,
-    id: attachmentId,
-  });
 
-  if (result.error || !result.data) {
-    throw new Error(result.error?.message ?? "Failed to retrieve received attachment");
+  try {
+    const result = await resend.emails.receiving.attachments.get({
+      emailId,
+      id: attachmentId,
+    });
+    if (!result.error && result.data) return result.data;
+  } catch {
+    // Fall through to the list endpoint. Resend documents list attachments as
+    // the canonical way to obtain attachment metadata + download_url.
   }
 
-  return result.data;
+  const listResult = await resend.emails.receiving.attachments.list({ emailId });
+  if (listResult.error || !listResult.data) {
+    throw new Error(listResult.error?.message ?? "Failed to retrieve received attachment");
+  }
+
+  const items = Array.isArray(listResult.data)
+    ? listResult.data
+    : Array.isArray((listResult.data as unknown as { data?: unknown[] }).data)
+      ? (listResult.data as unknown as { data: Array<Record<string, unknown>> }).data
+      : [];
+  const attachment = items.find((item: Record<string, unknown>) => item.id === attachmentId);
+  if (!attachment) throw new Error("Received attachment not found");
+  return attachment as Awaited<ReturnType<typeof resend.emails.receiving.attachments.get>>["data"] & { download_url: string; content_type?: string };
 }
 
 export function verifyResendWebhook(

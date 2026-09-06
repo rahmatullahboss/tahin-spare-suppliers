@@ -32,6 +32,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
   <main class="compose-shell">
     <nav class="compose-nav" aria-label="Compose navigation">
       <a href="/admin/emails" class="back-link">Back to inbox</a>
+      <a href="/admin/emails/signature" class="back-link">Email signature</a>
     </nav>
 
     <header class="compose-heading">
@@ -116,12 +117,19 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
 
         <section class="attachments-field" aria-labelledby="attachments-title">
           <div class="attachments-title-row">
-            <h2 id="attachments-title">Attachments</h2>
-            <span>Files added here are included with the email.</span>
+            <div>
+              <h2 id="attachments-title">Photos & Attachments</h2>
+              <span>Photos can be placed inside the message; other files are attached to the email.</span>
+            </div>
+            <div class="attachment-picker-actions">
+              <button type="button" data-open-photo-picker>Add photo</button>
+              <button type="button" data-open-file-picker>Attach file</button>
+            </div>
           </div>
           <div id="attachment-list" class="attachment-list" aria-live="polite">
             <p class="attachment-empty">No files attached</p>
           </div>
+          <p class="signature-note">Your saved <a href="/admin/emails/signature">email signature</a> is added automatically after this message when you send.</p>
         </section>
 
         <footer class="composer-footer">
@@ -407,6 +415,34 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
     font-size: 10.5px;
   }
 
+  .attachment-picker-actions {
+    display: flex;
+    gap: 7px;
+    flex: 0 0 auto;
+  }
+
+  .attachment-picker-actions button {
+    min-height: 38px;
+    border: 1px solid #d8dee6;
+    border-radius: 8px;
+    padding: 0 12px;
+    background: #fff;
+    color: #6b4b16;
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .attachment-picker-actions button:hover { background: #fff7e8; border-color: #dfc28e; }
+
+  .signature-note {
+    margin: 10px 0 0;
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .signature-note a { color: #a16207; font-weight: 800; }
+
   .attachment-list {
     display: grid;
     gap: 7px;
@@ -638,10 +674,18 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
     }
 
     .attachments-title-row {
-      align-items: flex-start;
+      align-items: stretch;
       flex-direction: column;
-      gap: 3px;
+      gap: 9px;
     }
+
+    .attachment-picker-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+    }
+
+    .attachment-picker-actions button { min-height: 44px; }
 
     .attachment-item {
       min-width: 0;
@@ -894,6 +938,12 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
       }
     });
   });
+
+  document.querySelector('[data-open-photo-picker]')?.addEventListener('click', () => {
+    saveEditorSelection();
+    imageInput.click();
+  });
+  document.querySelector('[data-open-file-picker]')?.addEventListener('click', () => fileInput.click());
 
   attachmentListEl?.addEventListener("click", (event) => {
     const target = event.target;
