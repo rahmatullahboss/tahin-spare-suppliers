@@ -46,12 +46,25 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
         <div class="address-field">
           <label for="to">To</label>
           <input
-            type="email"
+            type="text"
             id="to"
             name="to"
-            placeholder="recipient@example.com"
+            placeholder="one@example.com, two@example.com"
             required
             autocomplete="off"
+            inputmode="email"
+          />
+        </div>
+
+        <div class="address-field">
+          <label for="cc">CC</label>
+          <input
+            type="text"
+            id="cc"
+            name="cc"
+            placeholder="Optional — separate multiple emails with commas"
+            autocomplete="off"
+            inputmode="email"
           />
         </div>
 
@@ -1050,6 +1063,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
     event.preventDefault();
 
     const to = (document.getElementById("to") as HTMLInputElement).value.trim();
+    const cc = (document.getElementById("cc") as HTMLInputElement).value.trim();
     const subject = (document.getElementById("subject") as HTMLInputElement).value.trim();
     const liveInlineImageIds = new Set(
       Array.from(editorEl.querySelectorAll<HTMLImageElement>("img[data-email-image-id]"))
@@ -1084,6 +1098,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
         },
         body: JSON.stringify({
           to,
+          cc,
           subject,
           body,
           inReplyToId,

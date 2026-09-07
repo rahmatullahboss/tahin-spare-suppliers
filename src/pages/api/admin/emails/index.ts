@@ -3,6 +3,7 @@ import { requireAdminRequest } from "../../../../lib/server/api";
 import { ensureSchema, getDb } from "../../../../lib/server/db";
 import {
   filterReferencedInlineImages,
+  normalizeEmailAddresses,
   sendEmail,
   type EmailFileAttachmentInput,
   type InlineEmailImageInput
@@ -21,6 +22,7 @@ export const prerender = false;
 
 type SendEmailRequestBody = {
   to?: unknown;
+  cc?: unknown;
   subject?: unknown;
   body?: unknown;
   inReplyToId?: unknown;
@@ -43,7 +45,7 @@ export const GET: APIRoute = async (context) => {
     const search = url.searchParams.get("search") ?? "";
     const offset = (page - 1) * limit;
 
-    let query = `SELECT id, to_address, subject, body, attachments_json, delivery_status, delivery_error, created_at FROM sent_emails`;
+    let query = `SELECT id, to_address, cc_address, subject, body, attachments_json, delivery_status, delivery_error, created_at FROM sent_emails`;
     let countQuery = `SELECT COUNT(*) as total FROM sent_emails`;
     const params: (string | number)[] = [];
 
@@ -114,7 +116,17 @@ export const POST: APIRoute = async (context) => {
         contentBase64: typeof file.contentBase64 === "string" ? file.contentBase64 : "",
         size: typeof file.size === "number" ? file.size : undefined,
       }));
-    const to = typeof requestBody.to === "string" ? requestBody.to.trim() : "";
+    let toAddresses: string[];
+    let ccAddresses: string[];
+    try {
+      toAddresses = normalizeEmailAddresses(requestBody.to);
+      ccAddresses = normalizeEmailAddresses(requestBody.cc ?? []);
+    } catch (error) {
+      return Response.json(
+        { error: error instanceof Error ? error.message : "Invalid email address" },
+        { status: 400 }
+      );
+    }
     const subject = typeof requestBody.subject === "string" ? requestBody.subject.trim() : "";
     const emailBody = typeof requestBody.body === "string" ? requestBody.body : "";
     const inReplyToId = typeof requestBody.inReplyToId === "string"
@@ -125,17 +137,9 @@ export const POST: APIRoute = async (context) => {
       : "";
     const referencedInlineImages = filterReferencedInlineImages(emailBody, inlineImages);
 
-    if (!to || !subject || !emailBody) {
+    if (toAddresses.length === 0 || !subject || !emailBody) {
       return Response.json(
-        { error: "To, subject and body are required" },
-        { status: 400 }
-      );
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(to)) {
-      return Response.json(
-        { error: "Invalid email address" },
+        { error: "At least one To recipient, subject and body are required" },
         { status: 400 }
       );
     }
@@ -167,7 +171,8 @@ export const POST: APIRoute = async (context) => {
     }
 
     const result = await sendEmail(env, {
-      to,
+      to: toAddresses,
+      cc: ccAddresses,
       subject,
       html: signedEmailBody,
       headers: replyHeaders,
@@ -195,16 +200,17 @@ export const POST: APIRoute = async (context) => {
     try {
       const savedRows = await sql.query(
         `INSERT INTO sent_emails (
-           id, to_address, from_address, subject, body, attachments_json,
+           id, to_address, cc_address, from_address, subject, body, attachments_json,
            resend_id, in_reply_to_inbound_id
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (resend_id) WHERE resend_id <> ''
          DO UPDATE SET resend_id = EXCLUDED.resend_id
          RETURNING id`,
         [
           result.id,
-          to,
+          toAddresses.join(", "),
+          ccAddresses.join(", "),
           "sales@tahinspare.com",
           subject,
           signedEmailBody,

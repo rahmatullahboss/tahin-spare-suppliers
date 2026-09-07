@@ -17,6 +17,13 @@ if (!post) {
 }
 
 const canonicalPath = `/blog/${post.slug}`;
+const postImages = [
+  ...(post.imageUrl ? [{ url: post.imageUrl, alt: `${post.title} marine industry article` }] : []),
+  ...(post.galleryImages ?? []).map((image, index) => ({
+    url: image.url,
+    alt: image.alt || `${post.title} image ${index + 2}`,
+  })),
+].filter((image, index, items) => image.url && items.findIndex((candidate) => candidate.url === image.url) === index);
 const description = post.excerpt || `${post.title} — marine industry resource from Tahin Spare Suppliers.`;
 const articleSchema = {
   "@context": "https://schema.org",
@@ -25,7 +32,7 @@ const articleSchema = {
   "url": absoluteUrl(canonicalPath),
   "headline": post.title,
   "description": description,
-  "image": post.imageUrl ? [absoluteUrl(post.imageUrl)] : undefined,
+  "image": postImages.length > 0 ? postImages.map((image) => absoluteUrl(image.url)) : undefined,
   "datePublished": post.createdAt || undefined,
   "dateModified": post.updatedAt || undefined,
   "author": { "@type": "Organization", "name": "Tahin Spare Suppliers", "url": "https://tahinspare.com" },
@@ -58,7 +65,22 @@ const articleSchema = {
 
   <section class="section">
     <article class="container blog-detail">
-      {post.imageUrl && <img src={post.imageUrl} alt={`${post.title} marine industry article`} class="cover-image" width="1200" height="675" loading="eager" fetchpriority="high" decoding="async" />}
+      {postImages.length > 0 && (
+        <div class="post-gallery" aria-label={`${post.title} image gallery`}>
+          {postImages.map((image, index) => (
+            <img
+              src={image.url}
+              alt={image.alt}
+              class:list={["cover-image", index > 0 && "gallery-image"]}
+              width="1200"
+              height="675"
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchpriority={index === 0 ? "high" : undefined}
+              decoding="async"
+            />
+          ))}
+        </div>
+      )}
       <div class="content" set:html={post.content}></div>
       <aside class="quote-box">
         <h2>Need a marine engine or spare-part quote?</h2>
@@ -76,7 +98,10 @@ const articleSchema = {
   .page-hero-content h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.2rem); }
   .page-hero-content p { color: #e2e8f0; line-height: 1.6; }
   .blog-detail { max-width: 900px; }
-  .cover-image { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 18px; display: block; margin-bottom: 24px; }
+  .post-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .cover-image { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 18px; display: block; }
+  .post-gallery .cover-image:first-child { grid-column: 1 / -1; }
+  .gallery-image { border-radius: 12px; }
   .content { line-height: 1.8; color: #334155; font-size: 1.05rem; }
   .content :global(p) { margin-bottom: 1em; }
   .content :global(h2) { font-size: 1.6rem; margin: 2em 0 0.75em; font-weight: 700; color: #0f172a; }

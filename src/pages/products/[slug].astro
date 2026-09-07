@@ -32,6 +32,14 @@ const fallbackRelated = allProducts.filter((candidate) => (
 const relatedProducts: ContentRecord[] = [...manualRelated, ...fallbackRelated].slice(0, 3);
 
 const categorySlug = getCategorySlug(product.category ?? "");
+const productImages = [
+  ...(product.imageUrl ? [{ url: product.imageUrl, alt: product.imageAlt || product.title }] : []),
+  ...(product.galleryImages ?? []).map((image, index) => ({
+    url: image.url,
+    alt: image.alt || `${product.title} photo ${index + 2}`,
+  })),
+].filter((image, index, items) => image.url && items.findIndex((candidate) => candidate.url === image.url) === index);
+const primaryProductImage = productImages[0];
 const condition = product.condition?.trim() || "Contact for condition";
 const availabilityPolicy = resolvePublicAvailability({
   availability: product.availability,
@@ -61,7 +69,7 @@ const productSchema = {
   "url": absoluteUrl(canonicalPath),
   "name": product.title,
   "description": product.metaDescription || product.excerpt || product.title,
-  "image": product.imageUrl ? [absoluteUrl(product.imageUrl)] : undefined,
+  "image": productImages.length > 0 ? productImages.map((image) => absoluteUrl(image.url)) : undefined,
   "brand": product.brand ? { "@type": "Brand", "name": product.brand } : undefined,
   "model": product.model_number || undefined,
   "sku": product.partNumber || undefined,
@@ -85,15 +93,15 @@ const breadcrumbs = [
   description={product.metaDescription || product.excerpt}
   activeNav="products"
   canonicalUrl={absoluteUrl(canonicalPath)}
-  ogImage={product.imageUrl || undefined}
+  ogImage={primaryProductImage?.url || undefined}
 >
   <script type="application/ld+json" set:html={JSON.stringify(productSchema)} />
 
   <section class="page-hero">
-    {product.imageUrl && (
+    {primaryProductImage && (
       <img
         class="page-hero-bg"
-        src={product.imageUrl}
+        src={primaryProductImage.url}
         alt=""
         aria-hidden="true"
         width="1600"
@@ -163,19 +171,23 @@ const breadcrumbs = [
       </div>
 
       <div class="image-sidebar">
-        {product.imageUrl ? (
-          <figure class="detail-image">
-            <img
-              src={product.imageUrl}
-              alt={product.imageAlt || product.title}
-              width="900"
-              height="675"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-            />
-            <figcaption>{product.title}{product.partNumber ? ` — Part ${product.partNumber}` : ""}</figcaption>
-          </figure>
+        {productImages.length > 0 ? (
+          <div class="detail-gallery">
+            {productImages.map((image, index) => (
+              <figure class:list={["detail-image", index > 0 && "detail-image-secondary"]}>
+                <img
+                  src={image.url}
+                  alt={image.alt}
+                  width="900"
+                  height="675"
+                  loading={index === 0 ? "eager" : "lazy"}
+                  fetchpriority={index === 0 ? "high" : undefined}
+                  decoding="async"
+                />
+                {index === 0 && <figcaption>{product.title}{product.partNumber ? ` — Part ${product.partNumber}` : ""}</figcaption>}
+              </figure>
+            ))}
+          </div>
         ) : (
           <div class="image-placeholder">Product photo available on request.</div>
         )}
@@ -225,12 +237,15 @@ const breadcrumbs = [
   .btn-primary, .btn-whatsapp { display: inline-block; padding: 13px 22px; border-radius: 7px; text-decoration: none; font-weight: 800; }
   .btn-primary { background: #b11623; color: #fff; }
   .btn-whatsapp { background: #25d366; color: #052e16; }
-  .detail-image { position: sticky; top: 120px; margin: 0; }
+  .detail-gallery { position: sticky; top: 120px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .detail-image { margin: 0; min-width: 0; }
+  .detail-image:first-child { grid-column: 1 / -1; }
   .detail-image img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
+  .detail-image-secondary img { border-radius: 10px; box-shadow: 0 5px 18px rgba(0,0,0,.08); }
   .detail-image figcaption { padding: 10px 4px 0; color: #64748b; font-size: 0.85rem; line-height: 1.5; }
   .image-placeholder { padding: 70px 30px; border: 1px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; color: #64748b; text-align: center; }
   .related-section { background: #f8fafc; border-top: 1px solid #e5e7eb; padding: 60px 0; }
   .related-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 30px; text-align: center; color: #111827; }
-  @media (max-width: 992px) { .detail-grid { grid-template-columns: 1fr; gap: 36px; } .detail-image { position: relative; top: 0; } }
+  @media (max-width: 992px) { .detail-grid { grid-template-columns: 1fr; gap: 36px; } .detail-gallery { position: relative; top: 0; } }
   @media (max-width: 600px) { .specs-table th, .specs-table td { padding: 11px 12px; } .specs-table th { width: 40%; } .cta-actions > a { width: 100%; text-align: center; box-sizing: border-box; } }
 </style>

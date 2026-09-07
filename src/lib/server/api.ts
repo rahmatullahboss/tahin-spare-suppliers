@@ -31,6 +31,24 @@ export async function requireAdminRequest(context: Parameters<APIRoute>[0]) {
   return env;
 }
 
+function contentMediaKeys(item: Awaited<ReturnType<typeof getContentById>> | null): string[] {
+  if (!item) return [];
+  return [
+    item.imageKey,
+    ...(item.galleryImages ?? []).map((image) => image.key),
+  ].filter((key): key is string => Boolean(key));
+}
+
+async function deleteMediaKeys(bucket: R2Bucket, keys: string[]) {
+  for (const key of [...new Set(keys)]) {
+    try {
+      await bucket.delete(key);
+    } catch (error) {
+      console.error("Failed to delete media object", key, error);
+    }
+  }
+}
+
 function queueContentChange(
   context: Parameters<APIRoute>[0],
   env: ReturnType<typeof getRuntimeEnv>,
@@ -105,14 +123,7 @@ export function createDetailHandler(type: ContentType): APIRoute {
 
       if (context.request.method === "DELETE") {
         await deleteContent(env, type, id);
-
-        if (existingItem?.imageKey) {
-          try {
-            await env.MEDIA_BUCKET.delete(existingItem.imageKey);
-          } catch (error) {
-            console.error("Failed to delete media object", existingItem.imageKey, error);
-          }
-        }
+        await deleteMediaKeys(env.MEDIA_BUCKET, contentMediaKeys(existingItem));
 
         queueContentChange(context, env, type, [existingItem?.slug]);
         return Response.json({ ok: true });
@@ -125,6 +136,12 @@ export function createDetailHandler(type: ContentType): APIRoute {
       }
 
       const item = await updateContent(env, type, id, body);
+      if (!item) return Response.json({ error: "Content not found." }, { status: 404 });
+
+      const nextKeys = new Set(contentMediaKeys(item));
+      const staleKeys = contentMediaKeys(existingItem).filter((key) => !nextKeys.has(key));
+      await deleteMediaKeys(env.MEDIA_BUCKET, staleKeys);
+
       queueContentChange(context, env, type, [existingItem?.slug, item.slug]);
       return Response.json({ item });
     } catch (error) {

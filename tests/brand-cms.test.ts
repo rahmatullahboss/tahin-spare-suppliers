@@ -14,9 +14,10 @@ test("brand CMS persists canonical names and custom logos", async () => {
   assert.match(schema, /CREATE TABLE IF NOT EXISTS brands/);
   assert.match(schema, /logo_url TEXT NOT NULL DEFAULT ''/);
   assert.match(schema, /logo_key TEXT NOT NULL DEFAULT ''/);
-  assert.match(brandsServer, /syncBrandsFromProducts/);
+  assert.doesNotMatch(brandsServer, /syncBrandsFromProducts/);
   assert.match(brandsServer, /UPDATE products SET brand/);
   assert.match(brandsServer, /ensureBrandExists/);
+  assert.match(brandsServer, /LEFT JOIN \(/);
   assert.match(api, /requireAdminRequest/);
   assert.match(api, /createBrand/);
   assert.match(api, /updateBrand/);

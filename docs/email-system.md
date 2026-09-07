@@ -6,7 +6,8 @@ The application uses Resend for outbound delivery and inbound receiving, Cloudfl
 
 - Outbound sender: `Tahin Spare Suppliers <sales@tahinspare.com>`
 - Inbound address: `sales@tahinspare.com`
-- Notification destination: `NOTIFICATION_EMAIL`, with `tahinship@gmail.com` as the application fallback
+- Notification destination: `NOTIFICATION_EMAIL`, with `tahin591@gmail.com` as the application fallback
+- Inbound sales email forwarding destination: `INBOUND_FORWARD_TO`, with `tahin591@gmail.com` as the application fallback
 - Inbound webhook: `/api/webhooks/resend/inbound`
 - Admin email UI: `/admin/emails`
 
@@ -26,6 +27,7 @@ Non-sensitive variables may be configured in Wrangler:
 
 - `MEDIA_PUBLIC_URL`
 - `NOTIFICATION_EMAIL`
+- `INBOUND_FORWARD_TO`
 
 The Resend API key must have the permissions required by both sending and receiving APIs. A sending-only key cannot retrieve or forward received messages.
 

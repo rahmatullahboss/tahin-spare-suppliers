@@ -189,6 +189,18 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
         )}
         <ImageUploader label="Featured Image" />
         <div class="preview" data-preview></div>
+        <div class="gallery-uploader">
+          <div class="gallery-uploader-heading">
+            <div>
+              <label for={`${type}-gallery-input`}>Additional Images</label>
+              <small>Add up to 12 product/post photos. They are compressed to WebP and stored in R2.</small>
+            </div>
+            <label class="gallery-add-btn" for={`${type}-gallery-input`}>+ Add photos</label>
+          </div>
+          <input id={`${type}-gallery-input`} type="file" accept="image/*" multiple data-gallery-input hidden />
+          <div class="gallery-list" data-gallery-list></div>
+          <p class="gallery-status" data-gallery-status></p>
+        </div>
         <div class="actions">
           <button type="submit" class="btn-save">Save</button>
           <button type="button" class="btn-reset" data-reset-btn>Reset</button>
@@ -222,6 +234,9 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
     const imageInput = editor.querySelector("[data-image-input]");
     const imageUrlInput = editor.querySelector("[data-image-url]");
     const imageKeyInput = editor.querySelector("[data-image-key]");
+    const galleryInput = editor.querySelector("[data-gallery-input]");
+    const galleryList = editor.querySelector("[data-gallery-list]");
+    const galleryStatus = editor.querySelector("[data-gallery-status]");
     const countEl = editor.querySelector("[data-count]");
     const searchInput = editor.querySelector("[data-search]");
     let selectedFile = null;
@@ -229,6 +244,8 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
     let existingImageUrl = "";
     let existingImageKey = "";
     let imageRemoved = false;
+    let galleryItems = [];
+    const MAX_GALLERY_IMAGES = 12;
     let allItems = [];
 
     let currentPage = 1;
@@ -260,6 +277,120 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       }
     };
 
+    const clearGalleryPreviewUrls = () => {
+      galleryItems.forEach((item) => {
+        if (item.kind === "pending" && item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      });
+    };
+
+    const renderGallery = () => {
+      if (!galleryList) return;
+      galleryList.replaceChildren();
+      if (galleryItems.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "gallery-empty";
+        empty.textContent = "No additional images yet.";
+        galleryList.appendChild(empty);
+        return;
+      }
+
+      galleryItems.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "gallery-item";
+
+        const image = document.createElement("img");
+        image.src = item.kind === "pending" ? item.previewUrl : item.url;
+        image.alt = item.alt || `${itemLabel} image ${index + 1}`;
+        card.appendChild(image);
+
+        const meta = document.createElement("div");
+        meta.className = "gallery-item-meta";
+        const altInput = document.createElement("input");
+        altInput.type = "text";
+        altInput.placeholder = "Image ALT text";
+        altInput.value = item.alt || "";
+        altInput.dataset.galleryAlt = String(index);
+        meta.appendChild(altInput);
+
+        const actions = document.createElement("div");
+        actions.className = "gallery-item-actions";
+        const up = document.createElement("button");
+        up.type = "button";
+        up.textContent = "↑";
+        up.title = "Move up";
+        up.disabled = index === 0;
+        up.dataset.galleryAction = "up";
+        up.dataset.galleryIndex = String(index);
+        const down = document.createElement("button");
+        down.type = "button";
+        down.textContent = "↓";
+        down.title = "Move down";
+        down.disabled = index === galleryItems.length - 1;
+        down.dataset.galleryAction = "down";
+        down.dataset.galleryIndex = String(index);
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "Remove";
+        remove.className = "gallery-remove";
+        remove.dataset.galleryAction = "remove";
+        remove.dataset.galleryIndex = String(index);
+        actions.append(up, down, remove);
+        meta.appendChild(actions);
+        card.appendChild(meta);
+        galleryList.appendChild(card);
+      });
+    };
+
+    galleryList?.addEventListener("input", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement)) return;
+      const index = Number(target.dataset.galleryAlt);
+      if (!Number.isInteger(index) || !galleryItems[index]) return;
+      galleryItems[index].alt = target.value;
+    });
+
+    galleryList?.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest("[data-gallery-action]");
+      if (!(button instanceof HTMLButtonElement)) return;
+      const index = Number(button.dataset.galleryIndex);
+      if (!Number.isInteger(index) || !galleryItems[index]) return;
+      const action = button.dataset.galleryAction;
+
+      if (action === "remove") {
+        const item = galleryItems[index];
+        if (item.kind === "pending" && item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+        galleryItems.splice(index, 1);
+      } else if (action === "up" && index > 0) {
+        [galleryItems[index - 1], galleryItems[index]] = [galleryItems[index], galleryItems[index - 1]];
+      } else if (action === "down" && index < galleryItems.length - 1) {
+        [galleryItems[index + 1], galleryItems[index]] = [galleryItems[index], galleryItems[index + 1]];
+      }
+      renderGallery();
+    });
+
+    galleryInput?.addEventListener("change", () => {
+      const files = Array.from(galleryInput.files ?? []);
+      galleryInput.value = "";
+      const remaining = Math.max(0, MAX_GALLERY_IMAGES - galleryItems.length);
+      const accepted = files.filter((file) => file.type.startsWith("image/")).slice(0, remaining);
+      accepted.forEach((file) => {
+        galleryItems.push({
+          kind: "pending",
+          file,
+          previewUrl: URL.createObjectURL(file),
+          alt: "",
+        });
+      });
+      if (galleryStatus) {
+        galleryStatus.textContent = files.length > accepted.length
+          ? `Added ${accepted.length}. Maximum ${MAX_GALLERY_IMAGES} additional images are allowed.`
+          : `${galleryItems.length} additional image${galleryItems.length === 1 ? "" : "s"} ready.`;
+      }
+      renderGallery();
+    });
+
     const resetForm = () => {
       form.reset();
       const tiptapWrapper = editor.querySelector("[data-tiptap-wrapper]");
@@ -277,6 +408,11 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       imageUrlInput.value = "";
       imageKeyInput.value = "";
       if (imageInput) { imageInput.value = ""; }
+      clearGalleryPreviewUrls();
+      galleryItems = [];
+      if (galleryInput) galleryInput.value = "";
+      if (galleryStatus) galleryStatus.textContent = "";
+      renderGallery();
       statusEl.textContent = "";
       // Reset subcategory field
       if (subcategoryField) subcategoryField.style.display = "none";
@@ -349,6 +485,18 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       imageUrlInput.value = item.imageUrl || "";
       imageKeyInput.value = item.imageKey || "";
       if (imageInput) { imageInput.value = ""; }
+      clearGalleryPreviewUrls();
+      galleryItems = Array.isArray(item.galleryImages)
+        ? item.galleryImages.map((image) => ({
+            kind: "existing",
+            url: image.url || "",
+            key: image.key || "",
+            alt: image.alt || "",
+          })).filter((image) => image.url)
+        : [];
+      if (galleryInput) galleryInput.value = "";
+      if (galleryStatus) galleryStatus.textContent = "";
+      renderGallery();
       drawPreview(existingImageUrl);
       if (uploadStatus) uploadStatus.textContent = "";
       statusEl.textContent = "";
@@ -669,7 +817,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       statusEl.textContent = "Saving...";
       let nextImageUrl = existingImageUrl;
       let nextImageKey = existingImageKey;
-      let uploadedKeyToRollback = "";
+      const uploadedKeysToRollback = [];
 
       try {
         if (selectedFile) {
@@ -679,9 +827,29 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
           const uploaded = await uploadImage(compressed);
           nextImageUrl = uploaded.url || "";
           nextImageKey = uploaded.key || "";
-          uploadedKeyToRollback = nextImageKey;
+          if (nextImageKey) uploadedKeysToRollback.push(nextImageKey);
         }
         if (imageRemoved) { nextImageUrl = ""; nextImageKey = ""; }
+
+        const nextGalleryImages = [];
+        if (galleryStatus && galleryItems.some((item) => item.kind === "pending")) {
+          galleryStatus.textContent = "Compressing & uploading additional images...";
+        }
+        for (const item of galleryItems) {
+          if (item.kind === "existing") {
+            nextGalleryImages.push({ url: item.url, key: item.key || "", alt: item.alt || "" });
+            continue;
+          }
+
+          const compressed = await compressImageToWebp(item.file);
+          const uploaded = await uploadImage(compressed);
+          if (uploaded.key) uploadedKeysToRollback.push(uploaded.key);
+          nextGalleryImages.push({
+            url: uploaded.url || "",
+            key: uploaded.key || "",
+            alt: item.alt || "",
+          });
+        }
 
         let contentValue = "";
         const outputInput = editor.querySelector("[data-tiptap-output]");
@@ -694,6 +862,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
           content: contentValue,
           imageUrl: nextImageUrl,
           imageKey: nextImageKey,
+          galleryImages: nextGalleryImages,
           ...(type === 'products' ? {
             category: form.querySelector("[data-category]")?.value || "",
             subcategory: form.querySelector("[data-subcategory]")?.value || "",
@@ -730,9 +899,6 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
           throw new Error(data?.error || "Save failed.");
         }
 
-        const shouldDeleteOldImage = Boolean(existingImageKey) && existingImageKey !== nextImageKey && (Boolean(selectedFile) || imageRemoved);
-        if (shouldDeleteOldImage) await deleteImageByKey(existingImageKey);
-
         setExistingImageState(nextImageUrl, nextImageKey);
         imageUrlInput.value = nextImageUrl;
         imageKeyInput.value = nextImageKey;
@@ -745,8 +911,9 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
         await loadItems();
         resetForm();
       } catch (error) {
-        if (uploadedKeyToRollback) await deleteImageByKey(uploadedKeyToRollback);
+        for (const key of uploadedKeysToRollback) await deleteImageByKey(key);
         if (uploadStatus) uploadStatus.textContent = "";
+        if (galleryStatus) galleryStatus.textContent = "";
         statusEl.textContent = error instanceof Error ? error.message : "Save failed.";
       }
     });
@@ -757,6 +924,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
     });
 
     resetBtn?.addEventListener("click", resetForm);
+    renderGallery();
     loadItems();
   }
 </script>
@@ -1013,6 +1181,22 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
   .admin-main .field-hint { display: block; margin-top: 0.35rem; color: #64748b; line-height: 1.45; }
   @media (max-width: 640px) { .admin-main .seo-settings-header { flex-direction: column; } .admin-main .btn-seo-defaults { width: 100%; } }
   .admin-main .preview { margin-top: 0.75rem; }
+  .admin-main .gallery-uploader { margin-top: 1rem; padding: 0.9rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
+  .admin-main .gallery-uploader-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .admin-main .gallery-uploader-heading label { display: block; color: #334155; font-size: 0.82rem; font-weight: 800; }
+  .admin-main .gallery-uploader-heading small { display: block; margin-top: 3px; color: #64748b; line-height: 1.4; }
+  .admin-main .gallery-add-btn { flex: 0 0 auto; min-height: 40px; display: inline-flex !important; align-items: center; justify-content: center; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #334155 !important; cursor: pointer; }
+  .admin-main .gallery-list { display: grid; gap: 10px; }
+  .admin-main .gallery-empty { margin: 0; padding: 12px; border: 1px dashed #cbd5e1; border-radius: 8px; color: #94a3b8; text-align: center; font-size: 0.8rem; }
+  .admin-main .gallery-item { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: center; padding: 9px; border: 1px solid #e2e8f0; border-radius: 9px; background: #fff; }
+  .admin-main .gallery-item > img { width: 92px; height: 70px; object-fit: cover; border-radius: 7px; background: #f1f5f9; }
+  .admin-main .gallery-item-meta { min-width: 0; display: grid; gap: 8px; }
+  .admin-main .gallery-item-meta input { width: 100%; min-width: 0; box-sizing: border-box; padding: 8px 9px; border: 1px solid #dbe3ec; border-radius: 7px; font: inherit; font-size: 0.8rem; }
+  .admin-main .gallery-item-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .admin-main .gallery-item-actions button { min-height: 34px; border: 1px solid #dbe3ec; border-radius: 7px; padding: 5px 10px; background: #fff; color: #475569; cursor: pointer; font-weight: 700; }
+  .admin-main .gallery-item-actions button:disabled { opacity: .35; cursor: not-allowed; }
+  .admin-main .gallery-item-actions .gallery-remove { color: #b91c1c; background: #fff5f5; }
+  .admin-main .gallery-status { min-height: 0; margin: 9px 0 0; color: #64748b; font-size: 0.78rem; }
 
   @media (max-width: 1100px) {
     .admin-main .editor-grid { grid-template-columns: 1fr; }

@@ -20,8 +20,9 @@ test("product hero uses the clicked product image when available", async () => {
   const productPage = await source("src/pages/products/[slug].astro");
 
   assert.match(productPage, /class="page-hero-bg"/);
-  assert.match(productPage, /src=\{product\.imageUrl\}/);
-  assert.match(productPage, /product\.imageUrl\s*&&/);
+  assert.match(productPage, /primaryProductImage/);
+  assert.match(productPage, /src=\{primaryProductImage\.url\}/);
+  assert.match(productPage, /product\.imageUrl \? \[\{ url: product\.imageUrl/);
   assert.match(productPage, /\.page-hero-bg\s*\{/);
   assert.match(productPage, /object-fit:\s*cover/);
 });

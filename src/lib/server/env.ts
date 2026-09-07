@@ -9,6 +9,7 @@ export type RuntimeEnv = {
   RESEND_API_KEY: string;
   RESEND_WEBHOOK_SECRET: string;
   NOTIFICATION_EMAIL?: string;
+  INBOUND_FORWARD_TO?: string;
   GOOGLE_ANALYTICS_ID?: string;
   GOOGLE_SITE_VERIFICATION?: string;
   BING_SITE_VERIFICATION?: string;

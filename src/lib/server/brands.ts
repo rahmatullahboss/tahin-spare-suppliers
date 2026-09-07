@@ -41,30 +41,6 @@ function normalizeBrandInput(input: BrandInput) {
   };
 }
 
-async function syncBrandsFromProducts(env: RuntimeEnv) {
-  await ensureSchema(env);
-  const sql = getDb(env);
-  const rows = await sql.query(`SELECT DISTINCT brand FROM products WHERE TRIM(brand) <> '' ORDER BY brand`);
-
-  for (const row of rows) {
-    const rawBrand = asString(row.brand).trim();
-    const name = canonicalizeBrand(rawBrand);
-    const slug = slugify(name);
-    if (!name || !slug) continue;
-
-    if (rawBrand !== name) {
-      await sql.query(`UPDATE products SET brand = $1 WHERE brand = $2`, [name, rawBrand]);
-    }
-
-    await sql.query(
-      `INSERT INTO brands (id, name, slug, logo_url, logo_key, created_at, updated_at)
-       VALUES ($1, $2, $3, '', '', NOW(), NOW())
-       ON CONFLICT (slug) DO NOTHING`,
-      [crypto.randomUUID(), name, slug]
-    );
-  }
-}
-
 function mapBrand(row: Record<string, unknown>, productCount: number): BrandRecord {
   const name = asString(row.name);
   const customLogoUrl = asString(row.logo_url);
@@ -96,22 +72,29 @@ export async function ensureBrandExists(env: RuntimeEnv, rawName: string): Promi
 }
 
 export async function listBrands(env: RuntimeEnv): Promise<BrandRecord[]> {
-  await syncBrandsFromProducts(env);
+  await ensureSchema(env);
   const sql = getDb(env);
-  const [brandRows, productRows] = await Promise.all([
-    sql.query(`SELECT id, name, slug, logo_url, logo_key, created_at, updated_at FROM brands ORDER BY name`),
-    sql.query(`SELECT brand FROM products WHERE TRIM(brand) <> ''`)
-  ]);
+  const rows = await sql.query(`
+    SELECT
+      b.id,
+      b.name,
+      b.slug,
+      b.logo_url,
+      b.logo_key,
+      b.created_at,
+      b.updated_at,
+      COALESCE(p.product_count, 0) AS product_count
+    FROM brands b
+    LEFT JOIN (
+      SELECT LOWER(TRIM(brand)) AS brand_key, COUNT(*)::int AS product_count
+      FROM products
+      WHERE TRIM(brand) <> ''
+      GROUP BY LOWER(TRIM(brand))
+    ) p ON p.brand_key = LOWER(TRIM(b.name))
+    ORDER BY b.name
+  `);
 
-  const counts = new Map<string, number>();
-  for (const row of productRows) {
-    const canonicalName = canonicalizeBrand(asString(row.brand));
-    if (!canonicalName) continue;
-    const slug = slugify(canonicalName);
-    counts.set(slug, (counts.get(slug) ?? 0) + 1);
-  }
-
-  return brandRows.map((row) => mapBrand(row, counts.get(asString(row.slug)) ?? 0));
+  return rows.map((row) => mapBrand(row, Number(row.product_count ?? 0)));
 }
 
 export async function getBrandBySlug(env: RuntimeEnv, slug: string): Promise<BrandRecord | null> {

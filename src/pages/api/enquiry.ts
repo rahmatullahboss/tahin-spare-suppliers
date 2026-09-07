@@ -60,7 +60,7 @@ export const POST: APIRoute = async (context) => {
 
       try {
         await sendEmail(env, {
-          to: env.NOTIFICATION_EMAIL || "tahinship@gmail.com",
+          to: env.NOTIFICATION_EMAIL || "tahin591@gmail.com",
           subject: sanitizeEmailHeader(
             `New Enquiry from ${name}${equipment ? ` — ${equipment}` : ""}`
           ),

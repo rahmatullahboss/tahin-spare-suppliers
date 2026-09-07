@@ -28,7 +28,8 @@ export interface EmailFileAttachmentInput {
 }
 
 export interface SendEmailInput {
-  to: string;
+  to: string | string[];
+  cc?: string | string[];
   subject: string;
   html: string;
   text?: string;
@@ -52,7 +53,32 @@ const MAX_FILE_ATTACHMENT_SIZE = 20 * 1024 * 1024;
 const MAX_FILE_ATTACHMENT_COUNT = 10;
 const MAX_TOTAL_ATTACHMENT_ENCODED_SIZE = 40 * 1024 * 1024;
 const DEFAULT_FROM = "Tahin Spare Suppliers <sales@tahinspare.com>";
-const DEFAULT_INBOUND_FORWARD_TO = "tahinship@gmail.com";
+const DEFAULT_INBOUND_FORWARD_TO = "tahin591@gmail.com";
+const MAX_RECIPIENTS_PER_FIELD = 50;
+const EMAIL_ADDRESS_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function normalizeEmailAddresses(value: unknown): string[] {
+  const parts = (Array.isArray(value) ? value : [value])
+    .flatMap((item) => typeof item === "string" ? item.split(/[;,\n]+/) : [])
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const unique: string[] = [];
+  const seen = new Set<string>();
+  for (const address of parts) {
+    if (!EMAIL_ADDRESS_PATTERN.test(address)) {
+      throw new Error(`Invalid email address: ${address}`);
+    }
+    const key = address.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(address);
+    if (unique.length > MAX_RECIPIENTS_PER_FIELD) {
+      throw new Error(`Maximum ${MAX_RECIPIENTS_PER_FIELD} recipients are allowed per field.`);
+    }
+  }
+  return unique;
+}
 
 export function getResendClient(env: RuntimeEnv): Resend {
   if (!env.RESEND_API_KEY) {
@@ -215,9 +241,14 @@ export async function sendEmail(
     input.inlineImages,
     input.fileAttachments
   );
+  const to = normalizeEmailAddresses(input.to);
+  const cc = normalizeEmailAddresses(input.cc ?? []);
+  if (to.length === 0) throw new Error("At least one recipient is required.");
+
   const payload = {
     from: input.from ?? DEFAULT_FROM,
-    to: [input.to],
+    to,
+    cc: cc.length > 0 ? cc : undefined,
     subject: input.subject,
     html: input.html,
     text: input.text,
@@ -323,11 +354,12 @@ export function buildInboundForwardRequest(
 export async function forwardInboundEmail(
   env: RuntimeEnv,
   emailId: string,
-  toEmail: string = DEFAULT_INBOUND_FORWARD_TO
+  toEmail?: string
 ): Promise<void> {
   const resend = getResendClient(env);
+  const destination = toEmail?.trim() || env.INBOUND_FORWARD_TO?.trim() || DEFAULT_INBOUND_FORWARD_TO;
   const result = await resend.emails.receiving.forward(
-    buildInboundForwardRequest(emailId, toEmail)
+    buildInboundForwardRequest(emailId, destination)
   );
 
   if (result.error) {

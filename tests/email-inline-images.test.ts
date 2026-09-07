@@ -3,12 +3,21 @@ import test from "node:test";
 
 import {
   buildInboundForwardRequest,
+  normalizeEmailAddresses,
   prepareEmailAttachments,
   prepareFileAttachments,
   prepareInlineImageAttachments,
   type EmailFileAttachmentInput,
   type InlineEmailImageInput
 } from "../src/lib/server/email-service.ts";
+
+test("normalizeEmailAddresses supports multiple recipients and removes duplicates", () => {
+  assert.deepEqual(
+    normalizeEmailAddresses("first@example.com, second@example.com; FIRST@example.com\nthird@example.com"),
+    ["first@example.com", "second@example.com", "third@example.com"]
+  );
+  assert.throws(() => normalizeEmailAddresses("not-an-email"), /Invalid email address/);
+});
 
 test("prepareInlineImageAttachments keeps referenced cid images as inline attachments", () => {
   const images: InlineEmailImageInput[] = [
@@ -180,7 +189,7 @@ test("buildInboundForwardRequest forwards the original received email", () => {
     buildInboundForwardRequest("received-email-id"),
     {
       emailId: "received-email-id",
-      to: "tahinship@gmail.com",
+      to: "tahin591@gmail.com",
       from: "Tahin Spare Suppliers <sales@tahinspare.com>"
     }
   );

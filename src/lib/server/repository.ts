@@ -26,6 +26,12 @@ const CONTENT_TABLES = {
 
 export type ContentType = keyof typeof CONTENT_TABLES;
 
+export type ContentImage = {
+  url: string;
+  key: string;
+  alt: string;
+};
+
 export type ContentRecord = {
   id: string;
   slug: string;
@@ -34,6 +40,7 @@ export type ContentRecord = {
   content: string;
   imageUrl: string;
   imageKey: string;
+  galleryImages: ContentImage[];
   createdAt: string;
   updatedAt: string;
   category?: string;
@@ -61,6 +68,7 @@ export type ContentInput = {
   content?: string;
   imageUrl?: string;
   imageKey?: string;
+  galleryImages?: ContentImage[];
   slug?: string;
   category?: string;
   subcategory?: string;
@@ -103,6 +111,46 @@ type NormalizedProductFields = {
 
 function asString(value: unknown): string {
   return typeof value === "string" ? value : value == null ? "" : String(value);
+}
+
+const MAX_GALLERY_IMAGES = 12;
+
+function sanitizeMediaUrl(value: unknown): string {
+  const url = asString(value).trim();
+  if (!url) return "";
+  if (url.startsWith("/") && !url.startsWith("//")) return url.slice(0, 2000);
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? url.slice(0, 2000) : "";
+  } catch {
+    return "";
+  }
+}
+
+export function normalizeGalleryImages(value: unknown): ContentImage[] {
+  let raw = value;
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(raw)) return [];
+
+  const images: ContentImage[] = [];
+  for (const item of raw.slice(0, MAX_GALLERY_IMAGES)) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const record = item as Record<string, unknown>;
+    const url = sanitizeMediaUrl(record.url);
+    if (!url) continue;
+    images.push({
+      url,
+      key: asString(record.key).trim().slice(0, 500),
+      alt: asString(record.alt).replace(/[\u0000-\u001F]/g, "").trim().slice(0, 1000),
+    });
+  }
+  return images;
 }
 
 function normalizeProductFields(input: ContentInput): NormalizedProductFields {
@@ -163,6 +211,7 @@ function mapRecord(type: ContentType, row: Record<string, unknown>): ContentReco
     content: asString(row.content),
     imageUrl: asString(row.image_url),
     imageKey: asString(row.image_key),
+    galleryImages: normalizeGalleryImages(row.gallery_images),
     createdAt: asString(row.created_at),
     updatedAt: asString(row.updated_at)
   };
@@ -314,22 +363,24 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
   const imageKey = input.imageKey ?? "";
+  const galleryImages = normalizeGalleryImages(input.galleryImages);
+  const galleryJson = JSON.stringify(galleryImages);
 
   if (type === "products") {
     const product = normalizeProductFields(input);
     const rows = await sql.query(
       `INSERT INTO ${config.table} (
-        id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key,
+        id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, gallery_images,
         category, subcategory, brand, model_number, part_number, condition, availability,
         availability_verified_at, condition_verified_at, location, technical_specifications,
         application, seo_title, meta_description, focus_keyword, image_alt, related_products, updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7,
-        $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
-        $18, $19, $20, $21, $22, $23, $24, NOW()
+        $1, $2, $3, $4, $5, $6, $7, $8::jsonb,
+        $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
+        $19, $20, $21, $22, $23, $24, $25, NOW()
       ) RETURNING *`,
       [
-        id, slug, normalizedTitle, excerpt, content, imageUrl, imageKey,
+        id, slug, normalizedTitle, excerpt, content, imageUrl, imageKey, galleryJson,
         product.category, product.subcategory, product.brand, product.modelNumber, product.partNumber,
         product.condition, product.availability, product.availabilityVerifiedAt, product.conditionVerifiedAt,
         product.location, product.technicalSpecifications, product.application, product.seoTitle,
@@ -341,10 +392,10 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
   }
 
   const rows = await sql.query(
-    `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+    `INSERT INTO ${config.table} (id, slug, ${config.titleColumn}, ${config.excerptColumn}, content, image_url, image_key, gallery_images, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, NOW())
      RETURNING *`,
-    [id, slug, input.title, excerpt, content, imageUrl, imageKey]
+    [id, slug, input.title, excerpt, content, imageUrl, imageKey, galleryJson]
   );
 
   return mapRecord(type, rows[0]);
@@ -365,6 +416,8 @@ export async function updateContent(
   const content = input.content ?? "";
   const imageUrl = input.imageUrl ?? "";
   const imageKey = input.imageKey ?? "";
+  const galleryImages = normalizeGalleryImages(input.galleryImages);
+  const galleryJson = JSON.stringify(galleryImages);
 
   if (type === "products") {
     const product = normalizeProductFields(input);
@@ -376,28 +429,29 @@ export async function updateContent(
            content = $4,
            image_url = $5,
            image_key = $6,
-           category = $7,
-           subcategory = $8,
-           brand = $9,
-           model_number = $10,
-           part_number = $11,
-           condition = $12,
-           availability = $13,
-           availability_verified_at = $14,
-           condition_verified_at = $15,
-           location = $16,
-           technical_specifications = $17,
-           application = $18,
-           seo_title = $19,
-           meta_description = $20,
-           focus_keyword = $21,
-           image_alt = $22,
-           related_products = $23,
+           gallery_images = $7::jsonb,
+           category = $8,
+           subcategory = $9,
+           brand = $10,
+           model_number = $11,
+           part_number = $12,
+           condition = $13,
+           availability = $14,
+           availability_verified_at = $15,
+           condition_verified_at = $16,
+           location = $17,
+           technical_specifications = $18,
+           application = $19,
+           seo_title = $20,
+           meta_description = $21,
+           focus_keyword = $22,
+           image_alt = $23,
+           related_products = $24,
            updated_at = NOW()
-       WHERE id = $24
+       WHERE id = $25
        RETURNING *`,
       [
-        slug, normalizedTitle, excerpt, content, imageUrl, imageKey,
+        slug, normalizedTitle, excerpt, content, imageUrl, imageKey, galleryJson,
         product.category, product.subcategory, product.brand, product.modelNumber, product.partNumber,
         product.condition, product.availability, product.availabilityVerifiedAt, product.conditionVerifiedAt,
         product.location, product.technicalSpecifications, product.application, product.seoTitle,
@@ -416,10 +470,11 @@ export async function updateContent(
          content = $4,
          image_url = $5,
          image_key = $6,
+         gallery_images = $7::jsonb,
          updated_at = NOW()
-     WHERE id = $7
+     WHERE id = $8
      RETURNING *`,
-    [slug, input.title, excerpt, content, imageUrl, imageKey, id]
+    [slug, input.title, excerpt, content, imageUrl, imageKey, galleryJson, id]
   );
 
   return rows[0] ? mapRecord(type, rows[0]) : null;

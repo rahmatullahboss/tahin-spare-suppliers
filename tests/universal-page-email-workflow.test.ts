@@ -49,6 +49,26 @@ test("email composer exposes reliable photo and attachment pickers on mobile and
   assert.match(compose, /grid-template-columns: 1fr 1fr/);
 });
 
+test("email composer supports multiple To recipients, CC and forwarding inbound mail to the original mailbox", async () => {
+  const [compose, sendApi, service, env] = await Promise.all([
+    source("src/pages/admin/emails/send.astro"),
+    source("src/pages/api/admin/emails/index.ts"),
+    source("src/lib/server/email-service.ts"),
+    source("src/lib/server/env.ts"),
+  ]);
+
+  assert.match(compose, /id="cc"/);
+  assert.match(compose, /one@example\.com, two@example\.com/);
+  assert.match(compose, /JSON\.stringify\(\{[\s\S]*to,[\s\S]*cc,[\s\S]*subject/);
+  assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.to\)/);
+  assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.cc/);
+  assert.match(sendApi, /cc_address/);
+  assert.match(service, /cc: cc\.length > 0 \? cc : undefined/);
+  assert.match(service, /tahin591@gmail\.com/);
+  assert.match(service, /env\.INBOUND_FORWARD_TO/);
+  assert.match(env, /INBOUND_FORWARD_TO\?: string/);
+});
+
 test("outgoing admin email and replies receive the configured mandatory signature", async () => {
   const [signature, sendApi, signatureAdmin] = await Promise.all([
     source("src/lib/server/email-signature.ts"),

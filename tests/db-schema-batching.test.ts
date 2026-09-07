@@ -14,5 +14,8 @@ test("schema bootstrap batches statements into one Neon transaction", async () =
 
   assert.ok(statements.length > 50, "fixture must remain large enough to exercise the Cloudflare subrequest risk");
   assert.match(db, /sql\.transaction\(statements\.map\(\(statement\) => sql`\$\{sql\.unsafe\(statement\)\}`\)\)/);
+  assert.match(db, /app_schema_meta/);
+  assert.match(db, /SCHEMA_VERSION/);
+  assert.match(db, /if \(String\(versionRows\?\.\[0\]\?\.version \?\? ""\) === SCHEMA_VERSION\)/);
   assert.doesNotMatch(db, /for \(const statement of statements\)[\s\S]*await sql\.query\(statement\)/);
 });
