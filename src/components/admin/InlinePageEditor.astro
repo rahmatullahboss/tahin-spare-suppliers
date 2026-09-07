@@ -114,7 +114,14 @@ const { pageKey } = Astro.props;
     wrap.appendChild(label);
     const longField = /body|description|subtitle|headlineMain/i.test(key) || String(value).length > 90;
     const input = document.createElement(longField ? 'textarea' : 'input');
-    if (input instanceof HTMLInputElement) input.type = /url$/i.test(key) ? 'url' : 'text';
+    if (input instanceof HTMLInputElement) {
+      input.type = 'text';
+      if (/url$/i.test(key)) {
+        input.inputMode = 'url';
+        input.autocomplete = 'url';
+        input.placeholder = '/enquiry or https://example.com/path';
+      }
+    }
     input.value = value ?? '';
     if (input instanceof HTMLTextAreaElement) input.rows = 4;
     input.addEventListener('input', () => { holder[key] = input.value; });

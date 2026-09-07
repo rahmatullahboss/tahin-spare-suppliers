@@ -100,3 +100,12 @@ test("inline CMS styles dynamic controls globally and keeps mobile fields full-w
   assert.match(inlineEditor, /height:100dvh/);
   assert.match(inlineEditor, /\.cms-actions \{[^}]*position:sticky/s);
 });
+
+test("inline CMS URL fields accept internal relative links such as /enquiry", async () => {
+  const inlineEditor = await source("src/components/admin/InlinePageEditor.astro");
+
+  assert.doesNotMatch(inlineEditor, /input\.type = \/url\$\/i\.test\(key\) \? 'url' : 'text'/);
+  assert.match(inlineEditor, /input\.type = 'text'/);
+  assert.match(inlineEditor, /input\.inputMode = 'url'/);
+  assert.match(inlineEditor, /placeholder = '\/enquiry or https:\/\/example\.com\/path'/);
+});
