@@ -24,7 +24,12 @@ test("top-level category pages group their own products by brand and model with 
   assert.doesNotMatch(page, /brand-seo-links/);
 });
 
-test("homepage no longer renders the brand-model directory", async () => {
+test("homepage restores the running brand-logo marquee without moving the brand-model directory back home", async () => {
   const homepage = await source("src/pages/index.astro");
-  assert.doesNotMatch(homepage, /brands-marquee|modelDirectory|model-directory-grid/);
+  assert.match(homepage, /brands-marquee/);
+  assert.match(homepage, /listBrands\(env\)/);
+  assert.match(homepage, /brand\.displayLogoUrl/);
+  assert.match(homepage, /@keyframes marquee-scroll/);
+  assert.match(homepage, /\.recent-shipments-track[\s\S]*animation: marquee-scroll/);
+  assert.doesNotMatch(homepage, /modelDirectory|model-directory-grid/);
 });

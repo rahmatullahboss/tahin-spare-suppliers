@@ -43,33 +43,40 @@ export type CustomCategory = {
 export type DisplayCategory = {
   id?: string;
   value: string;
+  canonicalValue: string;
   slug: string;
   imageUrl: string;
   imageKey: string;
+  presentationImageKey?: string;
   parentId?: string;
   createdAt?: string;
+  sortOrder: number;
   isDefault: boolean;
 };
 
 export function mergeCategories(customCategories: CustomCategory[] = []): DisplayCategory[] {
-  const defaults = EQUIPMENT_CATEGORIES.map((category) => ({
+  const defaults = EQUIPMENT_CATEGORIES.map((category, index) => ({
     ...category,
+    canonicalValue: category.value,
     imageUrl: CATEGORY_IMAGES[category.slug] ?? DEFAULT_CATEGORY_IMAGE,
     imageKey: '',
+    sortOrder: index,
     isDefault: true
   }));
 
   const defaultSlugs = new Set(defaults.map((category) => category.slug));
   const custom = customCategories
     .filter((category) => !defaultSlugs.has(category.slug))
-    .map((category) => ({
+    .map((category, index) => ({
       id: category.id,
       value: category.name,
+      canonicalValue: category.name,
       slug: category.slug,
       imageUrl: category.imageUrl || DEFAULT_CATEGORY_IMAGE,
       imageKey: category.imageKey,
       parentId: category.parentId,
       createdAt: category.createdAt,
+      sortOrder: defaults.length + index,
       isDefault: false
     }));
 
@@ -91,5 +98,5 @@ export function getCategoryBySlug(slug: string) {
 
 /** Find category slug from its display value */
 export function getCategorySlug(value: string, categories: DisplayCategory[] = mergeCategories()): string {
-  return categories.find((c) => c.value === value)?.slug ?? value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return categories.find((c) => c.value === value || c.canonicalValue === value)?.slug ?? value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }

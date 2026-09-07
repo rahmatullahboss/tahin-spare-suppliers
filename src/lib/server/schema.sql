@@ -128,6 +128,17 @@ CREATE INDEX IF NOT EXISTS idx_inbound_emails_forward_status ON inbound_emails(f
 ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_id TEXT REFERENCES categories(id);
 CREATE INDEX IF NOT EXISTS idx_categories_parent ON categories(parent_id);
 
+CREATE TABLE IF NOT EXISTS category_presentations (
+  category_slug TEXT PRIMARY KEY,
+  label TEXT NOT NULL DEFAULT '',
+  image_url TEXT NOT NULL DEFAULT '',
+  image_key TEXT NOT NULL DEFAULT '',
+  sort_order INTEGER,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_category_presentations_order ON category_presentations(sort_order);
+
 ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory TEXT NOT NULL DEFAULT '';
 CREATE INDEX IF NOT EXISTS idx_products_subcategory ON products(subcategory);
 

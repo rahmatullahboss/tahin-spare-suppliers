@@ -293,7 +293,20 @@ const { pageKey } = Astro.props;
   const renderForm = () => {
     if (!fields || !state) return;
     fields.replaceChildren();
-    Object.entries(state).forEach(([key, value]) => renderValue(fields, key, value, state, renderForm));
+    const entries = activeSection === 'brands'
+      ? Object.entries(state).filter(([key]) => key === 'title')
+      : Object.entries(state);
+    entries.forEach(([key, value]) => renderValue(fields, key, value, state, renderForm));
+
+    if (activeSection === 'stock' || activeSection === 'brands') {
+      const manage = document.createElement('a');
+      manage.className = 'cms-manager-link';
+      manage.href = activeSection === 'stock' ? '/admin/categories' : '/admin/brands';
+      manage.textContent = activeSection === 'stock'
+        ? 'Manage category cards, photos & order →'
+        : 'Manage brand names & logos →';
+      fields.appendChild(manage);
+    }
   };
 
   const closeModal = async () => {
@@ -445,6 +458,7 @@ const { pageKey } = Astro.props;
   .cms-btn-secondary { background:#ececec; color:#111; }
   .cms-btn-danger { background:#fff0f0; color:#9a1c1c; }
   .cms-file-btn { display:inline-flex; align-items:center; }
+  .cms-manager-link { display:flex; align-items:center; justify-content:center; min-height:46px; padding:0 14px; border-radius:10px; background:#111827; color:#fff; text-decoration:none; font-weight:800; text-align:center; }
   .cms-status { min-height:20px; margin:0; padding:0 24px; color:#444; font:13px/1.4 system-ui,sans-serif; }
   .cms-status[data-error="true"] { color:#b00020; }
   .cms-actions { display:flex; justify-content:flex-end; gap:10px; position:sticky; bottom:0; z-index:3; padding:16px 24px calc(18px + env(safe-area-inset-bottom)); border-top:1px solid #ececec; background:rgba(255,255,255,.97); backdrop-filter:blur(8px); }

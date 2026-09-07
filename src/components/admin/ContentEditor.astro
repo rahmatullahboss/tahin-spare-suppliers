@@ -77,7 +77,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
               <select name="category" data-category required>
                 <option value="" disabled selected>-- Select --</option>
                 {categoryOptions.map((cat) => (
-                  <option value={cat.value}>{cat.value}</option>
+                  <option value={cat.canonicalValue}>{cat.value}</option>
                 ))}
               </select>
             </div>

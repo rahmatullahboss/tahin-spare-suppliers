@@ -109,7 +109,7 @@ const offerCategories = await listAllCategories(getRuntimeEnv(Astro.locals));
           <a href={`/category/${category.slug}`} class="offer-card">
             <img class="offer-category-image" src={category.imageUrl} alt={`${category.value} category`} loading="lazy" />
             <h3>{category.value}</h3>
-            <p>{getCategoryBuyingGuidance(category.value).supplySummary}</p>
+            <p>{getCategoryBuyingGuidance(category.canonicalValue).supplySummary}</p>
           </a>
         ))}
       </div>

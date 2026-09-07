@@ -87,7 +87,7 @@ const enquiryContext = requestedProduct
               <select id="equipment" name="equipment">
                 <option value="">Select a category</option>
                 {categories.map((cat) => (
-                  <option value={cat.value}>{cat.value}</option>
+                  <option value={cat.canonicalValue}>{cat.value}</option>
                 ))}
                 <option value="Other">Other</option>
               </select>

@@ -77,7 +77,7 @@ export const GET: APIRoute = async (context) => {
   });
 
   categories.forEach((category) => {
-    const categoryProducts = products.filter((product) => product.category === category.value);
+    const categoryProducts = products.filter((product) => product.category === category.canonicalValue);
     if (categoryProducts.length > 0) {
       dynamicPages.push({ url: `/category/${category.slug}` });
     }
@@ -88,7 +88,7 @@ export const GET: APIRoute = async (context) => {
     if (!parent) return;
 
     const subcategoryProducts = products.filter(
-      (product) => product.category === parent.value && product.subcategory === subcategory.value
+      (product) => product.category === parent.canonicalValue && product.subcategory === subcategory.value
     );
     if (subcategoryProducts.length > 0) {
       dynamicPages.push({ url: `/category/${parent.slug}/${subcategory.slug}` });

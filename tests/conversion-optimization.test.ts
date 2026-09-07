@@ -19,7 +19,7 @@ test("homepage keeps the client content structure without the category-specific 
   assert.doesNotMatch(homepage, /listProductSummaries/);
   assert.match(cmsDefaults, /REQUEST A QUOTE/);
   assert.match(cmsDefaults, /MARINE ENGINE & SPARE PARTS/);
-  assert.doesNotMatch(homepage, /brands-marquee/);
+  assert.match(homepage, /brands-marquee/);
   assert.doesNotMatch(homepage, /modelDirectory/);
   assert.doesNotMatch(homepage, /Browse Engine Models by Brand/i);
   assert.doesNotMatch(homepage, /MAJOR BRANDS WE CARRY/i);

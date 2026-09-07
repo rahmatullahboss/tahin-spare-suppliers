@@ -5,15 +5,18 @@ import InlinePageEditor from '../components/admin/InlinePageEditor.astro';
 import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
+import { listBrands } from '../lib/server/brands';
 import { getHomepageContent } from '../lib/server/page-content';
 import { isAuthenticated } from '../lib/server/session';
 
 const env = getRuntimeEnv(Astro.locals);
-const [categories, homeContent, authenticated] = await Promise.all([
+const [categories, homeContent, managedBrands, authenticated] = await Promise.all([
   listAllCategories(env),
   getHomepageContent(env),
+  listBrands(env),
   isAuthenticated(Astro.cookies, env.SESSION_SECRET),
 ]);
+const homepageBrands = managedBrands.filter((brand) => brand.displayLogoUrl);
 
 ---
 <MainLayout activeNav="home" preloadImage="/images/hero-bg-new.webp">
@@ -101,6 +104,7 @@ const [categories, homeContent, authenticated] = await Promise.all([
   <!-- Marine Equipment & Spare Parts -->
   <section class:list={["section stock-spares", authenticated && "cms-editable"]}>
     {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="stock">✎ Edit</button>}
+    {authenticated && <a href="/admin/categories" class="cms-manage-button">Manage cards ↕</a>}
     <div class="container">
       <h2 class="stock-title reveal">{homeContent.stock.title}</h2>
       <p class="stock-subtitle reveal">{homeContent.stock.subtitle}</p>
@@ -121,6 +125,31 @@ const [categories, homeContent, authenticated] = await Promise.all([
 
     </div>
   </section>
+
+  <!-- Brand logo marquee (brand/model directory remains inside category pages) -->
+  {homepageBrands.length > 0 && (
+    <section class:list={["brands-section", authenticated && "cms-editable"]}>
+      {authenticated && <button type="button" class="cms-edit-button" data-cms-edit="brands">✎ Edit title</button>}
+      {authenticated && <a href="/admin/brands" class="cms-manage-button">Manage logos</a>}
+      <div class="container">
+        <h2 class="brands-title reveal">{homeContent.brands.title}</h2>
+      </div>
+      <div class="brands-marquee" aria-label="Marine brands">
+        <div class="brands-track">
+          {homepageBrands.map((brand) => (
+            <a href={`/brands/${brand.slug}`} aria-label={`Browse ${brand.name} listings`}>
+              <img src={brand.displayLogoUrl} alt={brand.name} class="brand-logo" loading="lazy" />
+            </a>
+          ))}
+          {homepageBrands.map((brand) => (
+            <a href={`/brands/${brand.slug}`} aria-hidden="true" tabindex="-1">
+              <img src={brand.displayLogoUrl} alt="" class="brand-logo" loading="lazy" />
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
   <!-- Our Services -->
   <section class:list={["section services-section", authenticated && "cms-editable"]}>
@@ -447,6 +476,75 @@ const [categories, homeContent, authenticated] = await Promise.all([
     color: #222;
     line-height: 1.8;
     font-weight: 500;
+  }
+
+  /* Brand logo marquee */
+  .brands-section {
+    position: relative;
+    padding: 54px 0 46px;
+    background: #fff;
+    overflow: hidden;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+  }
+  .brands-title {
+    margin: 0 0 34px;
+    text-align: center;
+    color: #222;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .brands-marquee {
+    position: relative;
+    overflow: hidden;
+    padding: 10px 0;
+  }
+  .brands-marquee::before,
+  .brands-marquee::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 0;
+    width: 120px;
+    pointer-events: none;
+  }
+  .brands-marquee::before { left: 0; background: linear-gradient(to right, #fff, transparent); }
+  .brands-marquee::after { right: 0; background: linear-gradient(to left, #fff, transparent); }
+  .brands-track {
+    display: flex;
+    width: max-content;
+    align-items: center;
+    gap: 72px;
+    animation: marquee-scroll 35s linear infinite;
+    will-change: transform;
+  }
+  .brands-track a { display: inline-flex; align-items: center; justify-content: center; }
+  .brand-logo {
+    width: auto;
+    max-width: 160px;
+    height: 46px;
+    object-fit: contain;
+    opacity: .9;
+    transition: opacity .25s ease, transform .25s ease;
+  }
+  .brand-logo:hover { opacity: 1; transform: scale(1.05); }
+  .cms-manage-button {
+    position: absolute;
+    z-index: 8;
+    top: 12px;
+    right: 94px;
+    padding: 9px 12px;
+    border-radius: 9px;
+    background: #111827;
+    color: #fff;
+    text-decoration: none;
+    font: 700 12px/1 system-ui, sans-serif;
+  }
+  @keyframes marquee-scroll {
+    from { transform: translate3d(0,0,0); }
+    to { transform: translate3d(-50%,0,0); }
   }
 
   /* Stock Spares / Products — Premium Overlay Cards */

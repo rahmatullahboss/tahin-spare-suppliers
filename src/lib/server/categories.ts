@@ -10,6 +10,12 @@ type CategoryInput = {
   parentId?: string;
 };
 
+type CategoryPresentationInput = {
+  label?: string;
+  imageUrl?: string;
+  imageKey?: string;
+};
+
 function mapCustomCategory(row: Record<string, unknown>): CustomCategory {
   return {
     id: String(row.id),
@@ -55,7 +61,84 @@ export async function listCustomCategories(env: RuntimeEnv): Promise<CustomCateg
 }
 
 export async function listAllCategories(env: RuntimeEnv): Promise<DisplayCategory[]> {
-  return mergeCategories(await listCustomCategories(env));
+  const baseCategories = mergeCategories(await listCustomCategories(env));
+  await ensureSchema(env);
+  const sql = getDb(env);
+  const rows = await sql.query(
+    `SELECT category_slug, label, image_url, image_key, sort_order FROM category_presentations`
+  );
+  const presentations = new Map(rows.map((row) => [String(row.category_slug), row] as const));
+
+  return baseCategories
+    .map((category, baseIndex) => {
+      const presentation = presentations.get(category.slug);
+      const savedSort = presentation?.sort_order;
+      const sortOrder = savedSort == null || savedSort === "" ? baseIndex : Number(savedSort);
+      const label = String(presentation?.label ?? "").trim();
+      const imageUrl = String(presentation?.image_url ?? "").trim();
+      const imageKey = String(presentation?.image_key ?? "").trim();
+      return {
+        ...category,
+        value: label || category.value,
+        imageUrl: imageUrl || category.imageUrl,
+        imageKey: imageUrl ? imageKey : category.imageKey,
+        presentationImageKey: imageUrl ? imageKey : "",
+        sortOrder: Number.isFinite(sortOrder) ? sortOrder : baseIndex,
+      };
+    })
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.value.localeCompare(b.value));
+}
+
+export async function saveCategoryPresentation(
+  env: RuntimeEnv,
+  slug: string,
+  input: CategoryPresentationInput
+): Promise<DisplayCategory> {
+  const normalizedSlug = slug.trim();
+  const baseCategories = mergeCategories(await listCustomCategories(env));
+  const baseCategory = baseCategories.find((category) => category.slug === normalizedSlug);
+  if (!baseCategory) throw new Error("Category not found");
+
+  const label = input.label?.replace(/[\u0000-\u001F]/g, "").trim().slice(0, 160) ?? "";
+  const imageUrl = input.imageUrl?.trim().slice(0, 2000) ?? "";
+  const imageKey = input.imageKey?.trim().slice(0, 500) ?? "";
+
+  await ensureSchema(env);
+  const sql = getDb(env);
+  await sql.query(
+    `INSERT INTO category_presentations (category_slug, label, image_url, image_key, sort_order, updated_at)
+     VALUES ($1, $2, $3, $4, NULL, NOW())
+     ON CONFLICT (category_slug)
+     DO UPDATE SET label = EXCLUDED.label, image_url = EXCLUDED.image_url, image_key = EXCLUDED.image_key, updated_at = NOW()`,
+    [normalizedSlug, label, imageUrl, imageKey]
+  );
+
+  const categories = await listAllCategories(env);
+  const saved = categories.find((category) => category.slug === normalizedSlug);
+  if (!saved) throw new Error("Category presentation could not be loaded");
+  return saved;
+}
+
+export async function reorderCategories(env: RuntimeEnv, orderedSlugs: string[]): Promise<DisplayCategory[]> {
+  const categories = await listAllCategories(env);
+  const knownSlugs = new Set(categories.map((category) => category.slug));
+  const normalized = orderedSlugs.map((slug) => String(slug).trim()).filter(Boolean);
+  if (normalized.length !== categories.length || new Set(normalized).size !== categories.length) {
+    throw new Error("Category order must include every top-level category exactly once");
+  }
+  if (normalized.some((slug) => !knownSlugs.has(slug))) throw new Error("Category order contains an unknown category");
+
+  await ensureSchema(env);
+  const sql = getDb(env);
+  await sql.transaction(
+    normalized.map((slug, index) => sql`
+      INSERT INTO category_presentations (category_slug, label, image_url, image_key, sort_order, updated_at)
+      VALUES (${slug}, '', '', '', ${index}, NOW())
+      ON CONFLICT (category_slug)
+      DO UPDATE SET sort_order = EXCLUDED.sort_order, updated_at = NOW()
+    `)
+  );
+  return listAllCategories(env);
 }
 
 export async function findCategoryBySlug(env: RuntimeEnv, slug: string): Promise<DisplayCategory | null> {
@@ -145,20 +228,32 @@ export async function findSubcategoryBySlug(
     subcategory: {
       id: subcategory.id,
       value: subcategory.name,
+      canonicalValue: subcategory.name,
       slug: subcategory.slug,
       imageUrl: subcategory.imageUrl || parent.imageUrl,
       imageKey: subcategory.imageKey,
       parentId: subcategory.parentId,
       createdAt: subcategory.createdAt,
+      sortOrder: 0,
       isDefault: false,
     },
   };
 }
 
-export async function deleteCustomCategory(env: RuntimeEnv, id: string): Promise<boolean> {
+export async function deleteCustomCategory(env: RuntimeEnv, id: string): Promise<CustomCategory | null> {
   await ensureSchema(env);
   const sql = getDb(env);
-  await sql.query(`DELETE FROM categories WHERE parent_id = $1`, [id]);
-  const rows = await sql.query(`DELETE FROM categories WHERE id = $1 RETURNING id`, [id]);
-  return rows.length > 0;
+  const existingRows = await sql.query(
+    `SELECT id, name, slug, image_url, image_key, parent_id, created_at FROM categories WHERE id = $1 LIMIT 1`,
+    [id]
+  );
+  if (!existingRows[0]) return null;
+  const existing = mapCustomCategory(existingRows[0]);
+
+  await sql.transaction([
+    sql`DELETE FROM categories WHERE parent_id = ${id}`,
+    sql`DELETE FROM category_presentations WHERE category_slug = ${existing.slug}`,
+    sql`DELETE FROM categories WHERE id = ${id}`,
+  ]);
+  return existing;
 }

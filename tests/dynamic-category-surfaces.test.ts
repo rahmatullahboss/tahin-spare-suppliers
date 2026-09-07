@@ -37,3 +37,24 @@ test("category surfaces do not hide newly-created empty categories behind live-p
     assert.doesNotMatch(page, /liveCategories/);
   }
 });
+
+test("category cards have one editable presentation and order shared by every public category surface", async () => {
+  const [schema, repository, admin, api] = await Promise.all([
+    source("src/lib/server/schema.sql"),
+    source("src/lib/server/categories.ts"),
+    source("src/pages/admin/categories.astro"),
+    source("src/pages/api/admin/category-presentation.ts")
+  ]);
+
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS category_presentations/);
+  assert.match(repository, /saveCategoryPresentation/);
+  assert.match(repository, /reorderCategories/);
+  assert.match(repository, /canonicalValue/);
+  assert.match(admin, /Website Category Cards/);
+  assert.match(admin, /data-move-category="up"/);
+  assert.match(admin, /data-move-category="down"/);
+  assert.match(admin, /data-card-image/);
+  assert.match(admin, /canvas\.toBlob\(resolve, "image\/webp", 0\.82\)/);
+  assert.match(api, /requireAdminRequest/);
+  assert.match(api, /export const PATCH/);
+});

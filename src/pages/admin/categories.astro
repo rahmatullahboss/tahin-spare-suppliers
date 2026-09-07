@@ -1,10 +1,9 @@
 ---
 import ImageUploader from "../../components/admin/ImageUploader.astro";
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import { mergeCategories } from "../../lib/categories";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { isAuthenticated } from "../../lib/server/session";
-import { listCustomCategories, listAllSubcategories } from "../../lib/server/categories";
+import { listAllCategories, listCustomCategories, listAllSubcategories } from "../../lib/server/categories";
 
 const env = getRuntimeEnv(Astro.locals);
 const authenticated = await isAuthenticated(Astro.cookies, env.SESSION_SECRET);
@@ -13,9 +12,11 @@ if (!authenticated) {
   return Astro.redirect("/admin/login");
 }
 
-const customCategories = await listCustomCategories(env);
-const allSubcategories = await listAllSubcategories(env);
-const allCategories = mergeCategories(customCategories);
+const [customCategories, allSubcategories, allCategories] = await Promise.all([
+  listCustomCategories(env),
+  listAllSubcategories(env),
+  listAllCategories(env),
+]);
 const defaultCategories = allCategories.filter((category) => category.isDefault);
 ---
 
@@ -56,82 +57,77 @@ const defaultCategories = allCategories.filter((category) => category.isDefault)
   </section>
 
   <section class="categories-section">
-    <h2>Default Categories (read-only)</h2>
-    <div class="category-list">
-      {defaultCategories.map((category) => (
-        <div class="category-item default">
-          <img class="cat-thumb" src={category.imageUrl} alt="" loading="lazy" />
-          <div class="cat-info">
-            <span class="cat-name">{category.value}</span>
-            <span class="cat-slug">/{category.slug}</span>
+    <div class="categories-heading-row">
+      <div>
+        <h2>Website Category Cards</h2>
+        <p>Edit the public label/photo and move cards up or down. This order is reused on the home page, Sell Equipments, footer and other category lists.</p>
+      </div>
+    </div>
+    <div class="category-list" data-category-order-list>
+      {allCategories.map((category, index) => {
+        const subs = category.id ? allSubcategories.filter((s) => s.parentId === category.id) : [];
+        return (
+          <div class="category-group" data-category-row data-category-slug={category.slug}>
+            <form
+              class="category-item category-presentation-form"
+              data-presentation-form
+              data-category-slug={category.slug}
+              data-existing-image-url={category.imageUrl}
+              data-existing-presentation-key={category.presentationImageKey ?? ""}
+            >
+              <img class="cat-thumb" src={category.imageUrl} alt="" loading="lazy" data-card-preview />
+              <div class="cat-info">
+                <label class="card-label-field">
+                  <span>Public label</span>
+                  <input type="text" value={category.value} maxlength="160" data-card-label />
+                </label>
+                <span class="cat-slug">/{category.slug}{category.isDefault ? " · default" : " · custom"}</span>
+              </div>
+              <div class="cat-actions card-manage-actions">
+                <button type="button" class="move-btn" data-move-category="up" disabled={index === 0} aria-label={`Move ${category.value} up`}>↑ Up</button>
+                <button type="button" class="move-btn" data-move-category="down" disabled={index === allCategories.length - 1} aria-label={`Move ${category.value} down`}>↓ Down</button>
+                <label class="photo-btn">
+                  Photo
+                  <input type="file" accept="image/*" data-card-image hidden />
+                </label>
+                <button type="submit" class="edit-btn">Save</button>
+                {category.id && <button type="button" class="delete-btn" data-id={category.id}>Delete</button>}
+              </div>
+              <p class="card-save-status" data-card-status></p>
+            </form>
+
+            {subs.length > 0 && (
+              <div class="subcategory-list">
+                {subs.map((sub) => (
+                  <div class="category-item custom subcategory-item">
+                    <img class="cat-thumb sub-thumb" src={sub.imageUrl || category.imageUrl} alt="" loading="lazy" />
+                    <div class="cat-info">
+                      <span class="cat-name">{sub.name}</span>
+                      <span class="cat-slug">/{category.slug}/{sub.slug}</span>
+                    </div>
+                    <div class="cat-actions">
+                      <button
+                        type="button"
+                        class="edit-btn"
+                        data-edit-id={sub.id}
+                        data-edit-name={sub.name}
+                        data-edit-image-url={sub.imageUrl}
+                        data-edit-image-key={sub.imageKey}
+                        data-edit-parent={category.id}
+                      >
+                        Edit subcategory
+                      </button>
+                      <button class="delete-btn" data-id={sub.id}>Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   </section>
-
-  {customCategories.length > 0 && (
-    <section class="categories-section">
-      <h2>Custom Categories</h2>
-      <div class="category-list">
-        {customCategories.map((category) => {
-          const subs = allSubcategories.filter((s) => s.parentId === category.id);
-          return (
-            <div class="category-group">
-              <div class="category-item custom">
-                <img class="cat-thumb" src={category.imageUrl || "/images/marine-propulsion-engine.jpg"} alt="" loading="lazy" />
-                <div class="cat-info">
-                  <span class="cat-name">{category.name}</span>
-                  <span class="cat-slug">/{category.slug}</span>
-                </div>
-                <div class="cat-actions">
-                  <button
-                    type="button"
-                    class="edit-btn"
-                    data-edit-id={category.id}
-                    data-edit-name={category.name}
-                    data-edit-image-url={category.imageUrl}
-                    data-edit-image-key={category.imageKey}
-                    data-edit-parent=""
-                  >
-                    Edit
-                  </button>
-                  <button class="delete-btn" data-id={category.id}>Delete</button>
-                </div>
-              </div>
-              {subs.length > 0 && (
-                <div class="subcategory-list">
-                  {subs.map((sub) => (
-                    <div class="category-item custom subcategory-item">
-                      <img class="cat-thumb sub-thumb" src={sub.imageUrl || "/images/marine-propulsion-engine.jpg"} alt="" loading="lazy" />
-                      <div class="cat-info">
-                        <span class="cat-name">{sub.name}</span>
-                        <span class="cat-slug">/{category.slug}/{sub.slug}</span>
-                      </div>
-                      <div class="cat-actions">
-                        <button
-                          type="button"
-                          class="edit-btn"
-                          data-edit-id={sub.id}
-                          data-edit-name={sub.name}
-                          data-edit-image-url={sub.imageUrl}
-                          data-edit-image-key={sub.imageKey}
-                          data-edit-parent={category.id}
-                        >
-                          Edit
-                        </button>
-                        <button class="delete-btn" data-id={sub.id}>Delete</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  )}
 
   <style>
     .page-header { margin-bottom: 30px; }
@@ -171,7 +167,8 @@ const defaultCategories = allCategories.filter((category) => category.isDefault)
       box-shadow: 0 4px 20px rgba(0,0,0,0.04);
       margin-bottom: 20px;
     }
-    .categories-section h2 { font-size: 18px; margin: 0 0 15px; }
+    .categories-section h2 { font-size: 18px; margin: 0 0 6px; }
+    .categories-heading-row p { margin: 0 0 16px; color: #64748b; font-size: 13px; line-height: 1.6; }
 
     .category-list { display: flex; flex-direction: column; gap: 10px; }
     .category-item {
@@ -195,9 +192,15 @@ const defaultCategories = allCategories.filter((category) => category.isDefault)
     .cat-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
     .cat-name { font-weight: 600; color: #222; overflow-wrap: anywhere; }
     .cat-slug { color: #888; font-size: 13px; }
-    .cat-actions { display: flex; gap: 8px; }
+    .card-label-field { display: grid; gap: 5px; }
+    .card-label-field > span { color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+    .card-label-field input { width: 100%; box-sizing: border-box; min-height: 40px; padding: 8px 10px; border: 1px solid #d8dee6; border-radius: 7px; background: #fff; color: #1f2937; font: inherit; }
+    .cat-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .card-manage-actions { justify-content: flex-end; }
     .edit-btn,
-    .delete-btn {
+    .delete-btn,
+    .move-btn,
+    .photo-btn {
       border: none;
       padding: 7px 14px;
       border-radius: 6px;
@@ -207,8 +210,15 @@ const defaultCategories = allCategories.filter((category) => category.isDefault)
     }
     .edit-btn { background: #f1f5f9; color: #334155; }
     .edit-btn:hover { background: #e2e8f0; }
+    .move-btn { background: #eef2ff; color: #3730a3; }
+    .move-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .photo-btn { display: inline-flex; align-items: center; justify-content: center; background: #fff7ed; color: #9a3412; }
     .delete-btn { background: #dc3545; color: #fff; }
     .delete-btn:hover { background: #c82333; }
+    .category-presentation-form { position: relative; }
+    .card-save-status { grid-column: 1 / -1; min-height: 0; margin: 0; color: #64748b; font-size: 12px; }
+    .card-save-status:empty { display: none; }
+    .card-save-status[data-error="true"] { color: #dc2626; }
 
     .category-group { display: flex; flex-direction: column; gap: 10px; }
     .subcategory-list {
@@ -285,7 +295,9 @@ const defaultCategories = allCategories.filter((category) => category.isDefault)
         width: 100%;
       }
       .edit-btn,
-      .delete-btn {
+      .delete-btn,
+      .move-btn,
+      .photo-btn {
         min-height: 44px;
         padding: 10px 12px;
       }
@@ -426,6 +438,133 @@ const defaultCategories = allCategories.filter((category) => category.isDefault)
       drawPreview("");
       if (uploadStatus) uploadStatus.textContent = "Image will be removed on save.";
     });
+
+    const orderList = document.querySelector('[data-category-order-list]') as HTMLElement | null;
+
+    const orderedSlugs = () => Array.from(orderList?.querySelectorAll('[data-category-row]') ?? [])
+      .map((row) => (row as HTMLElement).dataset.categorySlug ?? "")
+      .filter(Boolean);
+
+    const refreshMoveButtons = () => {
+      const rows = Array.from(orderList?.querySelectorAll('[data-category-row]') ?? []);
+      rows.forEach((row, index) => {
+        const up = row.querySelector('[data-move-category="up"]') as HTMLButtonElement | null;
+        const down = row.querySelector('[data-move-category="down"]') as HTMLButtonElement | null;
+        if (up) up.disabled = index === 0;
+        if (down) down.disabled = index === rows.length - 1;
+      });
+    };
+
+    const persistCategoryOrder = async () => {
+      const response = await fetch('/api/admin/category-presentation', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderedSlugs: orderedSlugs() })
+      });
+      const payload = await response.json().catch(() => ({})) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || 'Failed to save category order');
+    };
+
+    orderList?.addEventListener('click', async (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest('[data-move-category]') as HTMLButtonElement | null;
+      if (!button) return;
+      const row = button.closest('[data-category-row]') as HTMLElement | null;
+      if (!row || !orderList) return;
+      const direction = button.dataset.moveCategory;
+      const sibling = direction === 'up' ? row.previousElementSibling : row.nextElementSibling;
+      if (!(sibling instanceof HTMLElement)) return;
+
+      button.disabled = true;
+      if (direction === 'up') orderList.insertBefore(row, sibling);
+      else orderList.insertBefore(sibling, row);
+      refreshMoveButtons();
+
+      try {
+        await persistCategoryOrder();
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to save category order');
+        location.reload();
+      }
+    });
+
+    document.querySelectorAll('[data-presentation-form]').forEach((node) => {
+      const presentationForm = node as HTMLFormElement;
+      const slug = presentationForm.dataset.categorySlug ?? '';
+      const labelInput = presentationForm.querySelector('[data-card-label]') as HTMLInputElement | null;
+      const fileInput = presentationForm.querySelector('[data-card-image]') as HTMLInputElement | null;
+      const preview = presentationForm.querySelector('[data-card-preview]') as HTMLImageElement | null;
+      const cardStatus = presentationForm.querySelector('[data-card-status]') as HTMLElement | null;
+      let cardFile: File | null = null;
+      let cardPreviewUrl = '';
+
+      fileInput?.addEventListener('change', () => {
+        cardFile = fileInput.files?.[0] ?? null;
+        if (cardPreviewUrl) URL.revokeObjectURL(cardPreviewUrl);
+        cardPreviewUrl = cardFile ? URL.createObjectURL(cardFile) : '';
+        if (preview && cardPreviewUrl) preview.src = cardPreviewUrl;
+        if (cardStatus) {
+          cardStatus.textContent = cardFile ? 'New photo selected. It will be compressed to WebP on save.' : '';
+          delete cardStatus.dataset.error;
+        }
+      });
+
+      presentationForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const submit = presentationForm.querySelector('[type="submit"]') as HTMLButtonElement | null;
+        const oldPresentationKey = presentationForm.dataset.existingPresentationKey ?? '';
+        let uploadedKey = '';
+        let nextImageUrl = presentationForm.dataset.existingImageUrl ?? preview?.src ?? '';
+        let nextImageKey = oldPresentationKey;
+        if (cardStatus) {
+          cardStatus.textContent = 'Saving…';
+          delete cardStatus.dataset.error;
+        }
+        if (submit) submit.disabled = true;
+
+        try {
+          if (cardFile) {
+            const compressed = await compressImageToWebp(cardFile);
+            const uploaded = await uploadImage(compressed);
+            nextImageUrl = uploaded.url || '';
+            nextImageKey = uploaded.key || '';
+            uploadedKey = nextImageKey;
+          }
+
+          const response = await fetch('/api/admin/category-presentation', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              slug,
+              label: labelInput?.value.trim() ?? '',
+              imageUrl: nextImageUrl,
+              imageKey: nextImageKey,
+            })
+          });
+          const payload = await response.json().catch(() => ({})) as { error?: string; category?: { imageUrl?: string; presentationImageKey?: string } };
+          if (!response.ok) throw new Error(payload.error || 'Failed to save category card');
+
+          if (oldPresentationKey && uploadedKey && oldPresentationKey !== uploadedKey) {
+            await deleteImageByKey(oldPresentationKey);
+          }
+          presentationForm.dataset.existingImageUrl = payload.category?.imageUrl || nextImageUrl;
+          presentationForm.dataset.existingPresentationKey = payload.category?.presentationImageKey || nextImageKey;
+          if (cardStatus) cardStatus.textContent = 'Saved. This card is updated everywhere.';
+          setTimeout(() => location.reload(), 450);
+        } catch (error) {
+          if (uploadedKey) await deleteImageByKey(uploadedKey);
+          if (cardStatus) {
+            cardStatus.textContent = error instanceof Error ? error.message : 'Failed to save category card';
+            cardStatus.dataset.error = 'true';
+          }
+        } finally {
+          if (submit) submit.disabled = false;
+        }
+      });
+    });
+
+    refreshMoveButtons();
 
     document.querySelectorAll('[data-edit-id]').forEach((button) => {
       button.addEventListener('click', () => {

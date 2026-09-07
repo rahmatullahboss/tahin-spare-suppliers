@@ -48,8 +48,9 @@ const { pageKey, overrides, editable } = Astro.props;
   if (!editable) return;
 
   const eligibleSelector = 'h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,img,.section-subtitle,.mission-text,.mission-cta,.btn,.view-details,.category-card-cta,.subcategory-card-cta';
-  const excludedSelector = '[data-no-page-edit], .cms-admin-bar, .cms-modal, script, style, noscript';
+  const excludedSelector = '[data-no-page-edit], .cms-admin-bar, .cms-modal, .universal-cms-section-button, script, style, noscript';
   let editMode = false;
+  let activeSectionRoot = null;
   let activeElement = null;
   let activeSelector = '';
   let uploadedKey = '';
@@ -67,6 +68,21 @@ const { pageKey, overrides, editable } = Astro.props;
     <span data-page-edit-help>Turn on edit mode, then tap text or an image.</span>
   `;
   document.body.appendChild(bar);
+
+  const sectionButtons = [];
+  root.querySelectorAll('section').forEach((section) => {
+    if (!(section instanceof HTMLElement) || section.closest('[data-no-page-edit]')) return;
+    if (!section.querySelector(eligibleSelector)) return;
+    section.classList.add('universal-cms-section');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'universal-cms-section-button';
+    button.textContent = '✎ Edit';
+    button.setAttribute('data-no-page-edit', 'true');
+    button.setAttribute('aria-label', 'Edit this section');
+    section.prepend(button);
+    sectionButtons.push({ section, button });
+  });
 
   const panel = document.createElement('div');
   panel.className = 'universal-cms-panel';
@@ -222,11 +238,32 @@ const { pageKey, overrides, editable } = Astro.props;
     document.documentElement.classList.add('universal-cms-open');
   };
 
+  const setEditingState = (enabled, section = null) => {
+    editMode = enabled;
+    activeSectionRoot = enabled ? section : null;
+    document.documentElement.classList.toggle('universal-cms-editing', enabled);
+    document.documentElement.classList.toggle('universal-cms-section-scoped', Boolean(enabled && section));
+    root.querySelectorAll('.universal-cms-section-active').forEach((node) => node.classList.remove('universal-cms-section-active'));
+    if (enabled && section instanceof HTMLElement) section.classList.add('universal-cms-section-active');
+    if (toggle) toggle.textContent = enabled ? 'Finish editing' : 'Edit this page';
+    if (help) {
+      help.textContent = enabled
+        ? (section ? 'Tap highlighted text or images inside this section.' : 'Tap a highlighted text block or image to edit it.')
+        : 'Turn on edit mode, then tap text or an image.';
+    }
+  };
+
   toggle?.addEventListener('click', () => {
-    editMode = !editMode;
-    document.documentElement.classList.toggle('universal-cms-editing', editMode);
-    toggle.textContent = editMode ? 'Finish editing' : 'Edit this page';
-    help.textContent = editMode ? 'Tap a highlighted text block or image to edit it.' : 'Turn on edit mode, then tap text or an image.';
+    setEditingState(!editMode, null);
+  });
+
+  sectionButtons.forEach(({ section, button }) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setEditingState(true, section);
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   });
 
   root.addEventListener('click', (event) => {
@@ -235,6 +272,7 @@ const { pageKey, overrides, editable } = Astro.props;
     if (!(target instanceof Element)) return;
     const element = target.closest(eligibleSelector);
     if (!element || !root.contains(element) || element.closest(excludedSelector)) return;
+    if (activeSectionRoot && !activeSectionRoot.contains(element)) return;
     event.preventDefault();
     event.stopPropagation();
     openEditor(element);
@@ -314,9 +352,17 @@ const { pageKey, overrides, editable } = Astro.props;
     .universal-cms-bar a, .universal-cms-bar button { border: 0; border-radius: 9px; padding: 8px 10px; background: #292929; color: #fff; text-decoration: none; font: inherit; cursor: pointer; }
     .universal-cms-bar button { background: #b11623; }
     .universal-cms-bar span { color: #cbd5e1; flex: 1 1 220px; }
-    html.universal-cms-editing #main-content :is(h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,img,.section-subtitle,.mission-text,.mission-cta,.btn,.view-details,.category-card-cta,.subcategory-card-cta) {
+    .universal-cms-section { position: relative; }
+    .universal-cms-section-button {
+      position: absolute; z-index: 20; top: 12px; right: 12px; min-height: 38px; padding: 0 12px;
+      border: 0; border-radius: 9px; background: #b11623; color: #fff; box-shadow: 0 5px 18px rgba(0,0,0,.18);
+      font: 800 12px/1 system-ui,sans-serif; cursor: pointer;
+    }
+    html.universal-cms-editing:not(.universal-cms-section-scoped) #main-content :is(h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,img,.section-subtitle,.mission-text,.mission-cta,.btn,.view-details,.category-card-cta,.subcategory-card-cta),
+    html.universal-cms-section-scoped #main-content .universal-cms-section-active :is(h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,img,.section-subtitle,.mission-text,.mission-cta,.btn,.view-details,.category-card-cta,.subcategory-card-cta) {
       outline: 2px dashed rgba(177,22,35,.65); outline-offset: 3px; cursor: pointer !important;
     }
+    html.universal-cms-section-scoped #main-content .universal-cms-section-active { box-shadow: inset 0 0 0 3px rgba(177,22,35,.15); }
     .universal-cms-panel[hidden] { display: none; }
     .universal-cms-panel { position: fixed; inset: 0; z-index: 1500; display: grid; place-items: center; padding: 16px; }
     .universal-cms-backdrop { position: absolute; inset: 0; background: rgba(15,23,42,.65); }

@@ -21,7 +21,7 @@ const [products, blogPosts, categories] = await Promise.all([
 // Calculate category metrics
 const categoryCounts = categories.map(cat => ({
   name: cat.value,
-  count: products.filter(p => p.category === cat.value).length
+  count: products.filter(p => p.category === cat.canonicalValue).length
 })).sort((a, b) => b.count - a.count);
 
 const recentProducts = products.slice(0, 5);

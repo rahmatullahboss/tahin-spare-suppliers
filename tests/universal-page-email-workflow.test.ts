@@ -17,6 +17,10 @@ test("all non-home public pages receive the authenticated universal page editor"
   assert.match(layout, /isAuthenticated\(Astro\.cookies/);
   assert.match(schema, /CREATE TABLE IF NOT EXISTS page_overrides/);
   assert.match(editor, /Edit this page/);
+  assert.match(editor, /root\.querySelectorAll\('section'\)/);
+  assert.match(editor, /universal-cms-section-button/);
+  assert.match(editor, /button\.textContent = '✎ Edit'/);
+  assert.match(editor, /activeSectionRoot/);
   assert.match(editor, /canvas\.toBlob\(resolve, 'image\/webp', 0\.82\)/);
   assert.match(editor, /fetch\('\/api\/upload'/);
   assert.match(api, /requireAdminRequest/);
