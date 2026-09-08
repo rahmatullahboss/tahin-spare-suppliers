@@ -82,7 +82,7 @@ test("brand-model directory lives inside category pages and uses real brand logo
   ]);
 
   assert.doesNotMatch(homepage, /modelDirectory|category-brand-directory/);
-  assert.match(categoryPage, /const brandModelDirectory = \[\.\.\.categoryProducts\.reduce/);
+  assert.match(categoryPage, /const brandModelDirectory = showBrandModelDirectory \? \[\.\.\.categoryProducts\.reduce/);
   assert.match(categoryPage, /product\.model_number/);
   assert.match(categoryPage, /getBrandLogoAsset\(group\.brand\)/);
   assert.match(categoryPage, /class="category-brand-logo"/);

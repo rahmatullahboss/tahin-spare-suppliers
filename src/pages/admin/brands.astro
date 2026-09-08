@@ -28,6 +28,10 @@ const brands = await listBrands(env);
         <small>Renaming a brand here updates products currently assigned to that brand.</small>
       </div>
       <ImageUploader label="Brand Logo" />
+      <div class="logo-picker-actions">
+        <button type="button" class="logo-picker-btn" data-logo-picker-btn>Add Logo</button>
+        <small data-logo-picker-hint>Choose a logo image to add or replace the current brand logo.</small>
+      </div>
       <div class="preview" data-preview></div>
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" data-submit-btn>Add Brand</button>
@@ -67,6 +71,7 @@ const brands = await listBrands(env);
               data-edit-name={brand.name}
               data-edit-logo-url={brand.logoUrl}
               data-edit-logo-key={brand.logoKey}
+              data-edit-display-logo-url={brand.displayLogoUrl}
             >Edit</button>
             <button type="button" class="delete-btn" data-delete-id={brand.id} data-delete-name={brand.name} data-product-count={brand.productCount}>Delete</button>
           </div>
@@ -89,11 +94,14 @@ const brands = await listBrands(env);
     const imageKeyInput = document.querySelector("[data-image-key]") as HTMLInputElement | null;
     const uploadStatus = document.querySelector("[data-upload-status]") as HTMLElement | null;
     const previewEl = document.querySelector("[data-preview]") as HTMLElement | null;
+    const logoPickerBtn = document.querySelector("[data-logo-picker-btn]") as HTMLButtonElement | null;
+    const logoPickerHint = document.querySelector("[data-logo-picker-hint]") as HTMLElement | null;
 
     let selectedFile: File | null = null;
     let selectedPreviewUrl = "";
     let existingLogoUrl = "";
     let existingLogoKey = "";
+    let existingDisplayLogoUrl = "";
     let imageRemoved = false;
 
     const setMessage = (message: string, isError = false) => {
@@ -119,6 +127,20 @@ const brands = await listBrands(env);
       img.alt = "Brand logo preview";
       previewEl.replaceChildren(img);
     };
+
+    const updateLogoPickerUi = () => {
+      const visibleLogoUrl = selectedPreviewUrl || (imageRemoved ? "" : (existingLogoUrl || existingDisplayLogoUrl));
+      if (logoPickerBtn) logoPickerBtn.textContent = visibleLogoUrl ? "Replace Logo" : "Add Logo";
+      if (logoPickerHint) {
+        logoPickerHint.textContent = existingLogoUrl
+          ? "A custom logo is saved. Choose another image to replace it."
+          : existingDisplayLogoUrl
+            ? "A built-in fallback logo is currently shown. Upload a custom logo to override it."
+            : "No logo is saved yet. Choose an image to add one.";
+      }
+    };
+
+    logoPickerBtn?.addEventListener("click", () => imageInput?.click());
 
     const compressImageToWebp = async (file: File) => {
       const bitmap = await createImageBitmap(file);
@@ -168,8 +190,10 @@ const brands = await listBrands(env);
       imageRemoved = false;
       existingLogoUrl = "";
       existingLogoKey = "";
+      existingDisplayLogoUrl = "";
       clearPreviewUrl();
       drawPreview("");
+      updateLogoPickerUi();
       setMessage("");
     };
 
@@ -182,8 +206,9 @@ const brands = await listBrands(env);
         drawPreview(selectedPreviewUrl);
         if (uploadStatus) uploadStatus.textContent = "Logo selected. It will be converted to WebP and uploaded to R2 on save.";
       } else {
-        drawPreview(existingLogoUrl);
+        drawPreview(existingLogoUrl || existingDisplayLogoUrl);
       }
+      updateLogoPickerUi();
     });
 
     imageRemoveBtn?.addEventListener("click", () => {
@@ -194,6 +219,7 @@ const brands = await listBrands(env);
       if (imageUrlInput) imageUrlInput.value = "";
       if (imageKeyInput) imageKeyInput.value = "";
       drawPreview("");
+      updateLogoPickerUi();
       if (uploadStatus) uploadStatus.textContent = "Custom logo will be removed on save. Built-in fallback may still display if available.";
     });
 
@@ -204,13 +230,15 @@ const brands = await listBrands(env);
         if (nameInput) nameInput.value = target.dataset.editName || "";
         existingLogoUrl = target.dataset.editLogoUrl || "";
         existingLogoKey = target.dataset.editLogoKey || "";
+        existingDisplayLogoUrl = target.dataset.editDisplayLogoUrl || "";
         if (imageUrlInput) imageUrlInput.value = existingLogoUrl;
         if (imageKeyInput) imageKeyInput.value = existingLogoKey;
         if (imageInput) imageInput.value = "";
         selectedFile = null;
         imageRemoved = false;
         clearPreviewUrl();
-        drawPreview(existingLogoUrl);
+        drawPreview(existingLogoUrl || existingDisplayLogoUrl);
+        updateLogoPickerUi();
         if (formTitle) formTitle.textContent = "Edit Brand";
         if (submitBtn) submitBtn.textContent = "Save Brand";
         if (uploadStatus) uploadStatus.textContent = "";
@@ -301,6 +329,10 @@ const brands = await listBrands(env);
     .field input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; }
     .field small { color: #64748b; line-height: 1.5; }
     .preview img { display: block; width: auto; max-width: 260px; max-height: 120px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; background: #fff; }
+    .logo-picker-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .logo-picker-actions small { color: #64748b; line-height: 1.45; }
+    .logo-picker-btn { min-height: 42px; border: 1px solid #b11623; border-radius: 8px; padding: 9px 15px; background: #fff; color: #b11623; font-weight: 800; cursor: pointer; }
+    .logo-picker-btn:hover { background: #fff5f5; }
     .form-actions { display: flex; gap: 10px; }
     .btn { min-height: 44px; border: 0; border-radius: 8px; padding: 10px 20px; font-weight: 800; cursor: pointer; }
     .btn-primary { background: #b11623; color: #fff; }
@@ -322,6 +354,8 @@ const brands = await listBrands(env);
     @media (max-width: 640px) {
       .brand-form-card, .brands-card { padding: 16px; }
       .field input { min-height: 44px; font-size: 16px; }
+      .logo-picker-actions { display: grid; }
+      .logo-picker-btn { width: 100%; min-height: 44px; }
       .form-actions { display: grid; grid-template-columns: 1fr 1fr; }
       .brand-row { grid-template-columns: 70px minmax(0,1fr); gap: 10px; }
       .brand-logo-wrap { width: 70px; height: 52px; }

@@ -2,6 +2,7 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { getBrandLogoAsset } from '../../lib/brand-logos';
+import { shouldShowCategoryBrandDirectory } from '../../lib/category-brand-directory';
 import { toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listProductSummaries } from '../../lib/server/repository';
@@ -19,10 +20,11 @@ if (!currentCategory) {
   });
 }
 
+const showBrandModelDirectory = shouldShowCategoryBrandDirectory(currentCategory);
 const [subcategories, categoryProducts, managedBrands] = await Promise.all([
   currentCategory.id ? listSubcategories(env, currentCategory.id) : Promise.resolve([]),
   listProductSummaries(env, { category: currentCategory.canonicalValue, limit: 1000 }),
-  listBrands(env)
+  showBrandModelDirectory ? listBrands(env) : Promise.resolve([])
 ]);
 const managedBrandBySlug = new Map(managedBrands.map((brand) => [brand.slug, brand] as const));
 const PRODUCT_PAGE_SIZE = 12;
@@ -36,7 +38,7 @@ const displayBrands = [...new Set(
 )];
 const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
 
-const brandModelDirectory = [...categoryProducts.reduce((groups, product) => {
+const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduce((groups, product) => {
   const brand = product.brand?.trim();
   if (!brand) return groups;
 
@@ -69,7 +71,7 @@ const brandModelDirectory = [...categoryProducts.reduce((groups, product) => {
       models: [...group.models.values()].sort((a, b) => a.label.localeCompare(b.label))
     };
   })
-  .sort((a, b) => a.brand.localeCompare(b.brand));
+  .sort((a, b) => a.brand.localeCompare(b.brand)) : [];
 
 ---
 <MainLayout
@@ -117,7 +119,7 @@ const brandModelDirectory = [...categoryProducts.reduce((groups, product) => {
     </section>
   )}
 
-  {brandModelDirectory.length > 0 && (
+  {showBrandModelDirectory && brandModelDirectory.length > 0 && (
     <section class="section category-brand-directory">
       <div class="container">
         <div class="category-brand-heading">

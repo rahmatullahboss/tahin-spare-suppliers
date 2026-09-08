@@ -34,6 +34,18 @@ test("brand admin converts uploaded logos to WebP before R2 upload", async () =>
   assert.match(admin, /fetch\("\/api\/admin\/brands"/);
 });
 
+test("brand edit can add a first custom logo when the brand currently has no custom logo", async () => {
+  const admin = await source("src/pages/admin/brands.astro");
+
+  assert.match(admin, /data-logo-picker-btn>Add Logo<\/button>/);
+  assert.match(admin, /logoPickerBtn\?\.addEventListener\("click", \(\) => imageInput\?\.click\(\)\)/);
+  assert.match(admin, /data-edit-display-logo-url=\{brand\.displayLogoUrl\}/);
+  assert.match(admin, /existingDisplayLogoUrl = target\.dataset\.editDisplayLogoUrl \|\| ""/);
+  assert.match(admin, /drawPreview\(existingLogoUrl \|\| existingDisplayLogoUrl\)/);
+  assert.match(admin, /if \(selectedFile\) \{[\s\S]*uploadImage\(compressed\)[\s\S]*nextLogoUrl = uploaded\.url/s);
+  assert.match(admin, /No logo is saved yet\. Choose an image to add one\./);
+});
+
 test("product admin uses the canonical managed brand list", async () => {
   const [productsAdmin, editor] = await Promise.all([
     source("src/pages/admin/products.astro"),
