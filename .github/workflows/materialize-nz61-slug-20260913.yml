@@ -1,0 +1,72 @@
+name: Materialize NZ61 slug release 2026-09-13
+
+on:
+  push:
+    branches:
+      - release-nz61-slug-20260913
+    paths:
+      - .release/nz61-ready
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.2
+
+      - name: Reconstruct exact NZ61 redirect change
+        shell: bash
+        run: |
+          git checkout -B release-nz61-materialized-20260913 4835e7b35514d2b57d424575a4425e2f5c4825e1
+          python3 - <<'PY'
+          from pathlib import Path
+
+          seo = Path('src/lib/seo.ts')
+          text = seo.read_text()
+          old = '''const LEGACY_PRODUCT_REDIRECTS: Readonly<Record<string, string>> = Object.freeze({\n  "connecting-rod-for-man-b-w-5l-16-24": "/products/man-b-w-5l16-24-genuine-spare-parts-5l-6l",\n  "cummins-vta-28-d-m-marine-engine-815hp": "/products/cummins-vta28-dm-815hp-marine-engine"\n});\n'''
+          new = '''const LEGACY_PRODUCT_REDIRECTS: Readonly<Record<string, string>> = Object.freeze({\n  "connecting-rod-for-man-b-w-5l-16-24": "/products/man-b-w-5l16-24-genuine-spare-parts-5l-6l",\n  "cummins-vta-28-d-m-marine-engine-815hp": "/products/cummins-vta28-dm-815hp-marine-engine",\n  "yanmar-nz62-hydraulic-governor-for-sale": "/products/yanmar-nz61-hydraulic-governor-for-sale"\n});\n'''
+          if text.count(old) != 1:
+              raise SystemExit('SEO redirect target mismatch')
+          seo.write_text(text.replace(old, new, 1))
+
+          test_file = Path('tests/seo-system.test.ts')
+          text = test_file.read_text()
+          old = '''  assert.equal(\n    resolveLegacyProductRedirect("cummins-vta-28-d-m-marine-engine-815hp"),\n    "/products/cummins-vta28-dm-815hp-marine-engine"\n  );\n  assert.equal(resolveLegacyProductRedirect("cummins-vta28-dm-815hp-marine-engine"), undefined);\n'''
+          new = '''  assert.equal(\n    resolveLegacyProductRedirect("cummins-vta-28-d-m-marine-engine-815hp"),\n    "/products/cummins-vta28-dm-815hp-marine-engine"\n  );\n  assert.equal(\n    resolveLegacyProductRedirect("yanmar-nz62-hydraulic-governor-for-sale"),\n    "/products/yanmar-nz61-hydraulic-governor-for-sale"\n  );\n  assert.equal(resolveLegacyProductRedirect("cummins-vta28-dm-815hp-marine-engine"), undefined);\n'''
+          if text.count(old) != 1:
+              raise SystemExit('SEO test target mismatch')
+          test_file.write_text(text.replace(old, new, 1))
+          PY
+          git add src/lib/seo.ts tests/seo-system.test.ts
+          git diff --cached --check
+          test "$(git write-tree)" = "4414be6131f434882a5c79b6b92e0d4cc429b25b"
+
+      - name: Verify exact release
+        shell: bash
+        run: |
+          npm ci
+          npm test
+          npm audit --omit=dev
+          npm run build
+          npx wrangler deploy --dry-run
+          test "$(git write-tree)" = "4414be6131f434882a5c79b6b92e0d4cc429b25b"
+
+      - name: Commit and publish materialized branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix(seo): redirect legacy NZ62 slug to NZ61"
+          test "$(git rev-parse HEAD^{tree})" = "4414be6131f434882a5c79b6b92e0d4cc429b25b"
+          git push origin HEAD:refs/heads/release-nz61-materialized-20260913
