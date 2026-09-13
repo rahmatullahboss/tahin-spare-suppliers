@@ -5,7 +5,10 @@ import test from "node:test";
 import {
   buildDefaultMetaDescription,
   buildDefaultSeoTitle,
+  findProductIdentityConflict,
   parseRelatedProductSlugs,
+  resolveCategorySeo,
+  resolveLegacyProductRedirect,
   resolveProductSeo,
   schemaConditionUrl,
   toUrlSlug
@@ -57,6 +60,58 @@ test("related product slugs are normalized and deduplicated", () => {
   assert.equal(toUrlSlug("MAN B&W 6S50MC-C"), "man-b-w-6s50mc-c");
 });
 
+test("legacy product redirects preserve exact historical commercial URL authority", () => {
+  assert.equal(
+    resolveLegacyProductRedirect("connecting-rod-for-man-b-w-5l-16-24"),
+    "/products/man-b-w-5l16-24-genuine-spare-parts-5l-6l"
+  );
+  assert.equal(
+    resolveLegacyProductRedirect("cummins-vta-28-d-m-marine-engine-815hp"),
+    "/products/cummins-vta28-dm-815hp-marine-engine"
+  );
+  assert.equal(resolveLegacyProductRedirect("cummins-vta28-dm-815hp-marine-engine"), undefined);
+  assert.equal(resolveLegacyProductRedirect("unknown-product"), undefined);
+});
+
+test("product identity guard catches conflicting model codes without inventing conflicts", () => {
+  assert.match(
+    findProductIdentityConflict({
+      slug: "yanmar-nz62-hydraulic-governor-for-sale",
+      title: "Yanmar NZ61 Hydraulic Governor for Sale",
+      modelNumber: "Yanmar NZ61 Governor",
+      seoTitle: "Yanmar NZ61 Hydraulic Governor for Sale | Tahin Spare Suppliers"
+    }) ?? "",
+    /NZ61.*NZ62/i
+  );
+
+  assert.equal(findProductIdentityConflict({
+    slug: "used-cummins-vta-28-marine-engine",
+    title: "Cummins VTA28 Marine Engine For Sale",
+    modelNumber: "Cummins VTA-28"
+  }), undefined);
+
+  assert.equal(findProductIdentityConflict({
+    slug: "marine-governor-stock",
+    title: "Yanmar Hydraulic Governor",
+    modelNumber: ""
+  }), undefined);
+});
+
+test("category SEO resolves commercial search intent without unsupported stock claims", () => {
+  assert.deepEqual(resolveCategorySeo({ slug: "spare-parts", value: "Spare Parts" }), {
+    title: "Marine Spare Parts Supplier | Tahin Spare Suppliers",
+    description: "Browse marine engine and equipment spare parts by brand and model. Request specifications, availability, price and worldwide shipping details from Tahin Spare Suppliers."
+  });
+  assert.deepEqual(resolveCategorySeo({ slug: "turbocharger", value: "Turbocharger" }), {
+    title: "Marine Turbocharger Supplier | Tahin Spare Suppliers",
+    description: "Browse marine turbocharger listings by brand and model. Request condition, specifications, availability, price and shipping details from Tahin Spare Suppliers."
+  });
+  assert.deepEqual(resolveCategorySeo({ slug: "marine-pump", value: "Marine Pump" }), {
+    title: "Marine Pump Supplier & Exporter | Tahin Spare Suppliers",
+    description: "Browse current Marine Pump listings by brand and model. Request specifications, condition, availability, price and worldwide shipping from Tahin Spare Suppliers."
+  });
+});
+
 test("database schema contains the complete product SEO and procurement contract", async () => {
   const schema = await source("src/lib/server/schema.sql");
   for (const column of [
@@ -104,6 +159,18 @@ test("product CMS exposes all required SEO-ready upload fields", async () => {
     assert.match(editor, new RegExp(marker));
   }
   assert.match(editor, /item\.partNumber\?\.toLowerCase\(\)\.includes\(searchQuery\)/);
+  assert.match(editor, /findProductIdentityConflict/);
+  assert.match(editor, /identityConflict[\s\S]*return;/);
+  assert.ok(editor.indexOf("identityConflict") < editor.indexOf("if (selectedFile)"));
+});
+
+test("product API rejects identity conflicts before repository writes", async () => {
+  const api = await source("src/lib/server/api.ts");
+  assert.match(api, /findProductIdentityConflict/);
+  assert.match(api, /validateProductIdentityInput/);
+  assert.match(api, /status:\s*400/);
+  assert.ok(api.indexOf("validateProductIdentityInput") < api.indexOf("createContent(env, type, body)"));
+  assert.ok(api.indexOf("validateProductIdentityInput") < api.indexOf("updateContent(env, type, id, body)"));
 });
 
 test("product detail is truthful, structured and buyer-conversion ready", async () => {
@@ -117,6 +184,13 @@ test("product detail is truthful, structured and buyer-conversion ready", async 
   assert.match(productPage, /Technical Specifications/);
   assert.match(productPage, /WhatsApp This Product/);
   assert.match(productPage, /fetchpriority="high"/);
+});
+
+test("missing historical product slugs permanently redirect before the generic 404", async () => {
+  const productPage = await source("src/pages/products/[slug].astro");
+  assert.match(productPage, /resolveLegacyProductRedirect/);
+  assert.match(productPage, /Astro\.redirect\(legacyRedirect,\s*301\)/);
+  assert.ok(productPage.indexOf("resolveLegacyProductRedirect") < productPage.indexOf('new Response("Product not found"'));
 });
 
 test("technical SEO has environment-backed Google hooks and complete sitemap collections", async () => {
@@ -151,6 +225,9 @@ test("schema scope and thin taxonomy indexation stay truthful", async () => {
   assert.match(layout, /const isHomepage = Astro\.url\.pathname === ['\"]\/['\"]/);
   assert.doesNotMatch(layout, /"priceRange"/);
   assert.match(layout, /isHomepage\s*&&[\s\S]*organizationSchema/);
+  assert.match(categoryPage, /resolveCategorySeo/);
+  assert.match(categoryPage, /title=\{categorySeo\.title\}/);
+  assert.match(categoryPage, /description=\{categorySeo\.description\}/);
   assert.match(categoryPage, /noindex=\{categoryProducts\.length === 0\}/);
   assert.match(subcategoryPage, /noindex=\{filteredProducts\.length === 0\}/);
   assert.doesNotMatch(categoryPage, /"@type": "FAQPage"/);

@@ -3,7 +3,7 @@ import MainLayout from "../../layouts/MainLayout.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import ProductGrid from "../../components/ProductGrid.astro";
 import { getCategorySlug } from "../../lib/categories";
-import { absoluteUrl, schemaConditionUrl } from "../../lib/seo";
+import { absoluteUrl, resolveLegacyProductRedirect, schemaConditionUrl } from "../../lib/seo";
 import { inventoryVerificationMaxAgeDays, resolvePublicAvailability } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
 import { getContentBySlug, listProductSummaries, type ContentRecord } from "../../lib/server/repository";
@@ -13,6 +13,9 @@ const slug = Astro.params.slug;
 const product = slug ? await getContentBySlug(env, "products", slug) : null;
 
 if (!product) {
+  const legacyRedirect = resolveLegacyProductRedirect(slug);
+  if (legacyRedirect) return Astro.redirect(legacyRedirect, 301);
+
   return new Response("Product not found", {
     status: 404,
     headers: { "Content-Type": "text/plain; charset=utf-8" }

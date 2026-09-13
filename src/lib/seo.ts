@@ -23,6 +23,14 @@ export type ResolvedProductSeo = {
   imageAlt: string;
 };
 
+export type ProductIdentitySource = {
+  slug?: string;
+  title: string;
+  modelNumber?: string;
+  seoTitle?: string;
+  focusKeyword?: string;
+};
+
 function cleanText(value: string | undefined): string {
   return value?.replace(/\s+/g, " ").trim() ?? "";
 }
@@ -78,6 +86,81 @@ export function resolveProductSeo(source: ProductSeoSource): ResolvedProductSeo 
     focusKeyword: cleanText(source.focusKeyword) || cleanText(source.title),
     imageAlt: cleanText(source.imageAlt) || buildDefaultImageAlt(source)
   };
+}
+
+function normalizeIdentityCode(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function extractModelCodes(value: string | undefined): Array<{ raw: string; normalized: string; stem: string }> {
+  const matches = cleanText(value).match(/\b(?=[a-z0-9/-]{3,}\b)(?=[a-z0-9/-]*[a-z])(?=[a-z0-9/-]*\d)[a-z0-9]+(?:[-/][a-z0-9]+)*\b/gi) ?? [];
+  return matches.map((raw) => {
+    const normalized = normalizeIdentityCode(raw);
+    const stem = normalized.match(/^([a-z]+)\d/)?.[1]
+      ?? normalized.match(/^\d+([a-z]+)/)?.[1]
+      ?? "";
+    return { raw, normalized, stem };
+  });
+}
+
+export function findProductIdentityConflict(source: ProductIdentitySource): string | undefined {
+  const modelCodes = extractModelCodes(source.modelNumber);
+  if (modelCodes.length === 0) return undefined;
+
+  const fields = [
+    ["slug", source.slug?.replace(/-/g, " ")],
+    ["title", source.title],
+    ["SEO title", source.seoTitle],
+    ["focus keyword", source.focusKeyword]
+  ] as const;
+
+  for (const modelCode of modelCodes) {
+    for (const [fieldName, fieldValue] of fields) {
+      if (!fieldValue) continue;
+      const compactField = normalizeIdentityCode(fieldValue);
+      if (compactField.includes(modelCode.normalized)) continue;
+
+      const conflictingCode = extractModelCodes(fieldValue).find((candidate) => (
+        Boolean(modelCode.stem)
+        && candidate.stem === modelCode.stem
+        && candidate.normalized !== modelCode.normalized
+      ));
+      if (conflictingCode) {
+        return `Model ${modelCode.raw} conflicts with ${fieldName} model ${conflictingCode.raw}.`;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+export function resolveCategorySeo(source: { slug: string; value: string }): { title: string; description: string } {
+  if (source.slug === "spare-parts") {
+    return {
+      title: "Marine Spare Parts Supplier | Tahin Spare Suppliers",
+      description: "Browse marine engine and equipment spare parts by brand and model. Request specifications, availability, price and worldwide shipping details from Tahin Spare Suppliers."
+    };
+  }
+  if (source.slug === "turbocharger") {
+    return {
+      title: "Marine Turbocharger Supplier | Tahin Spare Suppliers",
+      description: "Browse marine turbocharger listings by brand and model. Request condition, specifications, availability, price and shipping details from Tahin Spare Suppliers."
+    };
+  }
+  return {
+    title: `${source.value} Supplier & Exporter | ${SITE_NAME}`,
+    description: `Browse current ${source.value} listings by brand and model. Request specifications, condition, availability, price and worldwide shipping from ${SITE_NAME}.`
+  };
+}
+
+const LEGACY_PRODUCT_REDIRECTS: Readonly<Record<string, string>> = Object.freeze({
+  "connecting-rod-for-man-b-w-5l-16-24": "/products/man-b-w-5l16-24-genuine-spare-parts-5l-6l",
+  "cummins-vta-28-d-m-marine-engine-815hp": "/products/cummins-vta28-dm-815hp-marine-engine"
+});
+
+export function resolveLegacyProductRedirect(slug: string | undefined): string | undefined {
+  const normalizedSlug = cleanText(slug).toLowerCase();
+  return normalizedSlug ? LEGACY_PRODUCT_REDIRECTS[normalizedSlug] : undefined;
 }
 
 export function toUrlSlug(value: string): string {

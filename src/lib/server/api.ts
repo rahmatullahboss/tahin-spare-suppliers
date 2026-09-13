@@ -12,6 +12,7 @@ import {
 } from "./repository";
 import { getRuntimeEnv } from "./env";
 import { notifyContentChange } from "./indexnow";
+import { findProductIdentityConflict } from "../seo";
 
 export async function readJson<T>(request: Request): Promise<T> {
   try {
@@ -47,6 +48,20 @@ async function deleteMediaKeys(bucket: R2Bucket, keys: string[]) {
       console.error("Failed to delete media object", key, error);
     }
   }
+}
+
+function validateProductIdentityInput(type: ContentType, body: ContentInput): Response | null {
+  if (type !== "products") return null;
+  const conflict = findProductIdentityConflict({
+    slug: body.slug,
+    title: body.title,
+    modelNumber: body.model_number,
+    seoTitle: body.seoTitle,
+    focusKeyword: body.focusKeyword
+  });
+  return conflict
+    ? Response.json({ error: `Product identity conflict: ${conflict}` }, { status: 400 })
+    : null;
 }
 
 function queueContentChange(
@@ -93,6 +108,9 @@ export function createListHandler(type: ContentType): APIRoute {
         return Response.json({ error: "Title is required." }, { status: 400 });
       }
 
+      const identityError = validateProductIdentityInput(type, body);
+      if (identityError) return identityError;
+
       const item = await createContent(env, type, body);
       queueContentChange(context, env, type, [item.slug]);
       return Response.json({ item });
@@ -134,6 +152,9 @@ export function createDetailHandler(type: ContentType): APIRoute {
       if (!body.title || typeof body.title !== "string" || body.title.trim().length === 0) {
         return Response.json({ error: "Title is required." }, { status: 400 });
       }
+
+      const identityError = validateProductIdentityInput(type, body);
+      if (identityError) return identityError;
 
       const item = await updateContent(env, type, id, body);
       if (!item) return Response.json({ error: "Content not found." }, { status: 404 });
