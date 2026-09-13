@@ -155,7 +155,8 @@ export function resolveCategorySeo(source: { slug: string; value: string }): { t
 
 const LEGACY_PRODUCT_REDIRECTS: Readonly<Record<string, string>> = Object.freeze({
   "connecting-rod-for-man-b-w-5l-16-24": "/products/man-b-w-5l16-24-genuine-spare-parts-5l-6l",
-  "cummins-vta-28-d-m-marine-engine-815hp": "/products/cummins-vta28-dm-815hp-marine-engine"
+  "cummins-vta-28-d-m-marine-engine-815hp": "/products/cummins-vta28-dm-815hp-marine-engine",
+  "yanmar-nz62-hydraulic-governor-for-sale": "/products/yanmar-nz61-hydraulic-governor-for-sale"
 });
 
 export function resolveLegacyProductRedirect(slug: string | undefined): string | undefined {
