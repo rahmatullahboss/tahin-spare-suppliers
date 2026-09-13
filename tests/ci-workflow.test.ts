@@ -7,6 +7,9 @@ const workflow = readFileSync(
   "utf8"
 );
 
+const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+const tiptapEditor = readFileSync(new URL("../src/components/TiptapEditor.astro", import.meta.url), "utf8");
+
 test("CI verifies pull requests and master pushes before deployment", () => {
   assert.match(workflow, /pull_request:[\s\S]*?branches:[\s\S]*?- master/);
   assert.match(workflow, /push:[\s\S]*?branches:[\s\S]*?- master/);
@@ -28,4 +31,17 @@ test("production deployment uses GitHub secrets instead of committed credentials
   assert.match(workflow, /CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/);
   assert.match(workflow, /CLOUDFLARE_ACCOUNT_ID: \$\{\{ secrets\.CLOUDFLARE_ACCOUNT_ID \}\}/);
   assert.doesNotMatch(workflow, /474078d5f990169d7dadf4e1df83214a/);
+});
+
+
+test("direct Tiptap imports are declared as direct dependencies", () => {
+  const imports = [...tiptapEditor.matchAll(/from\s+["'](@tiptap\/[^"']+)["']/g)]
+    .map((match) => match[1]);
+
+  for (const dependency of imports) {
+    assert.ok(
+      packageJson.dependencies?.[dependency],
+      `${dependency} must be declared in package.json dependencies`
+    );
+  }
 });
