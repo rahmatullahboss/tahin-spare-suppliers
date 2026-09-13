@@ -3,7 +3,7 @@ import MainLayout from '../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { getBrandLogoAsset } from '../../lib/brand-logos';
 import { shouldShowCategoryBrandDirectory } from '../../lib/category-brand-directory';
-import { toUrlSlug } from '../../lib/seo';
+import { resolveCategorySeo, toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listProductSummaries } from '../../lib/server/repository';
 import { findCategoryBySlug, listSubcategories } from '../../lib/server/categories';
@@ -37,6 +37,8 @@ const displayBrands = [...new Set(
     .filter((brand) => brand.length > 0)
 )];
 const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
+
+const categorySeo = resolveCategorySeo({ slug: currentCategory.slug, value: currentCategory.value });
 
 const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduce((groups, product) => {
   const brand = product.brand?.trim();
@@ -75,8 +77,8 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
 
 ---
 <MainLayout
-  title={`${currentCategory.value} Supplier & Exporter | Tahin Spare Suppliers`}
-  description={`Browse current ${currentCategory.value} listings by brand and model. Request specifications, condition, availability, price and worldwide shipping from Tahin Spare Suppliers.`}
+  title={categorySeo.title}
+  description={categorySeo.description}
   activeNav="products"
   noindex={categoryProducts.length === 0}
 >

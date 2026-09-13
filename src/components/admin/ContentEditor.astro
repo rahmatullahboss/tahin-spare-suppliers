@@ -845,6 +845,32 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
 
     editor.querySelector("[data-generate-seo]")?.addEventListener("click", generateSeoDefaults);
 
+    const normalizeIdentityCode = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const extractModelCodes = (value) => (String(value || '').match(/\b(?=[a-z0-9/-]{3,}\b)(?=[a-z0-9/-]*[a-z])(?=[a-z0-9/-]*\d)[a-z0-9]+(?:[-/][a-z0-9]+)*\b/gi) || []).map((raw) => {
+      const normalized = normalizeIdentityCode(raw);
+      const stem = normalized.match(/^([a-z]+)\d/)?.[1] || normalized.match(/^\d+([a-z]+)/)?.[1] || '';
+      return { raw, normalized, stem };
+    });
+    const findProductIdentityConflict = () => {
+      if (type !== 'products') return '';
+      const modelCodes = extractModelCodes(form.querySelector("[data-model]")?.value || '');
+      if (modelCodes.length === 0) return '';
+      const fields = [
+        ['slug', (form.querySelector("[data-slug]")?.value || '').replace(/-/g, ' ')],
+        ['title', form.querySelector("[data-title]")?.value || ''],
+        ['SEO title', form.querySelector("[data-seo-title]")?.value || ''],
+        ['focus keyword', form.querySelector("[data-focus-keyword]")?.value || '']
+      ];
+      for (const modelCode of modelCodes) {
+        for (const [fieldName, fieldValue] of fields) {
+          if (!fieldValue || normalizeIdentityCode(fieldValue).includes(modelCode.normalized)) continue;
+          const conflicting = extractModelCodes(fieldValue).find((candidate) => modelCode.stem && candidate.stem === modelCode.stem && candidate.normalized !== modelCode.normalized);
+          if (conflicting) return `Model ${modelCode.raw} conflicts with ${fieldName} model ${conflicting.raw}.`;
+        }
+      }
+      return '';
+    };
+
     const compressImageToWebp = async (file) => {
       const bitmap = await createImageBitmap(file);
       const canvas = document.createElement("canvas");
@@ -902,6 +928,11 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
 
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
+      const identityConflict = findProductIdentityConflict();
+      if (identityConflict) {
+        statusEl.textContent = `Cannot save: ${identityConflict} Correct the slug/title/model fields so they describe the same product.`;
+        return;
+      }
       statusEl.textContent = "Saving...";
       let nextImageUrl = existingImageUrl;
       let nextImageKey = existingImageKey;

@@ -617,3 +617,29 @@ This batch is ready for explicit staged review, fresh-origin race reconciliation
 - Homepage, robots and sitemap remain 200; IndexNow key remains deliberate 404 while unconfigured, and no placeholder GA4/Google/Bing verification value is emitted.
 
 The client-visible UI restoration is production complete. Technical SEO/backend hardening remains active rather than being rolled back with the visual layer.
+
+## 2026-09-13 — Live GSC commercial-authority hardening release candidate
+
+### Evidence and implementation
+
+- Live Search Console audit is recorded in `docs/seo/gsc-live-audit-2026-09-13.md`; query privacy filtering is material, so page totals—not hidden query clicks—drive the implementation.
+- Added exact 301 authority mappings for the historical MAN B&W 5L16/24 connecting-rod URL and the historical Cummins VTA28-DM 815HP URL. Existing current product records always win before the legacy mapping is consulted.
+- Added a conservative model-identity guard that detects conflicting model codes while accepting punctuation-equivalent identities such as `VTA-28` and `VTA28`.
+- The guard runs before admin image upload/save and is independently enforced at the authenticated product API boundary.
+- Live first-party product evidence identifies the Yanmar governor record as NZ61 across name/model/SEO fields while its current URL contains NZ62. No NZ62 facts were fabricated and no production row was mutated in this code-only batch.
+- Intended controlled remediation is to rename that record to `/products/yanmar-nz61-hydraulic-governor-for-sale` and pair the old NZ62 URL with an exact 301 in the same release.
+- Added evidence-backed metadata for the high-ranking/low-CTR Spare Parts category and commercial Turbocharger category; generic categories retain truthful fallbacks.
+- Public Product schema still omits Offer/price because there is no verified public price/currency contract.
+
+### Fresh verification evidence
+
+- Focused SEO suite: **21/21 PASS**.
+- Full test suite: **153/153 PASS**.
+- Astro production build: **PASS**.
+- `npm run seo:snapshot`: **healthy=true** at `2026-09-13T13:34:59.988Z`.
+- Production snapshot sitemap: **157 URLs** (97 product, 11 category, 38 brand, 11 static), with **0** non-200, noindex, canonical mismatch, missing canonical, off-host, or fetch errors.
+- Homepage, sitemap and robots returned **200**; IndexNow key remained deliberate **404** while unconfigured.
+- `git diff --check`: **PASS** before final documentation staging.
+- Fresh production-publish gate on 2026-09-13: **153/153 tests PASS**, `npm audit --omit=dev` **0 vulnerabilities**, Astro production build **PASS**, and `git diff --check` **PASS**.
+- Runtime dependency hardening aligns direct Tiptap imports on the `3.31.3` line, including the direct `@tiptap/extension-link` dependency, with a regression assertion that every direct Tiptap import is declared.
+- No production DB mutation, deploy, master merge or push is part of this release-candidate checkpoint.
