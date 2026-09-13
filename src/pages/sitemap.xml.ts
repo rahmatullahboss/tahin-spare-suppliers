@@ -39,6 +39,18 @@ function xmlEscape(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
+function productMatchesCategory(
+  product: SitemapSnapshot["products"][number],
+  category: string,
+  subcategory?: string
+): boolean {
+  const primaryMatch = product.category === category && (!subcategory || product.subcategory === subcategory);
+  if (primaryMatch) return true;
+  return (product.categoryAssignments ?? []).some((assignment) =>
+    assignment.category === category && (!subcategory || assignment.subcategory === subcategory)
+  );
+}
+
 export const GET: APIRoute = async (context) => {
   const env = getRuntimeEnv(context.locals);
   let snapshot: SitemapSnapshot;
@@ -77,7 +89,7 @@ export const GET: APIRoute = async (context) => {
   });
 
   categories.forEach((category) => {
-    const categoryProducts = products.filter((product) => product.category === category.canonicalValue);
+    const categoryProducts = products.filter((product) => productMatchesCategory(product, category.canonicalValue));
     if (categoryProducts.length > 0) {
       dynamicPages.push({ url: `/category/${category.slug}` });
     }
@@ -87,8 +99,8 @@ export const GET: APIRoute = async (context) => {
     const parent = categories.find((category) => category.id === subcategory.parentId);
     if (!parent) return;
 
-    const subcategoryProducts = products.filter(
-      (product) => product.category === parent.canonicalValue && product.subcategory === subcategory.value
+    const subcategoryProducts = products.filter((product) =>
+      productMatchesCategory(product, parent.canonicalValue, subcategory.value)
     );
     if (subcategoryProducts.length > 0) {
       dynamicPages.push({ url: `/category/${parent.slug}/${subcategory.slug}` });

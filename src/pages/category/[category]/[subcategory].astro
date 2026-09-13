@@ -19,8 +19,11 @@ if (!result) {
 
 const { parent, subcategory: currentSubcategory } = result;
 
-const categoryProducts = await listProductSummaries(env, { category: parent.canonicalValue, limit: 1000 });
-const filteredProducts = categoryProducts.filter((p) => p.subcategory === currentSubcategory.value);
+const filteredProducts = await listProductSummaries(env, {
+  category: parent.canonicalValue,
+  subcategory: currentSubcategory.value,
+  limit: 1000
+});
 const PRODUCT_PAGE_SIZE = 12;
 const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCT_PAGE_SIZE));
 

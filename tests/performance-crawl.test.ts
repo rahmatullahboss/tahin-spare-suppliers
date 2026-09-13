@@ -16,7 +16,7 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   const inventoryCombination = await source("src/pages/inventory/[brand]-[category].astro");
 
   assert.match(repository, /export async function listProductSummaries/);
-  assert.match(repository, /SELECT id, slug, name, short_description, image_url, updated_at, category, subcategory, brand, model_number, part_number, image_alt FROM products/);
+  assert.match(repository, /SELECT p\.id, p\.slug, p\.name, p\.short_description, p\.image_url, p\.updated_at, p\.category, p\.subcategory, p\.brand, p\.model_number, p\.part_number, p\.image_alt FROM products p/);
   assert.match(homepage, /listAllCategories\(env\)/);
   assert.doesNotMatch(homepage, /listProductSummaries/);
   assert.match(productsHub, /listAllCategories\(env\)/);
@@ -25,7 +25,7 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   assert.match(brandsHub, /listBrands\(env\)/);
   assert.doesNotMatch(brandsHub, /listProductSummaries/);
   assert.match(category, /listProductSummaries\(env, \{ category: currentCategory\.canonicalValue, limit: 1000 \}\)/);
-  assert.match(subcategory, /listProductSummaries\(env, \{ category: parent\.canonicalValue, limit: 1000 \}\)/);
+  assert.match(subcategory, /listProductSummaries\(env, \{[\s\S]*category: parent\.canonicalValue,[\s\S]*subcategory: currentSubcategory\.value,[\s\S]*limit: 1000[\s\S]*\}\)/);
   assert.match(brand, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
   assert.match(product, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
   assert.match(inventoryCombination, /listProductSummaries\(env, \{ category: currentCategory\.value, limit: 1000 \}\)/);
@@ -37,7 +37,8 @@ test("sitemap batches database collections into one Neon transaction", async () 
   const db = await source("src/lib/server/db.ts");
 
   assert.match(sitemapData, /sql\.transaction\(/);
-  assert.match(sitemapData, /SELECT slug, updated_at, brand, category, subcategory FROM products/);
+  assert.match(sitemapData, /SELECT p\.slug, p\.updated_at, p\.brand, p\.category, p\.subcategory, COALESCE\(/);
+  assert.match(sitemapData, /FROM product_category_assignments pca/);
   assert.match(sitemapData, /SELECT slug, updated_at FROM parts/);
   assert.match(sitemapData, /SELECT slug, updated_at FROM blog_posts/);
   assert.match(sitemapData, /FROM categories ORDER BY/);

@@ -9,6 +9,7 @@ export type SitemapContentRecord = {
   brand?: string;
   category?: string;
   subcategory?: string;
+  categoryAssignments?: { category: string; subcategory?: string }[];
 };
 
 export type SitemapSnapshot = {
@@ -23,6 +24,18 @@ function asString(value: unknown): string {
   return typeof value === "string" ? value : value == null ? "" : String(value);
 }
 
+function parseCategoryAssignments(value: unknown): { category: string; subcategory?: string }[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+    const record = item as Record<string, unknown>;
+    const category = asString(record.category).trim();
+    if (!category) return [];
+    const subcategory = asString(record.subcategory).trim();
+    return [{ category, ...(subcategory ? { subcategory } : {}) }];
+  });
+}
+
 function mapContentRow(row: Record<string, unknown>, includeProductFields = false): SitemapContentRecord {
   const record: SitemapContentRecord = {
     slug: asString(row.slug),
@@ -33,6 +46,7 @@ function mapContentRow(row: Record<string, unknown>, includeProductFields = fals
     record.brand = canonicalizeBrand(row.brand);
     record.category = asString(row.category);
     record.subcategory = asString(row.subcategory);
+    record.categoryAssignments = parseCategoryAssignments(row.category_assignments);
   }
 
   return record;
@@ -54,7 +68,12 @@ export async function getSitemapSnapshot(env: RuntimeEnv): Promise<SitemapSnapsh
   await ensureSchema(env);
   const sql = getDb(env);
   const [productRows, partRows, blogRows, categoryRows] = await sql.transaction([
-    sql`SELECT slug, updated_at, brand, category, subcategory FROM products ORDER BY updated_at DESC`,
+    sql`SELECT p.slug, p.updated_at, p.brand, p.category, p.subcategory, COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('category', pca.category_name, 'subcategory', pca.subcategory_name) ORDER BY pca.category_name)
+      FROM product_category_assignments pca
+      WHERE pca.product_id = p.id
+    ), '[]'::jsonb) AS category_assignments
+    FROM products p ORDER BY p.updated_at DESC`,
     sql`SELECT slug, updated_at FROM parts ORDER BY updated_at DESC`,
     sql`SELECT slug, updated_at FROM blog_posts ORDER BY updated_at DESC`,
     sql`SELECT id, name, slug, image_url, image_key, parent_id, created_at FROM categories ORDER BY name`,

@@ -87,6 +87,12 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
                 <option value="">-- None --</option>
               </select>
             </div>
+            <div class="field additional-categories-field">
+              <label>Additional Categories</label>
+              <div class="additional-categories" data-additional-categories></div>
+              <button type="button" class="btn-add-category" data-additional-category-add>+ Add another category</button>
+              <small class="field-hint">Use this when the same product should appear in more than one category. Repeating the primary category is ignored.</small>
+            </div>
             <div class="field-row">
               <div class="field">
                 <label>Brand</label>
@@ -239,6 +245,8 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
     const galleryStatus = editor.querySelector("[data-gallery-status]");
     const countEl = editor.querySelector("[data-count]");
     const searchInput = editor.querySelector("[data-search]");
+    const additionalCategoriesEl = editor.querySelector("[data-additional-categories]");
+    const additionalCategoryAddBtn = editor.querySelector("[data-additional-category-add]");
     let selectedFile = null;
     let selectedPreviewUrl = "";
     let existingImageUrl = "";
@@ -421,6 +429,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
           subcategorySelect.remove(1);
         }
       }
+      if (type === 'products') renderAdditionalCategories([]);
       if (uploadStatus) uploadStatus.textContent = "";
       drawPreview("");
     };
@@ -439,6 +448,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
             subcategoryEl.value = item.subcategory;
           }
         }, 50);
+        renderAdditionalCategories(Array.isArray(item.additionalCategories) ? item.additionalCategories : []);
         const brandEl = editor.querySelector("[data-brand]");
         if (brandEl) brandEl.value = item.brand || '';
         const modelEl = editor.querySelector("[data-model]");
@@ -685,7 +695,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       const selectedCategory = categorySelect.value;
 
       // Find category ID from categoryOptions
-      const categoryOption = categoryOptions?.find(c => c.value === selectedCategory);
+      const categoryOption = categoryOptions?.find(c => (c.canonicalValue || c.value) === selectedCategory);
       const categoryId = categoryOption?.id;
 
       // Filter subcategories for this parent
@@ -713,6 +723,84 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
     };
 
     categorySelect?.addEventListener("change", updateSubcategoryDropdown);
+
+    const canonicalCategoryValue = (category) => category?.canonicalValue || category?.value || "";
+    const subcategoriesForCategory = (categoryValue) => {
+      const categoryOption = categoryOptions?.find((category) => canonicalCategoryValue(category) === categoryValue);
+      return categoryOption?.id ? subcategories.filter((subcategory) => subcategory.parentId === categoryOption.id) : [];
+    };
+
+    const createAdditionalCategoryRow = (assignment = {}) => {
+      const row = document.createElement("div");
+      row.className = "additional-category-row";
+      row.dataset.additionalCategoryRow = "";
+
+      const categoryInput = document.createElement("select");
+      categoryInput.dataset.additionalCategory = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "-- Select category --";
+      categoryInput.appendChild(placeholder);
+      categoryOptions.forEach((category) => {
+        const option = document.createElement("option");
+        option.value = canonicalCategoryValue(category);
+        option.textContent = category.value;
+        categoryInput.appendChild(option);
+      });
+
+      const subcategoryInput = document.createElement("select");
+      subcategoryInput.dataset.additionalSubcategory = "";
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "btn-remove-category";
+      removeButton.textContent = "Remove";
+
+      const refreshSubcategories = (selected = "") => {
+        subcategoryInput.replaceChildren();
+        const none = document.createElement("option");
+        none.value = "";
+        none.textContent = "-- No subcategory --";
+        subcategoryInput.appendChild(none);
+        const matches = subcategoriesForCategory(categoryInput.value);
+        matches.forEach((subcategory) => {
+          const option = document.createElement("option");
+          option.value = subcategory.name;
+          option.textContent = subcategory.name;
+          subcategoryInput.appendChild(option);
+        });
+        subcategoryInput.disabled = matches.length === 0;
+        if (selected && matches.some((subcategory) => subcategory.name === selected)) {
+          subcategoryInput.value = selected;
+        }
+      };
+
+      categoryInput.value = assignment.category || "";
+      refreshSubcategories(assignment.subcategory || "");
+      categoryInput.addEventListener("change", () => refreshSubcategories());
+      removeButton.addEventListener("click", () => row.remove());
+      row.append(categoryInput, subcategoryInput, removeButton);
+      return row;
+    };
+
+    const renderAdditionalCategories = (assignments = []) => {
+      if (!additionalCategoriesEl) return;
+      additionalCategoriesEl.replaceChildren();
+      assignments.forEach((assignment) => additionalCategoriesEl.appendChild(createAdditionalCategoryRow(assignment)));
+    };
+
+    const collectAdditionalCategories = () => {
+      if (!additionalCategoriesEl) return [];
+      return Array.from(additionalCategoriesEl.querySelectorAll("[data-additional-category-row]"))
+        .map((row) => ({
+          category: row.querySelector("[data-additional-category]")?.value?.trim() || "",
+          subcategory: row.querySelector("[data-additional-subcategory]")?.value?.trim() || ""
+        }))
+        .filter((assignment) => assignment.category);
+    };
+
+    additionalCategoryAddBtn?.addEventListener("click", () => {
+      additionalCategoriesEl?.appendChild(createAdditionalCategoryRow());
+    });
 
     const truncateSeoText = (value, maxLength) => {
       const normalized = String(value || '').replace(/\s+/g, ' ').trim();
@@ -866,6 +954,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
           ...(type === 'products' ? {
             category: form.querySelector("[data-category]")?.value || "",
             subcategory: form.querySelector("[data-subcategory]")?.value || "",
+            additionalCategories: collectAdditionalCategories(),
             brand: form.querySelector("[data-brand]")?.value || "",
             model_number: form.querySelector("[data-model]")?.value || "",
             partNumber: form.querySelector("[data-part-number]")?.value || "",
@@ -1179,6 +1268,12 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
   .admin-main .seo-settings-header p { margin: 0; color: #64748b; font-size: 0.8rem; line-height: 1.5; }
   .admin-main .btn-seo-defaults { flex: 0 0 auto; min-height: 40px; padding: 0.55rem 0.8rem; border: 1px solid #bfdbfe; border-radius: 8px; background: #fff; color: #1d4ed8; font-weight: 700; cursor: pointer; }
   .admin-main .field-hint { display: block; margin-top: 0.35rem; color: #64748b; line-height: 1.45; }
+  .admin-main .additional-categories { display: grid; gap: 0.5rem; margin-bottom: 0.55rem; }
+  .admin-main .additional-category-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 0.5rem; align-items: center; }
+  .admin-main .additional-category-row select { width: 100%; min-width: 0; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.55rem 0.65rem; background: #fff; font: inherit; font-size: 0.82rem; }
+  .admin-main .btn-add-category, .admin-main .btn-remove-category { min-height: 38px; border: 1px solid #cbd5e1; border-radius: 0.5rem; background: #fff; color: #334155; font-weight: 700; cursor: pointer; }
+  .admin-main .btn-add-category { width: 100%; }
+  .admin-main .btn-remove-category { padding: 0 0.7rem; color: #b91c1c; border-color: #fecaca; background: #fff7f7; }
   @media (max-width: 640px) { .admin-main .seo-settings-header { flex-direction: column; } .admin-main .btn-seo-defaults { width: 100%; } }
   .admin-main .preview { margin-top: 0.75rem; }
   .admin-main .gallery-uploader { margin-top: 1rem; padding: 0.9rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
@@ -1244,6 +1339,15 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
     .admin-main .field-row {
       grid-template-columns: 1fr;
       gap: 0;
+    }
+    .admin-main .additional-category-row {
+      grid-template-columns: 1fr;
+    }
+    .admin-main .additional-category-row select,
+    .admin-main .btn-remove-category,
+    .admin-main .btn-add-category {
+      min-height: 44px;
+      font-size: 16px;
     }
     .admin-main .field input,
     .admin-main .field textarea,

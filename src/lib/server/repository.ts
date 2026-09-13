@@ -32,6 +32,11 @@ export type ContentImage = {
   alt: string;
 };
 
+export type ProductCategoryAssignment = {
+  category: string;
+  subcategory?: string;
+};
+
 export type ContentRecord = {
   id: string;
   slug: string;
@@ -60,6 +65,7 @@ export type ContentRecord = {
   focusKeyword?: string;
   imageAlt?: string;
   relatedProducts?: string[];
+  additionalCategories?: ProductCategoryAssignment[];
 };
 
 export type ContentInput = {
@@ -87,6 +93,7 @@ export type ContentInput = {
   focusKeyword?: string;
   imageAlt?: string;
   relatedProducts?: string[];
+  additionalCategories?: ProductCategoryAssignment[];
 };
 
 type NormalizedProductFields = {
@@ -107,6 +114,7 @@ type NormalizedProductFields = {
   focusKeyword: string;
   imageAlt: string;
   relatedProducts: string;
+  additionalCategories: ProductCategoryAssignment[];
 };
 
 function asString(value: unknown): string {
@@ -153,9 +161,33 @@ export function normalizeGalleryImages(value: unknown): ContentImage[] {
   return images;
 }
 
+function normalizeProductCategoryAssignments(
+  value: unknown,
+  primaryCategory: string
+): ProductCategoryAssignment[] {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set<string>();
+  const assignments: ProductCategoryAssignment[] = [];
+
+  for (const item of value.slice(0, 12)) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const record = item as Record<string, unknown>;
+    const category = asString(record.category).replace(/[\u0000-\u001F]/g, "").trim().slice(0, 160);
+    if (!category || category.toLowerCase() === primaryCategory.toLowerCase()) continue;
+    const key = category.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const subcategory = asString(record.subcategory).replace(/[\u0000-\u001F]/g, "").trim().slice(0, 160);
+    assignments.push({ category, ...(subcategory ? { subcategory } : {}) });
+  }
+
+  return assignments;
+}
+
 function normalizeProductFields(input: ContentInput): NormalizedProductFields {
   const category = input.category?.trim() || "Uncategorized";
   const subcategory = input.subcategory?.trim() ?? "";
+  const additionalCategories = normalizeProductCategoryAssignments(input.additionalCategories, category);
   const brand = canonicalizeBrand(input.brand);
   const modelNumber = input.model_number?.trim() ?? "";
   const partNumber = input.partNumber?.trim() ?? "";
@@ -195,8 +227,24 @@ function normalizeProductFields(input: ContentInput): NormalizedProductFields {
     metaDescription: seo.metaDescription,
     focusKeyword: seo.focusKeyword,
     imageAlt: seo.imageAlt,
-    relatedProducts: stringifyRelatedProductSlugs(input.relatedProducts)
+    relatedProducts: stringifyRelatedProductSlugs(input.relatedProducts),
+    additionalCategories
   };
+}
+
+async function syncProductCategoryAssignments(
+  sql: ReturnType<typeof getDb>,
+  productId: string,
+  assignments: ProductCategoryAssignment[]
+) {
+  const statements = [
+    sql`DELETE FROM product_category_assignments WHERE product_id = ${productId}`,
+    ...assignments.map((assignment) => sql`
+      INSERT INTO product_category_assignments (product_id, category_name, subcategory_name)
+      VALUES (${productId}, ${assignment.category}, ${assignment.subcategory ?? ""})
+    `)
+  ];
+  await sql.transaction(statements);
 }
 
 function mapRecord(type: ContentType, row: Record<string, unknown>): ContentRecord {
@@ -238,6 +286,10 @@ function mapRecord(type: ContentType, row: Record<string, unknown>): ContentReco
     ...commonRecord,
     category: asString(row.category) || "Uncategorized",
     subcategory: asString(row.subcategory),
+    additionalCategories: normalizeProductCategoryAssignments(
+      row.additional_categories,
+      asString(row.category) || "Uncategorized"
+    ),
     brand,
     model_number: modelNumber,
     partNumber,
@@ -268,15 +320,21 @@ export async function listContent(
   const limit = normalizeContentLimit(options?.limit);
   const offset = (page - 1) * limit;
 
-  let query = `SELECT * FROM ${config.table}`;
+  const productSelect = `SELECT p.*, COALESCE((
+    SELECT jsonb_agg(jsonb_build_object('category', pca.category_name, 'subcategory', pca.subcategory_name) ORDER BY pca.category_name)
+    FROM product_category_assignments pca
+    WHERE pca.product_id = p.id
+  ), '[]'::jsonb) AS additional_categories FROM products p`;
+  let query = type === "products" ? productSelect : `SELECT * FROM ${config.table}`;
   const params: (string | number)[] = [];
+  const columnPrefix = type === "products" ? "p." : "";
 
   if (options?.search) {
-    query += ` WHERE ${config.titleColumn} ILIKE $1 OR ${config.excerptColumn} ILIKE $1`;
+    query += ` WHERE ${columnPrefix}${config.titleColumn} ILIKE $1 OR ${columnPrefix}${config.excerptColumn} ILIKE $1`;
     params.push(`%${options.search}%`);
   }
 
-  query += ` ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
+  query += ` ORDER BY ${columnPrefix}updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
   const rows = await sql.query(query, params.length ? params : undefined);
   return rows.map((row) => mapRecord(type, row));
@@ -284,7 +342,7 @@ export async function listContent(
 
 export async function listProductSummaries(
   env: RuntimeEnv,
-  options?: { page?: number; limit?: number; category?: string }
+  options?: { page?: number; limit?: number; category?: string; subcategory?: string }
 ): Promise<ContentRecord[]> {
   await ensureSchema(env);
   const sql = getDb(env);
@@ -292,14 +350,29 @@ export async function listProductSummaries(
   const limit = normalizeContentLimit(options?.limit);
   const offset = (page - 1) * limit;
   const params: string[] = [];
-  let query = "SELECT id, slug, name, short_description, image_url, updated_at, category, subcategory, brand, model_number, part_number, image_alt FROM products";
+  let query = "SELECT p.id, p.slug, p.name, p.short_description, p.image_url, p.updated_at, p.category, p.subcategory, p.brand, p.model_number, p.part_number, p.image_alt FROM products p";
 
   if (options?.category) {
-    query += " WHERE category = $1";
     params.push(options.category);
+    const categoryParam = `$${params.length}`;
+    let primaryMatch = `p.category = ${categoryParam}`;
+    let additionalMatch = `pca.category_name = ${categoryParam}`;
+
+    if (options?.subcategory) {
+      params.push(options.subcategory);
+      const subcategoryParam = `$${params.length}`;
+      primaryMatch += ` AND p.subcategory = ${subcategoryParam}`;
+      additionalMatch += ` AND pca.subcategory_name = ${subcategoryParam}`;
+    }
+
+    query += ` WHERE ((${primaryMatch}) OR EXISTS (
+      SELECT 1
+      FROM product_category_assignments pca
+      WHERE pca.product_id = p.id AND ${additionalMatch}
+    ))`;
   }
 
-  query += ` ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
+  query += ` ORDER BY p.updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
   const rows = await sql.query(query, params.length ? params : undefined);
   return rows.map((row) => mapRecord("products", row));
 }
@@ -340,7 +413,13 @@ export async function getContentBySlug(env: RuntimeEnv, type: ContentType, slug:
   await ensureSchema(env);
   const sql = getDb(env);
   const { table } = CONTENT_TABLES[type];
-  const rows = await sql.query(`SELECT * FROM ${table} WHERE slug = $1 LIMIT 1`, [slug]);
+  const query = type === "products"
+    ? `SELECT p.*, COALESCE((
+        SELECT jsonb_agg(jsonb_build_object('category', pca.category_name, 'subcategory', pca.subcategory_name) ORDER BY pca.category_name)
+        FROM product_category_assignments pca WHERE pca.product_id = p.id
+      ), '[]'::jsonb) AS additional_categories FROM products p WHERE p.slug = $1 LIMIT 1`
+    : `SELECT * FROM ${table} WHERE slug = $1 LIMIT 1`;
+  const rows = await sql.query(query, [slug]);
   return rows[0] ? mapRecord(type, rows[0]) : null;
 }
 
@@ -348,7 +427,13 @@ export async function getContentById(env: RuntimeEnv, type: ContentType, id: str
   await ensureSchema(env);
   const sql = getDb(env);
   const { table } = CONTENT_TABLES[type];
-  const rows = await sql.query(`SELECT * FROM ${table} WHERE id = $1 LIMIT 1`, [id]);
+  const query = type === "products"
+    ? `SELECT p.*, COALESCE((
+        SELECT jsonb_agg(jsonb_build_object('category', pca.category_name, 'subcategory', pca.subcategory_name) ORDER BY pca.category_name)
+        FROM product_category_assignments pca WHERE pca.product_id = p.id
+      ), '[]'::jsonb) AS additional_categories FROM products p WHERE p.id = $1 LIMIT 1`
+    : `SELECT * FROM ${table} WHERE id = $1 LIMIT 1`;
+  const rows = await sql.query(query, [id]);
   return rows[0] ? mapRecord(type, rows[0]) : null;
 }
 
@@ -387,8 +472,9 @@ export async function createContent(env: RuntimeEnv, type: ContentType, input: C
         product.metaDescription, product.focusKeyword, product.imageAlt, product.relatedProducts
       ]
     );
+    await syncProductCategoryAssignments(sql, id, product.additionalCategories);
     if (product.brand) await ensureBrandExists(env, product.brand);
-    return mapRecord(type, rows[0]);
+    return mapRecord(type, { ...rows[0], additional_categories: product.additionalCategories });
   }
 
   const rows = await sql.query(
@@ -458,8 +544,9 @@ export async function updateContent(
         product.metaDescription, product.focusKeyword, product.imageAlt, product.relatedProducts, id
       ]
     );
+    if (rows[0]) await syncProductCategoryAssignments(sql, id, product.additionalCategories);
     if (rows[0] && product.brand) await ensureBrandExists(env, product.brand);
-    return rows[0] ? mapRecord(type, rows[0]) : null;
+    return rows[0] ? mapRecord(type, { ...rows[0], additional_categories: product.additionalCategories }) : null;
   }
 
   const rows = await sql.query(

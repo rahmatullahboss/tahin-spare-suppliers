@@ -146,6 +146,16 @@ CREATE INDEX IF NOT EXISTS idx_category_presentations_order ON category_presenta
 ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory TEXT NOT NULL DEFAULT '';
 CREATE INDEX IF NOT EXISTS idx_products_subcategory ON products(subcategory);
 
+CREATE TABLE IF NOT EXISTS product_category_assignments (
+  product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  category_name TEXT NOT NULL,
+  subcategory_name TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (product_id, category_name)
+);
+CREATE INDEX IF NOT EXISTS idx_product_category_assignments_category
+  ON product_category_assignments(category_name, subcategory_name);
+
 ALTER TABLE products ADD COLUMN IF NOT EXISTS part_number TEXT NOT NULL DEFAULT '';
 ALTER TABLE products ADD COLUMN IF NOT EXISTS condition TEXT NOT NULL DEFAULT '';
 ALTER TABLE products ADD COLUMN IF NOT EXISTS availability TEXT NOT NULL DEFAULT '';
