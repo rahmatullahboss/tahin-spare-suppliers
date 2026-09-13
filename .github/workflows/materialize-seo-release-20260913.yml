@@ -1,0 +1,64 @@
+name: Materialize SEO release 2026-09-13
+
+on:
+  push:
+    branches:
+      - release-seo-gsc-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.2
+
+      - name: Set exact npm version
+        run: npm install --global npm@10.9.8
+
+      - name: Decode verified release patch
+        shell: bash
+        run: |
+          test "$(sha256sum .release/tahin-release-20260913.patch.gz.b64 | awk '{print $1}')" = "168f5776a793d69172c12982ab262406479d6b2dd940e715f141d89c6bf2b727"
+          base64 -d .release/tahin-release-20260913.patch.gz.b64 | gzip -dc > /tmp/tahin-release.patch
+          test "$(sha256sum /tmp/tahin-release.patch | awk '{print $1}')" = "4aaf8cee0d969e174e34ac7b35763547e9690e261404ac6827329bffc55bf509"
+
+      - name: Reconstruct exact release tree
+        shell: bash
+        run: |
+          git checkout -B release-seo-gsc-materialized-20260913 f5cbc2dcf9dda765cb832eee53e8ad988da666bd
+          git apply --index /tmp/tahin-release.patch
+          npm install --package-lock-only --ignore-scripts
+          test "$(git hash-object package-lock.json)" = "b3c5bbdc55291a26a0fc112d36a13084e4509fa2"
+          git add package-lock.json
+          test "$(git write-tree)" = "ec8f2407f8ad8292ae4eb447ee1ba44f9f97ac34"
+          git diff --cached --check
+
+      - name: Verify reconstructed release
+        shell: bash
+        run: |
+          npm ci
+          npm test
+          npm audit --omit=dev
+          npm run build
+          npx wrangler deploy --dry-run
+          test -z "$(git status --porcelain --untracked-files=no | grep '^ [MADRCU]')"
+
+      - name: Commit and publish materialized branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "release(seo): publish verified GSC hardening"
+          test "$(git rev-parse HEAD^{tree})" = "ec8f2407f8ad8292ae4eb447ee1ba44f9f97ac34"
+          git push origin HEAD:refs/heads/release-seo-gsc-materialized-20260913
