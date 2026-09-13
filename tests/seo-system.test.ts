@@ -69,6 +69,10 @@ test("legacy product redirects preserve exact historical commercial URL authorit
     resolveLegacyProductRedirect("cummins-vta-28-d-m-marine-engine-815hp"),
     "/products/cummins-vta28-dm-815hp-marine-engine"
   );
+  assert.equal(
+    resolveLegacyProductRedirect("yanmar-nz62-hydraulic-governor-for-sale"),
+    "/products/yanmar-nz61-hydraulic-governor-for-sale"
+  );
   assert.equal(resolveLegacyProductRedirect("cummins-vta28-dm-815hp-marine-engine"), undefined);
   assert.equal(resolveLegacyProductRedirect("unknown-product"), undefined);
 });
