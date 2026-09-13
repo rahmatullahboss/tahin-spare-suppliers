@@ -37,14 +37,22 @@ jobs:
           base64 -d /tmp/tahin-release.patch.gz.b64 | gzip -dc > /tmp/tahin-release.patch
           test "$(sha256sum /tmp/tahin-release.patch | awk '{print $1}')" = "4aaf8cee0d969e174e34ac7b35763547e9690e261404ac6827329bffc55bf509"
 
+      - name: Decode verified lockfile patch
+        shell: bash
+        run: |
+          cat .release/lock-chunks/chunk-* > /tmp/tahin-lock.patch.gz.b64
+          test "$(wc -c < /tmp/tahin-lock.patch.gz.b64)" = "37584"
+          test "$(sha256sum /tmp/tahin-lock.patch.gz.b64 | awk '{print $1}')" = "7bdf29fdc12c565f196d573e9f75c914cb3793fc58e31117005ab6eed33d7ae5"
+          base64 -d /tmp/tahin-lock.patch.gz.b64 | gzip -dc > /tmp/tahin-lock.patch
+          test "$(sha256sum /tmp/tahin-lock.patch | awk '{print $1}')" = "59a9575344b56d9b4a0b69746ca1690928ce416c6f267132977a1af1401205f4"
+
       - name: Reconstruct exact release tree
         shell: bash
         run: |
           git checkout -B release-seo-gsc-materialized-20260913 f5cbc2dcf9dda765cb832eee53e8ad988da666bd
           git apply --index /tmp/tahin-release.patch
-          npm install --package-lock-only --ignore-scripts
+          git apply --index /tmp/tahin-lock.patch
           test "$(git hash-object package-lock.json)" = "b3c5bbdc55291a26a0fc112d36a13084e4509fa2"
-          git add package-lock.json
           test "$(git write-tree)" = "ec8f2407f8ad8292ae4eb447ee1ba44f9f97ac34"
           git diff --cached --check
 
