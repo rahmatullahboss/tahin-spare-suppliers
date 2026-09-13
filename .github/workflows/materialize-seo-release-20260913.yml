@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - release-seo-gsc-20260913
+    paths:
+      - .release/ready
 
 permissions:
   contents: write
@@ -29,8 +31,10 @@ jobs:
       - name: Decode verified release patch
         shell: bash
         run: |
-          test "$(sha256sum .release/tahin-release-20260913.patch.gz.b64 | awk '{print $1}')" = "168f5776a793d69172c12982ab262406479d6b2dd940e715f141d89c6bf2b727"
-          base64 -d .release/tahin-release-20260913.patch.gz.b64 | gzip -dc > /tmp/tahin-release.patch
+          cat .release/chunks/chunk-* > /tmp/tahin-release.patch.gz.b64
+          test "$(wc -c < /tmp/tahin-release.patch.gz.b64)" = "17196"
+          test "$(sha256sum /tmp/tahin-release.patch.gz.b64 | awk '{print $1}')" = "168f5776a793d69172c12982ab262406479d6b2dd940e715f141d89c6bf2b727"
+          base64 -d /tmp/tahin-release.patch.gz.b64 | gzip -dc > /tmp/tahin-release.patch
           test "$(sha256sum /tmp/tahin-release.patch | awk '{print $1}')" = "4aaf8cee0d969e174e34ac7b35763547e9690e261404ac6827329bffc55bf509"
 
       - name: Reconstruct exact release tree
