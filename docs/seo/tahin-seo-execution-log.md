@@ -634,10 +634,12 @@ The client-visible UI restoration is production complete. Technical SEO/backend 
 ### Fresh verification evidence
 
 - Focused SEO suite: **21/21 PASS**.
-- Full test suite: **152/152 PASS**.
+- Full test suite: **153/153 PASS**.
 - Astro production build: **PASS**.
 - `npm run seo:snapshot`: **healthy=true** at `2026-09-13T13:34:59.988Z`.
 - Production snapshot sitemap: **157 URLs** (97 product, 11 category, 38 brand, 11 static), with **0** non-200, noindex, canonical mismatch, missing canonical, off-host, or fetch errors.
 - Homepage, sitemap and robots returned **200**; IndexNow key remained deliberate **404** while unconfigured.
 - `git diff --check`: **PASS** before final documentation staging.
+- Fresh production-publish gate on 2026-09-13: **153/153 tests PASS**, `npm audit --omit=dev` **0 vulnerabilities**, Astro production build **PASS**, and `git diff --check` **PASS**.
+- Runtime dependency hardening aligns direct Tiptap imports on the `3.31.3` line, including the direct `@tiptap/extension-link` dependency, with a regression assertion that every direct Tiptap import is declared.
 - No production DB mutation, deploy, master merge or push is part of this release-candidate checkpoint.

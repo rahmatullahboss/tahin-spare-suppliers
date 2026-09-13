@@ -25,51 +25,51 @@
 
 **Files:** `src/lib/seo.ts`, `src/pages/products/[slug].astro`, `tests/seo-system.test.ts`
 
-- [ ] Add failing unit assertions for `resolveLegacyProductRedirect()` covering the MAN connecting-rod and Cummins VTA28 historical slugs, plus unknown/current slug fallthrough.
-- [ ] Run `node --experimental-strip-types --test tests/seo-system.test.ts` and confirm the helper is missing.
-- [ ] Implement the minimal exact mapping in `src/lib/seo.ts`.
-- [ ] Add a failing source assertion proving the product route consults the helper only after current-product lookup misses and before returning 404.
-- [ ] Wire `Astro.redirect(canonicalPath, 301)` for an allowlisted miss and rerun the focused test.
+- [x] Add failing unit assertions for `resolveLegacyProductRedirect()` covering the MAN connecting-rod and Cummins VTA28 historical slugs, plus unknown/current slug fallthrough.
+- [x] Run `node --experimental-strip-types --test tests/seo-system.test.ts` and confirm the helper is missing.
+- [x] Implement the minimal exact mapping in `src/lib/seo.ts`.
+- [x] Add a failing source assertion proving the product route consults the helper only after current-product lookup misses and before returning 404.
+- [x] Wire `Astro.redirect(canonicalPath, 301)` for an allowlisted miss and rerun the focused test.
 
 ### Task 2: Product identity conflict guard
 
 **Files:** `src/lib/seo.ts`, `src/components/admin/ContentEditor.astro`, `tests/seo-system.test.ts`
 
-- [ ] Add failing tests for a pure identity-conflict helper: NZ61 title/model vs `nz62` slug must fail; `VTA-28` vs `vta28` must pass; missing model must not invent a conflict.
-- [ ] Implement normalized model-token comparison conservatively in `src/lib/seo.ts`.
-- [ ] Add failing CMS source assertions proving validation runs before media upload/save.
-- [ ] Mirror the pure guard in the browser editor or expose equivalent deterministic logic; block save with an actionable message before uploads.
-- [ ] Rerun the focused SEO test.
+- [x] Add failing tests for a pure identity-conflict helper: NZ61 title/model vs `nz62` slug must fail; `VTA-28` vs `vta28` must pass; missing model must not invent a conflict.
+- [x] Implement normalized model-token comparison conservatively in `src/lib/seo.ts`.
+- [x] Add failing CMS source assertions proving validation runs before media upload/save.
+- [x] Mirror the pure guard in the browser editor or expose equivalent deterministic logic; block save with an actionable message before uploads.
+- [x] Rerun the focused SEO test.
 
 ### Task 3: Evidence-backed category snippets
 
 **Files:** `src/lib/seo.ts`, `src/pages/category/[category].astro`, `tests/seo-system.test.ts`
 
-- [ ] Add failing tests for `resolveCategorySeo()` covering Spare Parts, Turbocharger, and generic fallback.
-- [ ] Implement concise truthful title/description overrides without inventory claims.
-- [ ] Update the category page to use the helper for title and description.
-- [ ] Run focused SEO tests and keep empty-category `noindex` behavior unchanged.
+- [x] Add failing tests for `resolveCategorySeo()` covering Spare Parts, Turbocharger, and generic fallback.
+- [x] Implement concise truthful title/description overrides without inventory claims.
+- [x] Update the category page to use the helper for title and description.
+- [x] Run focused SEO tests and keep empty-category `noindex` behavior unchanged.
 
 ### Task 4: Production data remediation contract
 
 **Files:** `docs/seo/gsc-live-audit-2026-09-13.md`, `docs/seo/tahin-seo-execution-log.md`
 
-- [ ] Record the read-only Neon evidence that the NZ62 slug record is actually NZ61 across name/model/SEO fields.
-- [ ] Define the intended canonical NZ61 slug and the required old-NZ62 301 mapping, but do not mutate production data inside a code-only commit.
-- [ ] Record that the MAN replacement record contains the connecting-rod specification, making the redirect evidence-based.
-- [ ] Record Search Console sitemap warnings and the representative URL Inspection results.
+- [x] Record the read-only Neon evidence that the NZ62 slug record is actually NZ61 across name/model/SEO fields.
+- [x] Define the intended canonical NZ61 slug and the required old-NZ62 301 mapping, but do not mutate production data inside a code-only commit.
+- [x] Record that the MAN replacement record contains the connecting-rod specification, making the redirect evidence-based.
+- [x] Record Search Console sitemap warnings and the representative URL Inspection results.
 
 ### Task 5: Full verification and evidence
 
 **Files:** all changed files
 
-- [ ] Run `npm test`.
-- [ ] Run `npm run build`.
-- [ ] Run `npm run seo:snapshot` against its configured production target.
-- [ ] Run `git diff --check`.
-- [ ] Review the final diff for unrelated changes and truthful claims.
-- [ ] Append implementation/test evidence to `docs/seo/tahin-seo-execution-log.md`.
-- [ ] Commit the completed implementation on the isolated branch.
+- [x] Run `npm test`.
+- [x] Run `npm run build`.
+- [x] Run `npm run seo:snapshot` against its configured production target.
+- [x] Run `git diff --check`.
+- [x] Review the final diff for unrelated changes and truthful claims.
+- [x] Append implementation/test evidence to `docs/seo/tahin-seo-execution-log.md`.
+- [x] Commit the completed implementation on the isolated branch.
 
 ## Post-deploy checks
 
