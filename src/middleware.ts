@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { env } from 'cloudflare:workers';
+import { getCanonicalRedirectUrl } from './lib/canonical-url';
 
 const RASTER_CONTENT_TYPES = new Map([
   ['.jpg', 'image/jpeg'],
@@ -31,6 +32,14 @@ function addSecurityHeaders(response: Response): Response {
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const url = new URL(context.request.url);
+  const canonicalRedirectUrl = getCanonicalRedirectUrl(url);
+  if (canonicalRedirectUrl) {
+    return addSecurityHeaders(new Response(null, {
+      status: 301,
+      headers: { Location: canonicalRedirectUrl },
+    }));
+  }
+
   const pathname = url.pathname.toLowerCase();
 
   // Handle R2 image serving
