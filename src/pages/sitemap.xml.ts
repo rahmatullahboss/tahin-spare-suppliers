@@ -21,7 +21,8 @@ const STATIC_PAGES: SitemapPage[] = [
   { url: "/business-info" },
   { url: "/privacy" },
   { url: "/terms" },
-  { url: "/blog" }
+  { url: "/blog" },
+  { url: "/blog/marine-spare-parts-identification-checklist" }
 ];
 
 function isoDate(value: string | undefined): string | undefined {
