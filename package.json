@@ -9,10 +9,14 @@
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
     "smoke:production": "node scripts/smoke-production.mjs",
-    "seo:snapshot": "node scripts/seo-growth-snapshot.mjs"
+    "seo:snapshot": "node scripts/seo-growth-snapshot.mjs",
+    "search-console:auth": "node scripts/search-console-auth.mjs",
+    "search-console:mcp": "node scripts/search-console-mcp.mjs",
+    "search-console:audit": "node scripts/search-console-audit.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.7",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@neondatabase/serverless": "^1.0.2",
     "@tiptap/core": "^3.31.3",
     "@tiptap/extension-image": "^3.31.3",
@@ -23,7 +27,8 @@
     "@tiptap/starter-kit": "^3.31.3",
     "astro": "^7.1.6",
     "resend": "^6.12.2",
-    "xss": "^1.0.15"
+    "xss": "^1.0.15",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "wrangler": "^4.118.0"

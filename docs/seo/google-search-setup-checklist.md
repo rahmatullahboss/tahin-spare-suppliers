@@ -173,6 +173,18 @@ Weekly during the first month after rollout, then monthly:
 - Pages with impressions but weak CTR (improve title/meta)
 - Product pages with thin or outdated stock/condition data
 
+## 10. Search Console connector (read-only)
+
+The project includes a stdio MCP server at `scripts/search-console-mcp.mjs` and a CLI audit at `scripts/search-console-audit.mjs`. The connector exposes read-only Sites, Sitemaps, URL Inspection, and Search Analytics calls when OAuth is configured. It can also import an exported Page indexing CSV and check each owned URL's live HTTP status, redirects, noindex, canonical, and fetch-error state.
+
+Run the CSV audit from the project root:
+
+```sh
+npm run search-console:audit -- --csv reports/search-console-5xx.csv --output reports/search-console-5xx-audit.json
+```
+
+The importer is restricted to `https://tahinspare.com`, deduplicates URLs, stays inside `GSC_IMPORT_ROOT`, and caps one audit at 100 URLs. It does not modify the repository or submit Google validation/indexing requests. See `docs/seo/search-console-mcp-runbook.md` for OAuth and MCP client registration details.
+
 ## External-account completion boundary
 
 Code can be fully implemented and deployed without inventing Google credentials. These four items require account access and remain external until the site owner supplies/completes them:
