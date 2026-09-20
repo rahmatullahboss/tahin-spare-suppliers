@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+import { getCanonicalRedirectUrl } from "../src/lib/canonical-url.ts";
 import {
   buildDefaultMetaDescription,
   buildDefaultSeoTitle,
@@ -17,6 +18,23 @@ import {
 async function source(path: string): Promise<string> {
   return readFile(new URL(`../${path}`, import.meta.url), "utf8");
 }
+
+test("public URL canonicalization converges protocol and host without touching local development", async () => {
+  assert.equal(
+    getCanonicalRedirectUrl("http://tahinspare.com/products?brand=Yanmar#results"),
+    "https://tahinspare.com/products?brand=Yanmar#results"
+  );
+  assert.equal(
+    getCanonicalRedirectUrl("https://www.tahinspare.com/category/spare-parts"),
+    "https://tahinspare.com/category/spare-parts"
+  );
+  assert.equal(getCanonicalRedirectUrl("https://tahinspare.com/category/spare-parts"), undefined);
+  assert.equal(getCanonicalRedirectUrl("http://localhost:4321/category/spare-parts"), undefined);
+
+  const middleware = await source("src/middleware.ts");
+  assert.match(middleware, /getCanonicalRedirectUrl\(url\)/);
+  assert.match(middleware, /status:\s*301/);
+});
 
 test("product SEO defaults follow the buyer-intent Cummins example", () => {
   const title = buildDefaultSeoTitle("Cummins VTA-28 Marine Engine");
