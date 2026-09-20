@@ -19,3 +19,8 @@ CLAUDE.md
 .windsurfrules
 .gemini/
 .cline/
+
+# Local CodexPro / agent runtime files
+.ai-bridge/
+.codexpro.env
+.codexpro-cloudflared.yml
