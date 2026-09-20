@@ -412,6 +412,8 @@ Complete the external account-side steps already documented in `docs/seo/google-
 - monitor Pages/Indexing, Core Web Vitals, structured-data issues, manual actions
 - record current query/page baseline before large content changes
 - use generative-AI performance reporting if/when available for this property
+- use the read-only connector to import exported Page indexing issue URLs and correlate them with live HTTP diagnostics before proposing fixes
+- keep Search Console API coverage separate from the Page indexing UI report; do not fabricate issue counts or affected URLs
 
 ### GA4
 
