@@ -1,0 +1,94 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Breadcrumbs from "../Breadcrumbs.astro";
+import { absoluteUrl } from "../../lib/seo";
+
+interface Props {
+  title: string;
+  metaTitle: string;
+  description: string;
+  canonicalPath: string;
+  breadcrumbLabel: string;
+  publishedDate?: string;
+}
+
+const {
+  title,
+  metaTitle,
+  description,
+  canonicalPath,
+  breadcrumbLabel,
+  publishedDate = "2026-09-20"
+} = Astro.props;
+
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "@id": `${absoluteUrl(canonicalPath)}#article`,
+  "url": absoluteUrl(canonicalPath),
+  "headline": title,
+  "description": description,
+  "datePublished": publishedDate,
+  "dateModified": publishedDate,
+  "author": { "@type": "Organization", "name": "Tahin Spare Suppliers", "url": "https://tahinspare.com" },
+  "publisher": { "@id": "https://tahinspare.com/#organization" },
+  "mainEntityOfPage": absoluteUrl(canonicalPath)
+};
+---
+
+<MainLayout
+  title={metaTitle}
+  description={description}
+  activeNav="blog"
+  canonicalUrl={absoluteUrl(canonicalPath)}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+
+  <section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1>{title}</h1>
+      <p>{description}</p>
+    </div>
+  </section>
+
+  <Breadcrumbs items={[
+    { name: "Home", href: "/" },
+    { name: "Marine Industry Resources", href: "/blog" },
+    { name: breadcrumbLabel, href: canonicalPath }
+  ]} />
+
+  <section class="section">
+    <article class="container static-blog-content">
+      <slot />
+
+      <aside class="quote-box">
+        <h2>Need help identifying marine equipment or spare parts?</h2>
+        <p>Send the maker, model, serial number, part number and available photos so the requirement can be reviewed before quotation.</p>
+        <a href="/enquiry">Send an Enquiry</a>
+      </aside>
+    </article>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { position: relative; min-height: 280px; background: url('/images/warehouse-yard.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.66); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; max-width: 900px; padding: 30px 20px; }
+  .page-hero-content h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.2rem); }
+  .page-hero-content p { color: #e2e8f0; line-height: 1.6; }
+  .static-blog-content { max-width: 900px; color: #334155; font-size: 1.05rem; line-height: 1.8; }
+  .static-blog-content :global(p) { margin: 0 0 1em; }
+  .static-blog-content :global(h2) { font-size: 1.6rem; margin: 2em 0 0.75em; font-weight: 700; color: #0f172a; }
+  .static-blog-content :global(h3) { font-size: 1.25rem; margin: 1.5em 0 0.5em; font-weight: 700; color: #0f172a; }
+  .static-blog-content :global(ul),
+  .static-blog-content :global(ol) { margin: 0 0 1.25em 1.4em; }
+  .static-blog-content :global(li) { margin-bottom: 0.45em; }
+  .static-blog-content :global(code) { background: #f1f5f9; padding: 0.1em 0.35em; border-radius: 4px; }
+  .static-blog-content :global(.checklist) { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; background: #f8fafc; margin: 1.5em 0; }
+  .static-blog-content :global(.checklist p) { margin-bottom: 0.55em; }
+  .quote-box { margin-top: 44px; padding: 28px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+  .quote-box h2 { margin: 0 0 8px; color: #111827; font-size: 1.35rem; }
+  .quote-box p { color: #475569; line-height: 1.7; }
+  .quote-box a { display: inline-block; margin-top: 8px; padding: 11px 18px; border-radius: 6px; background: #b11623; color: #fff; text-decoration: none; font-weight: 800; }
+</style>

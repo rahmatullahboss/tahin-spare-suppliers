@@ -303,6 +303,46 @@ test("first-party spare-parts identification guide is public, internally linked 
   assert.match(sitemap, /\/blog\/marine-spare-parts-identification-checklist/);
 });
 
+test("additional first-party marine buying guides are public, internally linked and in the sitemap", async () => {
+  const blogIndex = await source("src/pages/blog/index.astro");
+  const sitemap = await source("src/pages/sitemap.xml.ts");
+  const articles = [
+    {
+      path: "src/pages/blog/how-to-identify-marine-turbocharger.astro",
+      slug: "how-to-identify-marine-turbocharger",
+      requiredLink: "/category/turbocharger"
+    },
+    {
+      path: "src/pages/blog/marine-gearbox-identification-checklist.astro",
+      slug: "marine-gearbox-identification-checklist",
+      requiredLink: "/category/marine-gearbox"
+    },
+    {
+      path: "src/pages/blog/marine-hydraulic-power-unit-hpu-quote-checklist.astro",
+      slug: "marine-hydraulic-power-unit-hpu-quote-checklist",
+      requiredLink: "/products/iop-marine-hpu-1500-high-pressure-hydraulic-pump"
+    },
+    {
+      path: "src/pages/blog/reconditioned-marine-engine-buying-checklist.astro",
+      slug: "reconditioned-marine-engine-buying-checklist",
+      requiredLink: "/products/reconditioned-yanmar-6hal-tn-marine-generator-set-for-sale"
+    }
+  ];
+
+  for (const item of articles) {
+    const article = await source(item.path);
+    assert.match(article, new RegExp(`canonicalPath = "/blog/${item.slug}"`));
+    assert.match(article, new RegExp(`href="${item.requiredLink.replaceAll("/", "\\/")}"`));
+    assert.match(blogIndex, new RegExp(item.slug));
+    assert.match(sitemap, new RegExp(`/blog/${item.slug}`));
+  }
+
+  const sharedLayout = await source("src/components/blog/StaticBlogArticle.astro");
+  assert.match(sharedLayout, /"@type": "BlogPosting"/);
+  assert.match(sharedLayout, /canonicalUrl=\{absoluteUrl\(canonicalPath\)\}/);
+  assert.match(sharedLayout, /href="\/enquiry"/);
+});
+
 test("core marketing pages avoid unsupported universal and superlative claims", async () => {
   const homepage = await source("src/pages/index.astro");
   const about = await source("src/pages/about.astro");

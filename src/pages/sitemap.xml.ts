@@ -22,7 +22,11 @@ const STATIC_PAGES: SitemapPage[] = [
   { url: "/privacy" },
   { url: "/terms" },
   { url: "/blog" },
-  { url: "/blog/marine-spare-parts-identification-checklist" }
+  { url: "/blog/marine-spare-parts-identification-checklist" },
+  { url: "/blog/how-to-identify-marine-turbocharger" },
+  { url: "/blog/marine-gearbox-identification-checklist" },
+  { url: "/blog/marine-hydraulic-power-unit-hpu-quote-checklist" },
+  { url: "/blog/reconditioned-marine-engine-buying-checklist" }
 ];
 
 function isoDate(value: string | undefined): string | undefined {

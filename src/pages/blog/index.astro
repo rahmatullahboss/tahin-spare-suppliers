@@ -6,12 +6,38 @@ import { listAllContent } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
 const posts = await listAllContent(env, "blog");
-const staticPosts = [{
-  slug: "marine-spare-parts-identification-checklist",
-  title: "Marine Spare Parts Identification Checklist: Model, Serial & Part Numbers",
-  excerpt: "A practical checklist for identifying marine engine and equipment spare parts before requesting a quote, including maker, model, serial number, part number, dimensions, photos and operating context.",
-  imageUrl: ""
-}];
+const staticPosts = [
+  {
+    slug: "reconditioned-marine-engine-buying-checklist",
+    title: "Reconditioned Marine Engine Buying Checklist: What to Verify Before Purchase",
+    excerpt: "A practical checklist for evaluating a reconditioned marine engine listing, including identity, scope of overhaul, measurements, test evidence, included equipment, preservation and shipping details.",
+    imageUrl: ""
+  },
+  {
+    slug: "marine-hydraulic-power-unit-hpu-quote-checklist",
+    title: "Marine Hydraulic Power Unit (HPU) Quote Checklist: What Information to Send",
+    excerpt: "A practical HPU enquiry checklist covering maker, model, motor and pump data, pressure and flow information, reservoir, valves, electrical details, photos and application context.",
+    imageUrl: ""
+  },
+  {
+    slug: "marine-gearbox-identification-checklist",
+    title: "Marine Gearbox Identification Checklist: Model, Ratio, Rotation & Serial Number",
+    excerpt: "A practical checklist for identifying a marine gearbox before requesting a replacement or spare-parts quote, including model, ratio, rotation, serial number, engine details, flanges and photos.",
+    imageUrl: ""
+  },
+  {
+    slug: "how-to-identify-marine-turbocharger",
+    title: "How to Identify a Marine Turbocharger Before Ordering Parts or Replacement",
+    excerpt: "A practical marine turbocharger identification guide covering maker, model, serial and assembly numbers, engine details, nameplate photos and measurements to collect before requesting a quote.",
+    imageUrl: ""
+  },
+  {
+    slug: "marine-spare-parts-identification-checklist",
+    title: "Marine Spare Parts Identification Checklist: Model, Serial & Part Numbers",
+    excerpt: "A practical checklist for identifying marine engine and equipment spare parts before requesting a quote, including maker, model, serial number, part number, dimensions, photos and operating context.",
+    imageUrl: ""
+  }
+];
 const allPosts = [
   ...staticPosts,
   ...posts.filter((post) => !staticPosts.some((staticPost) => staticPost.slug === post.slug))
