@@ -186,7 +186,7 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
         paginationEl.appendChild(next);
       };
 
-      const goTo = (page: number) => {
+      const goTo = (page: number, shouldScroll = true) => {
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         grid.dataset.currentPage = String(currentPage);
@@ -195,10 +195,12 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
           item.style.display = pageNum === currentPage ? '' : 'none';
         });
         renderPagination();
-        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (shouldScroll) {
+          grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       };
 
-      goTo(1);
+      goTo(1, false);
     }
   }
 </script>

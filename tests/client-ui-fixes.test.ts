@@ -34,6 +34,19 @@ test("footer no longer renders the Created by credit", async () => {
   assert.doesNotMatch(footer, /digitalcare\.site/i);
 });
 
+test("category pages do not auto-scroll to the product grid on initial load", async () => {
+  const pages = await Promise.all([
+    source("src/pages/category/[category].astro"),
+    source("src/pages/category/[category]/[subcategory].astro"),
+  ]);
+
+  for (const page of pages) {
+    assert.match(page, /const goTo = \(page: number, shouldScroll = true\)/);
+    assert.match(page, /if \(shouldScroll\) \{\s*grid\.scrollIntoView/);
+    assert.match(page, /goTo\(1, false\)/);
+  }
+});
+
 
 test("generic warehouse hero is removed from client-facing public page backgrounds", async () => {
   const paths = [
