@@ -1,0 +1,215 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { absoluteUrl } from "../../lib/seo";
+
+const canonicalPath = "/blog/marine-spare-parts-identification-checklist";
+const title = "Marine Spare Parts Identification Checklist: Model, Serial & Part Numbers";
+const description = "A practical checklist for identifying marine engine and equipment spare parts before requesting a quote, including maker, model, serial number, part number, dimensions, photos and operating context.";
+
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "@id": `${absoluteUrl(canonicalPath)}#article`,
+  "url": absoluteUrl(canonicalPath),
+  "headline": title,
+  "description": description,
+  "datePublished": "2026-09-20",
+  "dateModified": "2026-09-20",
+  "author": { "@type": "Organization", "name": "Tahin Spare Suppliers", "url": "https://tahinspare.com" },
+  "publisher": { "@id": "https://tahinspare.com/#organization" },
+  "mainEntityOfPage": absoluteUrl(canonicalPath)
+};
+---
+
+<MainLayout
+  title="Marine Spare Parts Identification Checklist | Tahin Spare Suppliers"
+  description={description}
+  activeNav="blog"
+  canonicalUrl={absoluteUrl(canonicalPath)}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+
+  <section class="page-hero">
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1>{title}</h1>
+      <p>{description}</p>
+    </div>
+  </section>
+
+  <Breadcrumbs items={[
+    { name: "Home", href: "/" },
+    { name: "Marine Industry Resources", href: "/blog" },
+    { name: "Marine Spare Parts Identification Checklist", href: canonicalPath }
+  ]} />
+
+  <section class="section">
+    <article class="container blog-detail">
+      <p>When a marine engine, generator, gearbox, pump or deck-machinery part needs replacement, the fastest way to avoid a wrong quotation is to identify the part as precisely as possible before sending an enquiry.</p>
+
+      <p>A photo alone is often not enough. Many marine components look similar across different engine families, production years and licensed manufacturers. A model number without a serial number can also be incomplete when several revisions exist.</p>
+
+      <p>Use this checklist before requesting a marine spare-parts quotation.</p>
+
+      <h2>1. Record the equipment maker exactly as shown</h2>
+      <p>Start with the manufacturer or maker shown on the equipment nameplate, manual or original part.</p>
+      <p>Do not rely only on a shortened brand name if the plate shows additional licensing or manufacturing information. Older marine engines and machinery may have model families produced under licence or by different factories.</p>
+      <p>Useful details include:</p>
+      <ul>
+        <li>Maker or manufacturer name</li>
+        <li>Licensed manufacturer, if shown</li>
+        <li>Country or factory information, if relevant</li>
+        <li>Equipment type: main engine, auxiliary engine, generator, gearbox, pump, turbocharger, governor, crane or other machinery</li>
+      </ul>
+      <p>You can also browse the current <a href="/brands">marine equipment brands</a> listed on Tahin Spare Suppliers.</p>
+
+      <h2>2. Capture the full model number</h2>
+      <p>The model number is one of the most important identifiers.</p>
+      <p>Write it exactly as shown, including letters, hyphens, slashes and suffixes. Two models that look nearly identical in writing can use different parts if one letter or suffix identifies another series or configuration.</p>
+      <p>Do not simplify a model such as <code>6HAL-HTN</code>, <code>VTA28-DM</code>, <code>MG-521</code> or <code>5L16/24</code> into a broader family name when requesting a specific replacement part.</p>
+      <p>If the nameplate is difficult to read, send a clear close-up photo instead of guessing.</p>
+
+      <h2>3. Include the serial number when available</h2>
+      <p>A serial number can help distinguish production revisions within the same model family.</p>
+      <p>For engines, generators, gearboxes and hydraulic equipment, include the full serial number or engine number from the nameplate or stamped identification area.</p>
+      <p>This is especially useful when:</p>
+      <ul>
+        <li>The equipment is older</li>
+        <li>Several versions of the same model were produced</li>
+        <li>A part design changed during a production run</li>
+        <li>The original manual is unavailable</li>
+        <li>The replacement part has already been changed once</li>
+      </ul>
+      <p>If you are unsure which number is the serial number, send a photo of the complete nameplate.</p>
+
+      <h2>4. Look for a part number on the old component</h2>
+      <p>A genuine or previously fitted part may have a stamped, engraved, cast or printed part number.</p>
+      <p>Check both sides of the component and any attached label. Clean only enough surface dirt to read the marking without damaging the part.</p>
+      <p>Useful markings can include:</p>
+      <ul>
+        <li>OEM part number</li>
+        <li>Casting number</li>
+        <li>Assembly number</li>
+        <li>Drawing number</li>
+        <li>Bearing or seal designation</li>
+        <li>Injector or nozzle number</li>
+        <li>Turbocharger model or cartridge number</li>
+        <li>Electrical component code</li>
+      </ul>
+      <p>When both a model number and a part number are available, send both.</p>
+      <p>For current category listings, see <a href="/category/spare-parts">marine spare parts</a>.</p>
+
+      <h2>5. Take identification photos, not only general photos</h2>
+      <p>A useful photo set normally includes more than one image.</p>
+      <ol>
+        <li>A full photo of the complete component</li>
+        <li>A close-up of the nameplate</li>
+        <li>A close-up of every readable number or marking</li>
+        <li>The mounting face or connection points</li>
+        <li>Both sides of the part where possible</li>
+        <li>Any damaged area that explains why replacement is needed</li>
+        <li>A photo showing the part installed on the machine, if safe to take</li>
+      </ol>
+      <p>Use good lighting and make sure text is in focus. Avoid sending screenshots that have been compressed repeatedly if the original photo is available.</p>
+
+      <h2>6. Add dimensions when the part number is missing</h2>
+      <p>Dimensions should support identification, not replace a known model or part number.</p>
+      <p>If no readable number remains, measure the component carefully and state the unit used.</p>
+      <p>Depending on the part, useful measurements may include:</p>
+      <ul>
+        <li>Overall length, width and height</li>
+        <li>Bore and outside diameter</li>
+        <li>Shaft diameter</li>
+        <li>Bolt-hole diameter</li>
+        <li>Bolt-hole centre distance</li>
+        <li>Flange diameter</li>
+        <li>Thread size and pitch</li>
+        <li>Number of teeth or splines</li>
+        <li>Impeller diameter</li>
+        <li>Bearing dimensions</li>
+      </ul>
+      <p>For critical components, use a vernier caliper or micrometer where appropriate rather than estimating from a ruler.</p>
+
+      <h2>7. State the exact application</h2>
+      <p>A part enquiry is easier to verify when the surrounding equipment is known.</p>
+      <p>Include information such as:</p>
+      <ul>
+        <li>Vessel or machinery application</li>
+        <li>Main or auxiliary engine</li>
+        <li>Generator-set application</li>
+        <li>Engine output and RPM, if known</li>
+        <li>Gearbox model and ratio, if relevant</li>
+        <li>Turbocharger model, if relevant</li>
+        <li>Pump service, such as seawater, cooling or fuel</li>
+        <li>Cylinder number or installation position when the part is position-specific</li>
+      </ul>
+      <p>This context can help distinguish similar components used in different configurations.</p>
+
+      <h2>8. Describe the required condition without assuming availability</h2>
+      <p>State whether you are looking for new, genuine, OEM, reconditioned or serviceable used parts, but do not assume that every condition is available for every model.</p>
+      <p>Availability and condition should be confirmed for the exact item at the time of enquiry.</p>
+      <p>If an existing part can be reconditioned, include its current condition and the failure symptoms so the supplier can understand whether you are asking for replacement, repair or comparison.</p>
+
+      <h2>9. Include quantity and destination</h2>
+      <p>A complete quotation request should also state:</p>
+      <ul>
+        <li>Required quantity</li>
+        <li>Destination country and port or city</li>
+        <li>Required delivery timing</li>
+        <li>Whether the request is urgent or for planned maintenance</li>
+        <li>Any packing or export-document requirements you already know</li>
+      </ul>
+      <p>This avoids a second round of questions after the component itself has been identified.</p>
+
+      <h2>10. Use this short enquiry format</h2>
+      <div class="checklist">
+        <p><strong>Maker:</strong></p>
+        <p><strong>Equipment type:</strong></p>
+        <p><strong>Model:</strong></p>
+        <p><strong>Serial / engine number:</strong></p>
+        <p><strong>Part name:</strong></p>
+        <p><strong>Part number:</strong></p>
+        <p><strong>Required quantity:</strong></p>
+        <p><strong>Required condition:</strong></p>
+        <p><strong>Dimensions if no part number:</strong></p>
+        <p><strong>Application:</strong></p>
+        <p><strong>Destination:</strong></p>
+        <p><strong>Photos attached:</strong> Yes / No</p>
+        <p><strong>Additional notes:</strong></p>
+      </div>
+
+      <p>If you have incomplete information, send the details you do have together with clear photos rather than guessing missing numbers.</p>
+
+      <h2>Why precise identification matters</h2>
+      <p>Correct identification reduces the risk of quoting a visually similar but incompatible component. It also makes it easier to compare a requested part with available records, technical specifications and model-specific inventory.</p>
+      <p>For marine procurement teams, the most useful enquiry is usually not the longest one. It is the one that contains the correct maker, model, serial number, part number and clear identification photos.</p>
+
+      <aside class="quote-box">
+        <h2>Ready to request a spare-parts quotation?</h2>
+        <p>Send the maker, model, serial number, part number and available photos for the item you need.</p>
+        <a href="/enquiry">Send a Marine Spare-Parts Enquiry</a>
+      </aside>
+    </article>
+  </section>
+</MainLayout>
+
+<style>
+  .page-hero { position: relative; min-height: 280px; background: url('/images/warehouse-yard.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .page-hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.66); }
+  .page-hero-content { position: relative; z-index: 1; color: #fff; max-width: 900px; padding: 30px 20px; }
+  .page-hero-content h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.2rem); }
+  .page-hero-content p { color: #e2e8f0; line-height: 1.6; }
+  .blog-detail { max-width: 900px; color: #334155; font-size: 1.05rem; line-height: 1.8; }
+  .blog-detail p { margin: 0 0 1em; }
+  .blog-detail h2 { font-size: 1.6rem; margin: 2em 0 0.75em; font-weight: 700; color: #0f172a; }
+  .blog-detail ul, .blog-detail ol { margin: 0 0 1.25em 1.4em; }
+  .blog-detail li { margin-bottom: 0.45em; }
+  .blog-detail code { background: #f1f5f9; padding: 0.1em 0.35em; border-radius: 4px; }
+  .checklist { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; background: #f8fafc; margin-bottom: 24px; }
+  .checklist p { margin-bottom: 0.55em; }
+  .quote-box { margin-top: 44px; padding: 28px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+  .quote-box h2 { margin: 0 0 8px; color: #111827; font-size: 1.35rem; }
+  .quote-box p { color: #475569; line-height: 1.7; }
+  .quote-box a { display: inline-block; margin-top: 8px; padding: 11px 18px; border-radius: 6px; background: #b11623; color: #fff; text-decoration: none; font-weight: 800; }
+</style>

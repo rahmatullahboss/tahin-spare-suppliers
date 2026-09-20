@@ -6,8 +6,18 @@ import { listAllContent } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
 const posts = await listAllContent(env, "blog");
+const staticPosts = [{
+  slug: "marine-spare-parts-identification-checklist",
+  title: "Marine Spare Parts Identification Checklist: Model, Serial & Part Numbers",
+  excerpt: "A practical checklist for identifying marine engine and equipment spare parts before requesting a quote, including maker, model, serial number, part number, dimensions, photos and operating context.",
+  imageUrl: ""
+}];
+const allPosts = [
+  ...staticPosts,
+  ...posts.filter((post) => !staticPosts.some((staticPost) => staticPost.slug === post.slug))
+];
 const PAGE_SIZE = 9;
-const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
+const totalPages = Math.max(1, Math.ceil(allPosts.length / PAGE_SIZE));
 ---
 <MainLayout
   title="Marine Industry Blog & Resources | Tahin Spare Suppliers"
@@ -26,7 +36,7 @@ const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
 
   <section class="section">
     <div class="container">
-      {posts.length === 0 ? (
+      {allPosts.length === 0 ? (
         <div class="empty-state">
           <h2>No Blog Posts Yet</h2>
           <p>Check back soon for articles about marine engines, industry updates, and more.</p>
@@ -35,7 +45,7 @@ const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
       ) : (
         <>
           <div class="blog-grid" data-paginated data-page-size={PAGE_SIZE} data-current-page="1">
-            {posts.map((post) => (
+            {allPosts.map((post) => (
               <a href={`/blog/${post.slug}`} class="blog-card">
                 {post.imageUrl && <img src={post.imageUrl} alt={`${post.title} marine industry article`} width="800" height="450" loading="lazy" decoding="async" />}
                 <div class="blog-card-body">

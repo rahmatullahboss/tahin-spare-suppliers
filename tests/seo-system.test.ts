@@ -290,6 +290,19 @@ test("client-approved navigation and structured-content hubs preserve SEO reach"
   assert.match(blog, /<Breadcrumbs items=/);
 });
 
+test("first-party spare-parts identification guide is public, internally linked and in the sitemap", async () => {
+  const article = await source("src/pages/blog/marine-spare-parts-identification-checklist.astro");
+  const blogIndex = await source("src/pages/blog/index.astro");
+  const sitemap = await source("src/pages/sitemap.xml.ts");
+
+  assert.match(article, /"@type": "BlogPosting"/);
+  assert.match(article, /canonicalPath = "\/blog\/marine-spare-parts-identification-checklist"/);
+  assert.match(article, /href="\/category\/spare-parts"/);
+  assert.match(article, /href="\/enquiry"/);
+  assert.match(blogIndex, /marine-spare-parts-identification-checklist/);
+  assert.match(sitemap, /\/blog\/marine-spare-parts-identification-checklist/);
+});
+
 test("core marketing pages avoid unsupported universal and superlative claims", async () => {
   const homepage = await source("src/pages/index.astro");
   const about = await source("src/pages/about.astro");
