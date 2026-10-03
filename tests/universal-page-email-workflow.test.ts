@@ -59,15 +59,22 @@ test("email composer supports private bulk To recipients, single-recipient CC an
 
   assert.match(compose, /id="cc"/);
   assert.match(compose, /Up to 100/);
-  assert.match(compose, /JSON\.stringify\(\{[\s\S]*to,[\s\S]*cc,[\s\S]*subject/);
+  assert.match(compose, /maxBulkRecipientsWithAttachments = 40/);
+  assert.match(compose, /recipientBatches/);
+  assert.match(compose, /JSON\.stringify\(\{[\s\S]*to: batchTo,[\s\S]*cc,[\s\S]*subject/);
+  assert.doesNotMatch(compose, /Bulk sends cannot include photos or file attachments/);
   assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.to, MAX_BULK_RECIPIENTS\)/);
   assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.cc/);
   assert.match(sendApi, /sendBulkEmails/);
+  assert.match(sendApi, /inlineImages: referencedInlineImages/);
+  assert.match(sendApi, /bulkAttachmentsJson/);
   assert.match(sendApi, /\$\$\{offset \+ 1\}/);
   assert.match(sendApi, /cc_address/);
   assert.match(service, /to: \[recipient\]/);
   assert.match(service, /resend\.batch\.send/);
-  assert.match(service, /cc: cc\.length > 0 \? cc : undefined/);
+  assert.match(service, /MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS = 40/);
+  assert.match(service, /attachments: input\.attachments\.length > 0/);
+  assert.match(service, /cc: input\.cc\.length > 0 \? input\.cc : undefined/);
   assert.match(service, /tahin591@gmail\.com/);
   assert.match(service, /env\.INBOUND_FORWARD_TO/);
   assert.match(env, /INBOUND_FORWARD_TO\?: string/);
