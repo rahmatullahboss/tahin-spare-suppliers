@@ -3,7 +3,9 @@ import { requireAdminRequest } from "../../../../lib/server/api";
 import { ensureSchema, getDb } from "../../../../lib/server/db";
 import {
   filterReferencedInlineImages,
+  MAX_BULK_RECIPIENTS,
   normalizeEmailAddresses,
+  sendBulkEmails,
   sendEmail,
   type EmailFileAttachmentInput,
   type InlineEmailImageInput
@@ -119,7 +121,7 @@ export const POST: APIRoute = async (context) => {
     let toAddresses: string[];
     let ccAddresses: string[];
     try {
-      toAddresses = normalizeEmailAddresses(requestBody.to);
+      toAddresses = normalizeEmailAddresses(requestBody.to, MAX_BULK_RECIPIENTS);
       ccAddresses = normalizeEmailAddresses(requestBody.cc ?? []);
     } catch (error) {
       return Response.json(
@@ -154,6 +156,80 @@ export const POST: APIRoute = async (context) => {
     const signatureSettings = await getEmailSignatureSettings(env);
     const signatureHtml = renderEmailSignatureHtml(signatureSettings);
     const signedEmailBody = appendEmailSignature(emailBody, signatureHtml);
+
+    if (toAddresses.length > 1) {
+      if (ccAddresses.length > 0) {
+        return Response.json(
+          { error: "CC is not supported for bulk sends because it would send duplicate copies to CC recipients." },
+          { status: 400 }
+        );
+      }
+
+      if (inReplyToId) {
+        return Response.json(
+          { error: "Bulk sending is not supported when replying to an existing email thread." },
+          { status: 400 }
+        );
+      }
+
+      if (referencedInlineImages.length > 0 || fileAttachments.length > 0) {
+        return Response.json(
+          { error: "Photos and file attachments are not supported for bulk sends. Send to one recipient when attachments are required." },
+          { status: 400 }
+        );
+      }
+
+      const results = await sendBulkEmails(env, {
+        to: toAddresses,
+        subject,
+        html: signedEmailBody,
+        idempotencyKey: requestId ? `admin-email/${requestId}` : undefined,
+      });
+
+      const insertParams: string[] = [];
+      const valueSql = results.map((result, index) => {
+        const offset = index * 9;
+        insertParams.push(
+          result.id,
+          result.to,
+          "",
+          "sales@tahinspare.com",
+          subject,
+          signedEmailBody,
+          "[]",
+          result.resendId,
+          ""
+        );
+        return `(${offset + 1}, ${offset + 2}, ${offset + 3}, ${offset + 4}, ${offset + 5}, ${offset + 6}, ${offset + 7}, ${offset + 8}, ${offset + 9})`;
+      }).join(", ");
+
+      const savedRows = await sql.query(
+        `INSERT INTO sent_emails (
+           id, to_address, cc_address, from_address, subject, body, attachments_json,
+           resend_id, in_reply_to_inbound_id
+         )
+         VALUES ${valueSql}
+         ON CONFLICT (resend_id) WHERE resend_id <> ''
+         DO UPDATE SET resend_id = EXCLUDED.resend_id
+         RETURNING id, resend_id`,
+        insertParams
+      );
+
+      const idByResendId = new Map(
+        savedRows.map((row) => [String(row.resend_id ?? ""), String(row.id ?? "")])
+      );
+      const ids = results
+        .map((result) => idByResendId.get(result.resendId) ?? "")
+        .filter(Boolean);
+
+      return Response.json({
+        ok: true,
+        id: ids[0] ?? "",
+        ids,
+        resendIds: results.map((result) => result.resendId),
+        recipientCount: results.length,
+      });
+    }
 
     let replyHeaders: Record<string, string> | undefined = undefined;
     if (inReplyToId) {
@@ -225,7 +301,12 @@ export const POST: APIRoute = async (context) => {
         await deleteStoredSentEmailAttachments(env.MEDIA_BUCKET, storedAttachments);
       }
 
-      return Response.json({ ok: true, id, resendId: result.resendId });
+      return Response.json({
+        ok: true,
+        id,
+        resendId: result.resendId,
+        recipientCount: 1,
+      });
     } catch (error) {
       await deleteStoredSentEmailAttachments(env.MEDIA_BUCKET, storedAttachments);
       throw error;
