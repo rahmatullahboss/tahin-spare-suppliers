@@ -2,7 +2,11 @@ import type { APIRoute } from "astro";
 import { requireAdminRequest } from "../../../../../../../lib/server/api";
 import { ensureSchema, getDb } from "../../../../../../../lib/server/db";
 import { isSafeInlineImageContentType } from "../../../../../../../lib/server/email-content";
-import { parseStoredSentAttachments } from "../../../../../../../lib/server/sent-email-attachments";
+import { getSentEmailAttachmentByMetadata } from "../../../../../../../lib/server/email-service";
+import {
+  isStoredSentAttachmentOwnedByEmail,
+  parseStoredSentAttachments,
+} from "../../../../../../../lib/server/sent-email-attachments";
 
 export const prerender = false;
 
@@ -26,7 +30,7 @@ export const GET: APIRoute = async (context) => {
     await ensureSchema(env);
     const sql = getDb(env);
     const rows = await sql.query(
-      `SELECT attachments_json FROM sent_emails WHERE id = $1 LIMIT 1`,
+      `SELECT attachments_json, resend_id FROM sent_emails WHERE id = $1 LIMIT 1`,
       [emailId]
     );
     if (rows.length === 0) {
@@ -35,21 +39,42 @@ export const GET: APIRoute = async (context) => {
 
     const attachments = parseStoredSentAttachments(rows[0]?.attachments_json);
     const attachment = attachments.find((item) => item.id === attachmentId);
-    if (!attachment) {
-      return Response.json({ error: "Attachment not found" }, { status: 404 });
-    }
-
-    const expectedPrefix = `email/sent/${emailId.replace(/[^a-zA-Z0-9._-]+/g, "-")}/`;
-    if (!attachment.storageKey.startsWith(expectedPrefix)) {
+    if (!attachment || !isStoredSentAttachmentOwnedByEmail(emailId, attachment)) {
       return Response.json({ error: "Attachment not found" }, { status: 404 });
     }
 
     const object = await env.MEDIA_BUCKET.get(attachment.storageKey);
-    if (!object?.body) {
-      return Response.json({ error: "Attachment not found" }, { status: 404 });
+    let responseBody = object?.body ?? null;
+    let contentType = object?.httpMetadata?.contentType
+      || attachment.contentType
+      || "application/octet-stream";
+
+    if (!responseBody) {
+      const resendId = typeof rows[0]?.resend_id === "string" ? rows[0].resend_id : "";
+      if (!resendId) {
+        return Response.json({ error: "Attachment not found" }, { status: 404 });
+      }
+
+      try {
+        const remoteAttachment = await getSentEmailAttachmentByMetadata(env, resendId, {
+          filename: attachment.filename,
+          contentId: attachment.contentId,
+        });
+        const remoteResponse = await fetch(remoteAttachment.download_url);
+        if (!remoteResponse.ok || !remoteResponse.body) {
+          return Response.json({ error: "Attachment download failed" }, { status: 502 });
+        }
+
+        responseBody = remoteResponse.body;
+        contentType = remoteAttachment.content_type
+          || remoteResponse.headers.get("content-type")
+          || contentType;
+      } catch (error) {
+        console.error("Sent attachment fallback error:", error);
+        return Response.json({ error: "Attachment not found" }, { status: 404 });
+      }
     }
 
-    const contentType = object.httpMetadata?.contentType || attachment.contentType || "application/octet-stream";
     const inlineSafe = isSafeInlineImageContentType(contentType);
     const download = context.url.searchParams.get("download") === "1" || !inlineSafe;
     const headers = new Headers();
@@ -60,7 +85,7 @@ export const GET: APIRoute = async (context) => {
     headers.set("Cross-Origin-Resource-Policy", "same-origin");
     headers.set("X-Content-Type-Options", "nosniff");
 
-    return new Response(object.body, { headers });
+    return new Response(responseBody, { headers });
   } catch (error) {
     console.error("Get sent attachment error:", error);
     return Response.json({ error: "Failed to fetch attachment" }, { status: 500 });

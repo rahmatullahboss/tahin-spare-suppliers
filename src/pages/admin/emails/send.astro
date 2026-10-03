@@ -55,6 +55,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
             inputmode="email"
           />
         </div>
+        <p class="recipient-privacy-note">Multiple To addresses are sent as separate private emails. Recipients cannot see the other To addresses.</p>
 
         <div class="address-field">
           <label for="cc">CC</label>
@@ -67,6 +68,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
             inputmode="email"
           />
         </div>
+        <p class="recipient-privacy-note cc-note">CC addresses are visible to every recipient.</p>
 
         <div class="address-field subject-field">
           <label for="subject">Subject</label>
@@ -256,6 +258,17 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
 
   .address-field input::placeholder {
     color: #a1a8b3;
+  }
+
+  .recipient-privacy-note {
+    margin: -8px 18px 10px 86px;
+    color: #6b7280;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .cc-note {
+    color: #8a5a13;
   }
 
   .address-field:focus-within {
