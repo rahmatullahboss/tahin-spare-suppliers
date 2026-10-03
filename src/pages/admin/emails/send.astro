@@ -49,7 +49,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
             type="text"
             id="to"
             name="to"
-            placeholder="one@example.com, two@example.com"
+            placeholder="Up to 100 — separate emails with commas, semicolons or new lines"
             required
             autocomplete="off"
             inputmode="email"
@@ -62,7 +62,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
             type="text"
             id="cc"
             name="cc"
-            placeholder="Optional — separate multiple emails with commas"
+            placeholder="Optional — available for single-recipient sends"
             autocomplete="off"
             inputmode="email"
           />
@@ -800,6 +800,19 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
     return `${size} B`;
   };
 
+  const parseRecipientAddresses = (value: string) => {
+    const unique = new Map<string, string>();
+    value
+      .split(/[;,\n]+/)
+      .map((address) => address.trim())
+      .filter(Boolean)
+      .forEach((address) => {
+        const key = address.toLowerCase();
+        if (!unique.has(key)) unique.set(key, address);
+      });
+    return Array.from(unique.values());
+  };
+
   const getTotalAttachmentSize = () => {
     const inlineSize = inlineImages.reduce((total, image) => total + image.size, 0);
     const fileSize = fileAttachments.reduce((total, file) => total + file.size, 0);
@@ -1072,6 +1085,8 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
     );
     const activeInlineImages = inlineImages.filter((image) => liveInlineImageIds.has(image.id));
     const body = buildEmailBodyHtml();
+    const recipients = parseRecipientAddresses(to);
+    const isBulkSend = recipients.length > 1;
 
     if (!to || !subject) {
       statusEl.textContent = "To and subject are required.";
@@ -1081,6 +1096,30 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
 
     if (!body || body === "<br>" || body === "<p></p>") {
       statusEl.textContent = "Message body is required.";
+      statusEl.className = "status-message error";
+      return;
+    }
+
+    if (recipients.length > 100) {
+      statusEl.textContent = "Maximum 100 recipients can be sent at once.";
+      statusEl.className = "status-message error";
+      return;
+    }
+
+    if (isBulkSend && cc) {
+      statusEl.textContent = "CC is available only when sending to one recipient.";
+      statusEl.className = "status-message error";
+      return;
+    }
+
+    if (isBulkSend && inReplyToId) {
+      statusEl.textContent = "Bulk sending is not available when replying to an existing email thread.";
+      statusEl.className = "status-message error";
+      return;
+    }
+
+    if (isBulkSend && (activeInlineImages.length > 0 || fileAttachments.length > 0)) {
+      statusEl.textContent = "Bulk sends cannot include photos or file attachments. Send to one recipient when attachments are required.";
       statusEl.className = "status-message error";
       return;
     }
@@ -1114,8 +1153,19 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
         throw new Error(data.error || "Failed to send email");
       }
 
-      statusEl.textContent = "Email sent successfully.";
+      const recipientCount = typeof data.recipientCount === "number"
+        ? data.recipientCount
+        : 1;
+      statusEl.textContent = recipientCount > 1
+        ? `Email sent privately to ${recipientCount} recipients.`
+        : "Email sent successfully.";
       statusEl.className = "status-message success";
+
+      if (recipientCount > 1) {
+        window.location.href = "/admin/emails";
+        return;
+      }
+
       const sentId = typeof data.id === "string" ? data.id : "";
       window.location.href = sentId
         ? `/admin/emails/thread/sent/${encodeURIComponent(sentId)}`
