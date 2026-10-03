@@ -11,6 +11,10 @@ export interface EmailResult {
   resendId: string;
 }
 
+export interface BulkEmailResult extends EmailResult {
+  to: string;
+}
+
 export interface InlineEmailImageInput {
   id: string;
   filename: string;
@@ -41,6 +45,17 @@ export interface SendEmailInput {
   idempotencyKey?: string;
 }
 
+export interface SendBulkEmailInput {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  from?: string;
+  replyTo?: string;
+  headers?: Record<string, string>;
+  idempotencyKey?: string;
+}
+
 const ALLOWED_INLINE_IMAGE_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -54,10 +69,14 @@ const MAX_FILE_ATTACHMENT_COUNT = 10;
 const MAX_TOTAL_ATTACHMENT_ENCODED_SIZE = 40 * 1024 * 1024;
 const DEFAULT_FROM = "Tahin Spare Suppliers <sales@tahinspare.com>";
 const DEFAULT_INBOUND_FORWARD_TO = "tahin591@gmail.com";
-const MAX_RECIPIENTS_PER_FIELD = 50;
+export const MAX_RECIPIENTS_PER_EMAIL = 50;
+export const MAX_BULK_RECIPIENTS = 100;
 const EMAIL_ADDRESS_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function normalizeEmailAddresses(value: unknown): string[] {
+export function normalizeEmailAddresses(
+  value: unknown,
+  maxRecipients: number = MAX_RECIPIENTS_PER_EMAIL
+): string[] {
   const parts = (Array.isArray(value) ? value : [value])
     .flatMap((item) => typeof item === "string" ? item.split(/[;,\n]+/) : [])
     .map((item) => item.trim())
@@ -73,11 +92,28 @@ export function normalizeEmailAddresses(value: unknown): string[] {
     if (seen.has(key)) continue;
     seen.add(key);
     unique.push(address);
-    if (unique.length > MAX_RECIPIENTS_PER_FIELD) {
-      throw new Error(`Maximum ${MAX_RECIPIENTS_PER_FIELD} recipients are allowed per field.`);
+    if (unique.length > maxRecipients) {
+      throw new Error(`Maximum ${maxRecipients} recipients are allowed per field.`);
     }
   }
   return unique;
+}
+
+export function buildBulkEmailPayloads(input: SendBulkEmailInput) {
+  const recipients = normalizeEmailAddresses(input.to, MAX_BULK_RECIPIENTS);
+  if (recipients.length < 2) {
+    throw new Error("Bulk email requires at least two recipients.");
+  }
+
+  return recipients.map((recipient) => ({
+    from: input.from ?? DEFAULT_FROM,
+    to: [recipient],
+    subject: input.subject,
+    html: input.html,
+    text: input.text,
+    replyTo: input.replyTo,
+    headers: input.headers,
+  }));
 }
 
 export function getResendClient(env: RuntimeEnv): Resend {
@@ -244,6 +280,9 @@ export async function sendEmail(
   const to = normalizeEmailAddresses(input.to);
   const cc = normalizeEmailAddresses(input.cc ?? []);
   if (to.length === 0) throw new Error("At least one recipient is required.");
+  if (to.length > 1) {
+    throw new Error("Multiple To recipients are not allowed in a single email. Use private bulk sending instead.");
+  }
 
   const payload = {
     from: input.from ?? DEFAULT_FROM,
@@ -268,6 +307,36 @@ export async function sendEmail(
     id: crypto.randomUUID(),
     resendId: result.data.id,
   };
+}
+
+export async function sendBulkEmails(
+  env: RuntimeEnv,
+  input: SendBulkEmailInput
+): Promise<BulkEmailResult[]> {
+  const resend = getResendClient(env);
+  const payloads = buildBulkEmailPayloads(input);
+  const result = input.idempotencyKey
+    ? await resend.batch.send(payloads, { idempotencyKey: input.idempotencyKey })
+    : await resend.batch.send(payloads);
+
+  if (result.error || !result.data) {
+    throw new Error(result.error?.message ?? "Resend did not accept the email batch.");
+  }
+
+  const accepted = result.data.data;
+  if (
+    !Array.isArray(accepted)
+    || accepted.length !== payloads.length
+    || accepted.some((item) => typeof item?.id !== "string" || !item.id)
+  ) {
+    throw new Error("Resend did not accept the complete email batch.");
+  }
+
+  return payloads.map((payload, index) => ({
+    id: crypto.randomUUID(),
+    resendId: accepted[index].id,
+    to: payload.to[0],
+  }));
 }
 
 export async function getReceivedEmail(
