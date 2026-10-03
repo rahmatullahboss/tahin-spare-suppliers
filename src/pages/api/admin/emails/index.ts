@@ -172,19 +172,25 @@ export const POST: APIRoute = async (context) => {
         );
       }
 
-      if (referencedInlineImages.length > 0 || fileAttachments.length > 0) {
-        return Response.json(
-          { error: "Photos and file attachments are not supported for bulk sends. Send to one recipient when attachments are required." },
-          { status: 400 }
-        );
-      }
-
       const results = await sendBulkEmails(env, {
         to: toAddresses,
         subject,
         html: signedEmailBody,
+        inlineImages: referencedInlineImages,
+        fileAttachments,
         idempotencyKey: requestId ? `admin-email/${requestId}` : undefined,
       });
+
+      const hasBulkAttachments = referencedInlineImages.length > 0 || fileAttachments.length > 0;
+      const storedBulkAttachments = hasBulkAttachments
+        ? await storeSentEmailAttachments(
+          env.MEDIA_BUCKET,
+          requestId ? `bulk-${requestId}` : `bulk-${crypto.randomUUID()}`,
+          referencedInlineImages,
+          fileAttachments
+        )
+        : [];
+      const bulkAttachmentsJson = JSON.stringify(storedBulkAttachments);
 
       const insertParams: string[] = [];
       const valueSql = results.map((result, index) => {
@@ -196,7 +202,7 @@ export const POST: APIRoute = async (context) => {
           "sales@tahinspare.com",
           subject,
           signedEmailBody,
-          "[]",
+          bulkAttachmentsJson,
           result.resendId,
           ""
         );

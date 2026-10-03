@@ -4,7 +4,9 @@ import test from "node:test";
 import {
   buildBulkEmailPayloads,
   buildInboundForwardRequest,
+  getBulkRecipientLimit,
   MAX_BULK_RECIPIENTS,
+  MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS,
   normalizeEmailAddresses,
   prepareEmailAttachments,
   prepareFileAttachments,
@@ -67,6 +69,21 @@ test("buildBulkEmailPayloads requires more than one recipient", () => {
     }),
     /at least two recipients/
   );
+});
+
+test("bulk recipient limits keep attachment fan-out within one Worker invocation", () => {
+  assert.equal(getBulkRecipientLimit({}), MAX_BULK_RECIPIENTS);
+  assert.equal(
+    getBulkRecipientLimit({
+      fileAttachments: [{
+        filename: "quotation.pdf",
+        contentType: "application/pdf",
+        contentBase64: "cGRm",
+      }],
+    }),
+    MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS
+  );
+  assert.equal(MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS, 40);
 });
 
 test("sendEmail refuses a shared To header with multiple recipients", async () => {
