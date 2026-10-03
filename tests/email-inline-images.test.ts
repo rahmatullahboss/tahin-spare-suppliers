@@ -9,6 +9,7 @@ import {
   prepareEmailAttachments,
   prepareFileAttachments,
   prepareInlineImageAttachments,
+  sendEmail,
   type EmailFileAttachmentInput,
   type InlineEmailImageInput
 } from "../src/lib/server/email-service.ts";
@@ -65,6 +66,20 @@ test("buildBulkEmailPayloads requires more than one recipient", () => {
       html: "<p>Hello</p>"
     }),
     /at least two recipients/
+  );
+});
+
+test("sendEmail refuses a shared To header with multiple recipients", async () => {
+  await assert.rejects(
+    () => sendEmail(
+      { RESEND_API_KEY: "re_test" } as never,
+      {
+        to: ["one@example.com", "two@example.com"],
+        subject: "Privacy guard",
+        html: "<p>Hello</p>"
+      }
+    ),
+    /Multiple To recipients are not allowed/
   );
 });
 
