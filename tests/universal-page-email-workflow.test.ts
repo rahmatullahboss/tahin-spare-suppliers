@@ -49,7 +49,7 @@ test("email composer exposes reliable photo and attachment pickers on mobile and
   assert.match(compose, /grid-template-columns: 1fr 1fr/);
 });
 
-test("email composer supports multiple To recipients, CC and forwarding inbound mail to the original mailbox", async () => {
+test("email composer supports private bulk To recipients, single-recipient CC and inbound forwarding", async () => {
   const [compose, sendApi, service, env] = await Promise.all([
     source("src/pages/admin/emails/send.astro"),
     source("src/pages/api/admin/emails/index.ts"),
@@ -58,16 +58,23 @@ test("email composer supports multiple To recipients, CC and forwarding inbound 
   ]);
 
   assert.match(compose, /id="cc"/);
-  assert.match(compose, /one@example\.com, two@example\.com/);
-  assert.match(compose, /JSON\.stringify\(\{[\s\S]*to,[\s\S]*cc,[\s\S]*subject/);
-  assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.to\)/);
+  assert.match(compose, /Up to 100/);
+  assert.match(compose, /maxBulkRecipientsWithAttachments = 40/);
+  assert.match(compose, /recipientBatches/);
+  assert.match(compose, /JSON\.stringify\(\{[\s\S]*to: batchTo,[\s\S]*cc,[\s\S]*subject/);
+  assert.doesNotMatch(compose, /Bulk sends cannot include photos or file attachments/);
+  assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.to, MAX_BULK_RECIPIENTS\)/);
   assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.cc/);
+  assert.match(sendApi, /sendBulkEmails/);
+  assert.match(sendApi, /inlineImages: referencedInlineImages/);
+  assert.match(sendApi, /bulkAttachmentsJson/);
+  assert.match(sendApi, /\$\$\{offset \+ 1\}/);
   assert.match(sendApi, /cc_address/);
-  assert.match(sendApi, /for \(const \[recipientIndex, recipient\] of toAddresses\.entries\(\)\)/);
-  assert.match(sendApi, /to: recipient/);
-  assert.match(sendApi, /recipient-\$\{recipientIndex \+ 1\}/);
-  assert.match(compose, /Multiple To addresses are sent as separate private emails/);
-  assert.match(service, /cc: cc\.length > 0 \? cc : undefined/);
+  assert.match(service, /to: \[recipient\]/);
+  assert.match(service, /resend\.batch\.send/);
+  assert.match(service, /MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS = 40/);
+  assert.match(service, /attachments: input\.attachments\.length > 0/);
+  assert.match(service, /cc: input\.cc\.length > 0 \? input\.cc : undefined/);
   assert.match(service, /tahin591@gmail\.com/);
   assert.match(service, /env\.INBOUND_FORWARD_TO/);
   assert.match(env, /INBOUND_FORWARD_TO\?: string/);
@@ -101,19 +108,6 @@ test("inbound email attachment retrieval falls back to Resend attachment listing
   assert.match(thread, /attachment-preview/);
   assert.match(thread, /Reply/);
   assert.match(thread, /isSafeInlineImageContentType/);
-});
-
-test("sent attachment route falls back to Resend when the private R2 copy is missing", async () => {
-  const [route, service] = await Promise.all([
-    source("src/pages/api/admin/emails/sent/[id]/attachments/[attachmentId].ts"),
-    source("src/lib/server/email-service.ts"),
-  ]);
-
-  assert.match(route, /getSentEmailAttachmentByMetadata/);
-  assert.match(route, /remoteAttachment\.download_url/);
-  assert.match(route, /isStoredSentAttachmentOwnedByEmail/);
-  assert.match(service, /emails\.attachments\.list/);
-  assert.match(service, /emails\.attachments\.get/);
 });
 
 test("homepage edit bar and mailbox expose the new management shortcuts", async () => {

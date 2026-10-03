@@ -2,11 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildBulkEmailPayloads,
   buildInboundForwardRequest,
+  getBulkRecipientLimit,
+  MAX_BULK_RECIPIENTS,
+  MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS,
   normalizeEmailAddresses,
   prepareEmailAttachments,
   prepareFileAttachments,
   prepareInlineImageAttachments,
+  sendEmail,
   type EmailFileAttachmentInput,
   type InlineEmailImageInput
 } from "../src/lib/server/email-service.ts";
@@ -17,6 +22,82 @@ test("normalizeEmailAddresses supports multiple recipients and removes duplicate
     ["first@example.com", "second@example.com", "third@example.com"]
   );
   assert.throws(() => normalizeEmailAddresses("not-an-email"), /Invalid email address/);
+});
+
+test("normalizeEmailAddresses supports the 100-recipient bulk limit", () => {
+  const recipients = Array.from(
+    { length: MAX_BULK_RECIPIENTS },
+    (_, index) => `buyer-${index + 1}@example.com`
+  );
+
+  assert.equal(
+    normalizeEmailAddresses(recipients.join(","), MAX_BULK_RECIPIENTS).length,
+    MAX_BULK_RECIPIENTS
+  );
+
+  assert.throws(
+    () => normalizeEmailAddresses(
+      [...recipients, "buyer-101@example.com"].join(","),
+      MAX_BULK_RECIPIENTS
+    ),
+    /Maximum 100 recipients/
+  );
+});
+
+test("buildBulkEmailPayloads keeps each recipient private", () => {
+  const payloads = buildBulkEmailPayloads({
+    to: "one@example.com, two@example.com, ONE@example.com",
+    subject: "Availability update",
+    html: "<p>Hello</p>",
+    idempotencyKey: "not-in-payload"
+  });
+
+  assert.equal(payloads.length, 2);
+  assert.deepEqual(payloads.map((payload) => payload.to), [
+    ["one@example.com"],
+    ["two@example.com"]
+  ]);
+  assert.ok(payloads.every((payload) => payload.to.length === 1));
+});
+
+test("buildBulkEmailPayloads requires more than one recipient", () => {
+  assert.throws(
+    () => buildBulkEmailPayloads({
+      to: "one@example.com",
+      subject: "Availability update",
+      html: "<p>Hello</p>"
+    }),
+    /at least two recipients/
+  );
+});
+
+test("bulk recipient limits keep attachment fan-out within one Worker invocation", () => {
+  assert.equal(getBulkRecipientLimit({}), MAX_BULK_RECIPIENTS);
+  assert.equal(
+    getBulkRecipientLimit({
+      fileAttachments: [{
+        filename: "quotation.pdf",
+        contentType: "application/pdf",
+        contentBase64: "cGRm",
+      }],
+    }),
+    MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS
+  );
+  assert.equal(MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS, 40);
+});
+
+test("sendEmail refuses a shared To header with multiple recipients", async () => {
+  await assert.rejects(
+    () => sendEmail(
+      { RESEND_API_KEY: "re_test" } as never,
+      {
+        to: ["one@example.com", "two@example.com"],
+        subject: "Privacy guard",
+        html: "<p>Hello</p>"
+      }
+    ),
+    /Multiple To recipients are not allowed/
+  );
 });
 
 test("prepareInlineImageAttachments keeps referenced cid images as inline attachments", () => {

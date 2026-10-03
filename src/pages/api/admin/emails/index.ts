@@ -3,7 +3,9 @@ import { requireAdminRequest } from "../../../../lib/server/api";
 import { ensureSchema, getDb } from "../../../../lib/server/db";
 import {
   filterReferencedInlineImages,
+  MAX_BULK_RECIPIENTS,
   normalizeEmailAddresses,
+  sendBulkEmails,
   sendEmail,
   type EmailFileAttachmentInput,
   type InlineEmailImageInput
@@ -119,7 +121,7 @@ export const POST: APIRoute = async (context) => {
     let toAddresses: string[];
     let ccAddresses: string[];
     try {
-      toAddresses = normalizeEmailAddresses(requestBody.to);
+      toAddresses = normalizeEmailAddresses(requestBody.to, MAX_BULK_RECIPIENTS);
       ccAddresses = normalizeEmailAddresses(requestBody.cc ?? []);
     } catch (error) {
       return Response.json(
@@ -155,6 +157,86 @@ export const POST: APIRoute = async (context) => {
     const signatureHtml = renderEmailSignatureHtml(signatureSettings);
     const signedEmailBody = appendEmailSignature(emailBody, signatureHtml);
 
+    if (toAddresses.length > 1) {
+      if (ccAddresses.length > 0) {
+        return Response.json(
+          { error: "CC is not supported for bulk sends because it would send duplicate copies to CC recipients." },
+          { status: 400 }
+        );
+      }
+
+      if (inReplyToId) {
+        return Response.json(
+          { error: "Bulk sending is not supported when replying to an existing email thread." },
+          { status: 400 }
+        );
+      }
+
+      const results = await sendBulkEmails(env, {
+        to: toAddresses,
+        subject,
+        html: signedEmailBody,
+        inlineImages: referencedInlineImages,
+        fileAttachments,
+        idempotencyKey: requestId ? `admin-email/${requestId}` : undefined,
+      });
+
+      const hasBulkAttachments = referencedInlineImages.length > 0 || fileAttachments.length > 0;
+      const storedBulkAttachments = hasBulkAttachments
+        ? await storeSentEmailAttachments(
+          env.MEDIA_BUCKET,
+          requestId ? `bulk-${requestId}` : `bulk-${crypto.randomUUID()}`,
+          referencedInlineImages,
+          fileAttachments
+        )
+        : [];
+      const bulkAttachmentsJson = JSON.stringify(storedBulkAttachments);
+
+      const insertParams: string[] = [];
+      const valueSql = results.map((result, index) => {
+        const offset = index * 9;
+        insertParams.push(
+          result.id,
+          result.to,
+          "",
+          "sales@tahinspare.com",
+          subject,
+          signedEmailBody,
+          bulkAttachmentsJson,
+          result.resendId,
+          ""
+        );
+        return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9})`;
+      }).join(", ");
+
+      const savedRows = await sql.query(
+        `INSERT INTO sent_emails (
+           id, to_address, cc_address, from_address, subject, body, attachments_json,
+           resend_id, in_reply_to_inbound_id
+         )
+         VALUES ${valueSql}
+         ON CONFLICT (resend_id) WHERE resend_id <> ''
+         DO UPDATE SET resend_id = EXCLUDED.resend_id
+         RETURNING id, resend_id`,
+        insertParams
+      );
+
+      const idByResendId = new Map(
+        savedRows.map((row) => [String(row.resend_id ?? ""), String(row.id ?? "")])
+      );
+      const ids = results
+        .map((result) => idByResendId.get(result.resendId) ?? "")
+        .filter(Boolean);
+
+      return Response.json({
+        ok: true,
+        id: ids[0] ?? "",
+        ids,
+        resendIds: results.map((result) => result.resendId),
+        recipientCount: results.length,
+      });
+    }
+
     let replyHeaders: Record<string, string> | undefined = undefined;
     if (inReplyToId) {
       const inboundResult = await sql.query(
@@ -170,82 +252,76 @@ export const POST: APIRoute = async (context) => {
       }
     }
 
-    const sent: Array<{ id: string; resendId: string; recipient: string }> = [];
+    const result = await sendEmail(env, {
+      to: toAddresses,
+      cc: ccAddresses,
+      subject,
+      html: signedEmailBody,
+      headers: replyHeaders,
+      inlineImages: referencedInlineImages,
+      fileAttachments,
+      idempotencyKey: requestId ? `admin-email/${requestId}` : undefined,
+    });
 
-    for (const [recipientIndex, recipient] of toAddresses.entries()) {
-      const result = await sendEmail(env, {
-        to: recipient,
-        cc: ccAddresses,
-        subject,
-        html: signedEmailBody,
-        headers: replyHeaders,
-        inlineImages: referencedInlineImages,
-        fileAttachments,
-        idempotencyKey: requestId
-          ? `admin-email/${requestId}/recipient-${recipientIndex + 1}`
-          : undefined,
+    const existingRows = await sql.query(
+      `SELECT id FROM sent_emails WHERE resend_id = $1 LIMIT 1`,
+      [result.resendId]
+    );
+    const existingId = typeof existingRows[0]?.id === "string" ? existingRows[0].id : "";
+    if (existingId) {
+      return Response.json({
+        ok: true,
+        id: existingId,
+        resendId: result.resendId,
+        recipientCount: 1,
       });
-
-      const existingRows = await sql.query(
-        `SELECT id FROM sent_emails WHERE resend_id = $1 LIMIT 1`,
-        [result.resendId]
-      );
-      const existingId = typeof existingRows[0]?.id === "string" ? existingRows[0].id : "";
-      if (existingId) {
-        sent.push({ id: existingId, resendId: result.resendId, recipient });
-        continue;
-      }
-
-      const storedAttachments = await storeSentEmailAttachments(
-        env.MEDIA_BUCKET,
-        result.id,
-        referencedInlineImages,
-        fileAttachments
-      );
-
-      try {
-        const savedRows = await sql.query(
-          `INSERT INTO sent_emails (
-             id, to_address, cc_address, from_address, subject, body, attachments_json,
-             resend_id, in_reply_to_inbound_id
-           )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-           ON CONFLICT (resend_id) WHERE resend_id <> ''
-           DO UPDATE SET resend_id = EXCLUDED.resend_id
-           RETURNING id`,
-          [
-            result.id,
-            recipient,
-            ccAddresses.join(", "),
-            "sales@tahinspare.com",
-            subject,
-            signedEmailBody,
-            JSON.stringify(storedAttachments),
-            result.resendId,
-            inReplyToId,
-          ]
-        );
-        const id = typeof savedRows[0]?.id === "string" ? savedRows[0].id : result.id;
-
-        if (id !== result.id) {
-          await deleteStoredSentEmailAttachments(env.MEDIA_BUCKET, storedAttachments);
-        }
-
-        sent.push({ id, resendId: result.resendId, recipient });
-      } catch (error) {
-        await deleteStoredSentEmailAttachments(env.MEDIA_BUCKET, storedAttachments);
-        throw error;
-      }
     }
 
-    const first = sent[0];
-    return Response.json({
-      ok: true,
-      id: first?.id ?? "",
-      resendId: first?.resendId ?? "",
-      count: sent.length,
-      ids: sent.map((item) => item.id),
-    });
+    const storedAttachments = await storeSentEmailAttachments(
+      env.MEDIA_BUCKET,
+      result.id,
+      referencedInlineImages,
+      fileAttachments
+    );
+
+    try {
+      const savedRows = await sql.query(
+        `INSERT INTO sent_emails (
+           id, to_address, cc_address, from_address, subject, body, attachments_json,
+           resend_id, in_reply_to_inbound_id
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (resend_id) WHERE resend_id <> ''
+         DO UPDATE SET resend_id = EXCLUDED.resend_id
+         RETURNING id`,
+        [
+          result.id,
+          toAddresses.join(", "),
+          ccAddresses.join(", "),
+          "sales@tahinspare.com",
+          subject,
+          signedEmailBody,
+          JSON.stringify(storedAttachments),
+          result.resendId,
+          inReplyToId,
+        ]
+      );
+      const id = typeof savedRows[0]?.id === "string" ? savedRows[0].id : result.id;
+
+      if (id !== result.id) {
+        await deleteStoredSentEmailAttachments(env.MEDIA_BUCKET, storedAttachments);
+      }
+
+      return Response.json({
+        ok: true,
+        id,
+        resendId: result.resendId,
+        recipientCount: 1,
+      });
+    } catch (error) {
+      await deleteStoredSentEmailAttachments(env.MEDIA_BUCKET, storedAttachments);
+      throw error;
+    }
   } catch (error) {
     console.error("Send email error:", error);
     const message = error instanceof Error ? error.message : "Failed to send email";

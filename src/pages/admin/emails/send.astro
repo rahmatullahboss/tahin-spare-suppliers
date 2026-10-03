@@ -49,7 +49,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
             type="text"
             id="to"
             name="to"
-            placeholder="one@example.com, two@example.com"
+            placeholder="Up to 100 — separate emails with commas, semicolons or new lines"
             required
             autocomplete="off"
             inputmode="email"
@@ -63,7 +63,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
             type="text"
             id="cc"
             name="cc"
-            placeholder="Optional — separate multiple emails with commas"
+            placeholder="Optional — available for single-recipient sends"
             autocomplete="off"
             inputmode="email"
           />
@@ -778,6 +778,7 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
   const maxFileAttachmentSize = 20 * 1024 * 1024;
   const maxFileAttachments = 10;
   const maxTotalAttachmentSize = 30 * 1024 * 1024;
+  const maxBulkRecipientsWithAttachments = 40;
   const inlineImages: {
     id: string;
     filename: string;
@@ -811,6 +812,19 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
     if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`;
     if (size >= 1024) return `${Math.ceil(size / 1024)} KB`;
     return `${size} B`;
+  };
+
+  const parseRecipientAddresses = (value: string) => {
+    const unique = new Map<string, string>();
+    value
+      .split(/[;,\n]+/)
+      .map((address) => address.trim())
+      .filter(Boolean)
+      .forEach((address) => {
+        const key = address.toLowerCase();
+        if (!unique.has(key)) unique.set(key, address);
+      });
+    return Array.from(unique.values());
   };
 
   const getTotalAttachmentSize = () => {
@@ -1085,6 +1099,8 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
     );
     const activeInlineImages = inlineImages.filter((image) => liveInlineImageIds.has(image.id));
     const body = buildEmailBodyHtml();
+    const recipients = parseRecipientAddresses(to);
+    const isBulkSend = recipients.length > 1;
 
     if (!to || !subject) {
       statusEl.textContent = "To and subject are required.";
@@ -1098,40 +1114,103 @@ const inReplyToId = Astro.url.searchParams.get("inReplyToId") ?? "";
       return;
     }
 
+    if (recipients.length > 100) {
+      statusEl.textContent = "Maximum 100 recipients can be sent at once.";
+      statusEl.className = "status-message error";
+      return;
+    }
+
+    if (isBulkSend && cc) {
+      statusEl.textContent = "CC is available only when sending to one recipient.";
+      statusEl.className = "status-message error";
+      return;
+    }
+
+    if (isBulkSend && inReplyToId) {
+      statusEl.textContent = "Bulk sending is not available when replying to an existing email thread.";
+      statusEl.className = "status-message error";
+      return;
+    }
+
+    const hasAttachments = activeInlineImages.length > 0 || fileAttachments.length > 0;
+
     sendBtn.disabled = true;
     sendBtn.textContent = "Sending...";
     statusEl.textContent = "";
     statusEl.className = "status-message";
 
     try {
-      const response = await fetch("/api/admin/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to,
-          cc,
-          subject,
-          body,
-          inReplyToId,
-          requestId: sendRequestId,
-          inlineImages: activeInlineImages,
-          fileAttachments,
-        }),
-      });
+      type SendResponse = {
+        error?: string;
+        recipientCount?: number;
+        id?: string;
+      };
 
-      const data = await response.json();
+      const recipientBatches = isBulkSend && hasAttachments
+        ? Array.from(
+          { length: Math.ceil(recipients.length / maxBulkRecipientsWithAttachments) },
+          (_, index) => recipients.slice(
+            index * maxBulkRecipientsWithAttachments,
+            (index + 1) * maxBulkRecipientsWithAttachments
+          )
+        )
+        : [recipients];
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to send email");
+      let totalRecipientCount = 0;
+      let lastSentId = "";
+
+      for (let index = 0; index < recipientBatches.length; index += 1) {
+        const batch = recipientBatches[index];
+        const batchTo = batch.join(", ");
+        const batchRequestId = recipientBatches.length > 1
+          ? `${sendRequestId}:part:${index + 1}`
+          : sendRequestId;
+
+        if (recipientBatches.length > 1) {
+          statusEl.textContent = `Sending ${index + 1} of ${recipientBatches.length} private batches...`;
+        }
+
+        const response = await fetch("/api/admin/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            to: batchTo,
+            cc,
+            subject,
+            body,
+            inReplyToId,
+            requestId: batchRequestId,
+            inlineImages: activeInlineImages,
+            fileAttachments,
+          }),
+        });
+
+        const data = await response.json() as SendResponse;
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to send email");
+        }
+
+        totalRecipientCount += typeof data.recipientCount === "number"
+          ? data.recipientCount
+          : batch.length;
+        if (typeof data.id === "string") lastSentId = data.id;
       }
 
-      statusEl.textContent = "Email sent successfully.";
+      statusEl.textContent = totalRecipientCount > 1
+        ? `Email sent privately to ${totalRecipientCount} recipients.`
+        : "Email sent successfully.";
       statusEl.className = "status-message success";
-      const sentId = typeof data.id === "string" ? data.id : "";
-      window.location.href = sentId
-        ? `/admin/emails/thread/sent/${encodeURIComponent(sentId)}`
+
+      if (totalRecipientCount > 1) {
+        window.location.href = "/admin/emails";
+        return;
+      }
+
+      window.location.href = lastSentId
+        ? `/admin/emails/thread/sent/${encodeURIComponent(lastSentId)}`
         : "/admin/emails";
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to send email";

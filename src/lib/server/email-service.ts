@@ -11,6 +11,10 @@ export interface EmailResult {
   resendId: string;
 }
 
+export interface BulkEmailResult extends EmailResult {
+  to: string;
+}
+
 export interface InlineEmailImageInput {
   id: string;
   filename: string;
@@ -41,6 +45,19 @@ export interface SendEmailInput {
   idempotencyKey?: string;
 }
 
+export interface SendBulkEmailInput {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  from?: string;
+  replyTo?: string;
+  headers?: Record<string, string>;
+  inlineImages?: InlineEmailImageInput[];
+  fileAttachments?: EmailFileAttachmentInput[];
+  idempotencyKey?: string;
+}
+
 const ALLOWED_INLINE_IMAGE_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -54,10 +71,17 @@ const MAX_FILE_ATTACHMENT_COUNT = 10;
 const MAX_TOTAL_ATTACHMENT_ENCODED_SIZE = 40 * 1024 * 1024;
 const DEFAULT_FROM = "Tahin Spare Suppliers <sales@tahinspare.com>";
 const DEFAULT_INBOUND_FORWARD_TO = "tahin591@gmail.com";
-const MAX_RECIPIENTS_PER_FIELD = 50;
+export const MAX_RECIPIENTS_PER_EMAIL = 50;
+export const MAX_BULK_RECIPIENTS = 100;
+export const MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS = 40;
 const EMAIL_ADDRESS_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PRIVATE_BULK_CONCURRENCY = 5;
+const PRIVATE_BULK_THROTTLE_MS = 600;
 
-export function normalizeEmailAddresses(value: unknown): string[] {
+export function normalizeEmailAddresses(
+  value: unknown,
+  maxRecipients: number = MAX_RECIPIENTS_PER_EMAIL
+): string[] {
   const parts = (Array.isArray(value) ? value : [value])
     .flatMap((item) => typeof item === "string" ? item.split(/[;,\n]+/) : [])
     .map((item) => item.trim())
@@ -73,11 +97,41 @@ export function normalizeEmailAddresses(value: unknown): string[] {
     if (seen.has(key)) continue;
     seen.add(key);
     unique.push(address);
-    if (unique.length > MAX_RECIPIENTS_PER_FIELD) {
-      throw new Error(`Maximum ${MAX_RECIPIENTS_PER_FIELD} recipients are allowed per field.`);
+    if (unique.length > maxRecipients) {
+      throw new Error(`Maximum ${maxRecipients} recipients are allowed per field.`);
     }
   }
   return unique;
+}
+
+export function buildBulkEmailPayloads(input: SendBulkEmailInput) {
+  const recipients = normalizeEmailAddresses(input.to, MAX_BULK_RECIPIENTS);
+  if (recipients.length < 2) {
+    throw new Error("Bulk email requires at least two recipients.");
+  }
+
+  return recipients.map((recipient) => ({
+    from: input.from ?? DEFAULT_FROM,
+    to: [recipient],
+    subject: input.subject,
+    html: input.html,
+    text: input.text,
+    replyTo: input.replyTo,
+    headers: input.headers,
+  }));
+}
+
+export function getBulkRecipientLimit(input: {
+  inlineImages?: InlineEmailImageInput[];
+  fileAttachments?: EmailFileAttachmentInput[];
+}): number {
+  const hasAttachments =
+    (input.inlineImages?.length ?? 0) > 0
+    || (input.fileAttachments?.length ?? 0) > 0;
+
+  return hasAttachments
+    ? MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS
+    : MAX_BULK_RECIPIENTS;
 }
 
 export function getResendClient(env: RuntimeEnv): Resend {
@@ -231,30 +285,24 @@ export function prepareEmailAttachments(
   return attachments;
 }
 
-export async function sendEmail(
-  env: RuntimeEnv,
-  input: SendEmailInput
+async function sendPreparedEmail(
+  resend: Resend,
+  input: Omit<SendEmailInput, "to" | "cc" | "inlineImages" | "fileAttachments"> & {
+    to: string[];
+    cc: string[];
+    attachments: Attachment[];
+  }
 ): Promise<EmailResult> {
-  const resend = getResendClient(env);
-  const attachments = prepareEmailAttachments(
-    input.html,
-    input.inlineImages,
-    input.fileAttachments
-  );
-  const to = normalizeEmailAddresses(input.to);
-  const cc = normalizeEmailAddresses(input.cc ?? []);
-  if (to.length === 0) throw new Error("At least one recipient is required.");
-
   const payload = {
     from: input.from ?? DEFAULT_FROM,
-    to,
-    cc: cc.length > 0 ? cc : undefined,
+    to: input.to,
+    cc: input.cc.length > 0 ? input.cc : undefined,
     subject: input.subject,
     html: input.html,
     text: input.text,
     replyTo: input.replyTo,
     headers: input.headers,
-    attachments: attachments.length > 0 ? attachments : undefined,
+    attachments: input.attachments.length > 0 ? input.attachments : undefined,
   };
   const result = input.idempotencyKey
     ? await resend.emails.send(payload, { idempotencyKey: input.idempotencyKey })
@@ -268,6 +316,119 @@ export async function sendEmail(
     id: crypto.randomUUID(),
     resendId: result.data.id,
   };
+}
+
+export async function sendEmail(
+  env: RuntimeEnv,
+  input: SendEmailInput
+): Promise<EmailResult> {
+  const resend = getResendClient(env);
+  const attachments = prepareEmailAttachments(
+    input.html,
+    input.inlineImages,
+    input.fileAttachments
+  );
+  const to = normalizeEmailAddresses(input.to);
+  const cc = normalizeEmailAddresses(input.cc ?? []);
+  if (to.length === 0) throw new Error("At least one recipient is required.");
+  if (to.length > 1) {
+    throw new Error("Multiple To recipients are not allowed in a single email. Use private bulk sending instead.");
+  }
+
+  return sendPreparedEmail(resend, {
+    ...input,
+    to,
+    cc,
+    attachments,
+  });
+}
+
+export async function sendBulkEmails(
+  env: RuntimeEnv,
+  input: SendBulkEmailInput
+): Promise<BulkEmailResult[]> {
+  const resend = getResendClient(env);
+  const recipients = normalizeEmailAddresses(input.to, MAX_BULK_RECIPIENTS);
+  if (recipients.length < 2) {
+    throw new Error("Bulk email requires at least two recipients.");
+  }
+
+  const recipientLimit = getBulkRecipientLimit(input);
+  if (recipients.length > recipientLimit) {
+    throw new Error(
+      `Maximum ${recipientLimit} recipients are allowed per attachment-enabled bulk request.`
+    );
+  }
+
+  const hasAttachments = recipientLimit === MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS;
+  if (hasAttachments) {
+    const attachments = prepareEmailAttachments(
+      input.html,
+      input.inlineImages,
+      input.fileAttachments
+    );
+    const results: BulkEmailResult[] = [];
+
+    for (let start = 0; start < recipients.length; start += PRIVATE_BULK_CONCURRENCY) {
+      const group = recipients.slice(start, start + PRIVATE_BULK_CONCURRENCY);
+      const groupResults = await Promise.all(
+        group.map(async (recipient, groupIndex) => {
+          const recipientIndex = start + groupIndex;
+          const idempotencyKey = input.idempotencyKey
+            ? `${input.idempotencyKey}/recipient-${recipientIndex + 1}`
+            : undefined;
+          const result = await sendPreparedEmail(resend, {
+            subject: input.subject,
+            html: input.html,
+            text: input.text,
+            from: input.from,
+            replyTo: input.replyTo,
+            headers: input.headers,
+            idempotencyKey,
+            to: [recipient],
+            cc: [],
+            attachments,
+          });
+
+          return {
+            ...result,
+            to: recipient,
+          };
+        })
+      );
+      results.push(...groupResults);
+
+      if (start + PRIVATE_BULK_CONCURRENCY < recipients.length) {
+        await new Promise((resolve) => setTimeout(resolve, PRIVATE_BULK_THROTTLE_MS));
+      }
+    }
+
+    return results;
+  }
+
+  const payloads = buildBulkEmailPayloads(input);
+  const result = input.idempotencyKey
+    ? await resend.batch.send(payloads, { idempotencyKey: input.idempotencyKey })
+    : await resend.batch.send(payloads);
+
+  if (result.error || !result.data) {
+    throw new Error(result.error?.message ?? "Resend did not accept the email batch.");
+  }
+
+  const accepted = result.data.data;
+  if (
+    !Array.isArray(accepted)
+    || accepted.length !== payloads.length
+    || accepted.some((item) => typeof item?.id !== "string" || !item.id)
+  ) {
+    throw new Error("Resend did not accept the complete email batch.");
+  }
+
+  return payloads.map((payload, index) => ({
+    id: crypto.randomUUID(),
+    resendId: accepted[index].id,
+    to: payload.to[0],
+  }));
 }
 
 export async function getReceivedEmail(
