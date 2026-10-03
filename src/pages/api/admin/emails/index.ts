@@ -263,7 +263,12 @@ export const POST: APIRoute = async (context) => {
     );
     const existingId = typeof existingRows[0]?.id === "string" ? existingRows[0].id : "";
     if (existingId) {
-      return Response.json({ ok: true, id: existingId, resendId: result.resendId });
+      return Response.json({
+        ok: true,
+        id: existingId,
+        resendId: result.resendId,
+        recipientCount: 1,
+      });
     }
 
     const storedAttachments = await storeSentEmailAttachments(
