@@ -317,6 +317,44 @@ export async function getReceivedEmailAttachment(
   return attachment as Awaited<ReturnType<typeof resend.emails.receiving.attachments.get>>["data"] & { download_url: string; content_type?: string };
 }
 
+export async function getSentEmailAttachmentByMetadata(
+  env: RuntimeEnv,
+  emailId: string,
+  metadata: { filename: string; contentId?: string }
+) {
+  const resend = getResendClient(env);
+  const listResult = await resend.emails.attachments.list({ emailId });
+  if (listResult.error || !listResult.data) {
+    throw new Error(listResult.error?.message ?? "Failed to list sent attachments");
+  }
+
+  const items = Array.isArray(listResult.data)
+    ? listResult.data
+    : Array.isArray((listResult.data as unknown as { data?: unknown[] }).data)
+      ? (listResult.data as unknown as { data: Array<Record<string, unknown>> }).data
+      : [];
+  const normalizedContentId = metadata.contentId?.replace(/^<|>$/g, "") ?? "";
+  const attachment = items.find((item: Record<string, unknown>) => {
+    const filename = typeof item.filename === "string" ? item.filename : "";
+    const rawContentId = typeof item.content_id === "string" ? item.content_id : "";
+    const contentId = rawContentId.replace(/^<|>$/g, "");
+    if (filename !== metadata.filename) return false;
+    return !normalizedContentId || !contentId || contentId === normalizedContentId;
+  });
+
+  const attachmentId = typeof attachment?.id === "string" ? attachment.id : "";
+  if (!attachmentId) {
+    throw new Error("Sent attachment not found");
+  }
+
+  const result = await resend.emails.attachments.get({ emailId, id: attachmentId });
+  if (result.error || !result.data) {
+    throw new Error(result.error?.message ?? "Failed to retrieve sent attachment");
+  }
+
+  return result.data as typeof result.data & { download_url: string; content_type?: string };
+}
+
 export function verifyResendWebhook(
   env: RuntimeEnv,
   payload: string,

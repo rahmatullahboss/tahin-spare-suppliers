@@ -23,6 +23,10 @@ function safeSegment(value: string, fallback: string): string {
   return cleaned || fallback;
 }
 
+export function sentAttachmentStoragePrefix(emailId: string): string {
+  return `email/sent/${safeSegment(emailId, "email")}/`;
+}
+
 function decodeBase64(contentBase64: string): Uint8Array {
   const normalized = contentBase64.replace(/\s/g, "");
   const binary = atob(normalized);
@@ -38,7 +42,7 @@ export function buildStoredSentAttachmentManifest(
   inlineImages: InlineEmailImageInput[] = [],
   fileAttachments: EmailFileAttachmentInput[] = []
 ): StoredSentAttachment[] {
-  const safeEmailId = safeSegment(emailId, "email");
+  const storagePrefix = sentAttachmentStoragePrefix(emailId);
   const manifest: StoredSentAttachment[] = [];
 
   inlineImages.forEach((image, index) => {
@@ -49,7 +53,7 @@ export function buildStoredSentAttachmentManifest(
       contentType: image.contentType || "application/octet-stream",
       contentDisposition: "inline",
       contentId: image.id,
-      storageKey: `email/sent/${safeEmailId}/${id}`,
+      storageKey: `${storagePrefix}${id}`,
     });
   });
 
@@ -61,7 +65,7 @@ export function buildStoredSentAttachmentManifest(
       contentType: file.contentType || "application/octet-stream",
       contentDisposition: "attachment",
       contentId: "",
-      storageKey: `email/sent/${safeEmailId}/${id}`,
+      storageKey: `${storagePrefix}${id}`,
     });
   });
 
@@ -91,6 +95,13 @@ export function parseStoredSentAttachments(value: unknown): StoredSentAttachment
   } catch {
     return [];
   }
+}
+
+export function isStoredSentAttachmentOwnedByEmail(
+  emailId: string,
+  attachment: StoredSentAttachment
+): boolean {
+  return attachment.storageKey.startsWith(sentAttachmentStoragePrefix(emailId));
 }
 
 export async function deleteStoredSentEmailAttachments(

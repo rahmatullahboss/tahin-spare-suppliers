@@ -63,6 +63,10 @@ test("email composer supports multiple To recipients, CC and forwarding inbound 
   assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.to\)/);
   assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.cc/);
   assert.match(sendApi, /cc_address/);
+  assert.match(sendApi, /for \(const \[recipientIndex, recipient\] of toAddresses\.entries\(\)\)/);
+  assert.match(sendApi, /to: recipient/);
+  assert.match(sendApi, /recipient-\$\{recipientIndex \+ 1\}/);
+  assert.match(compose, /Multiple To addresses are sent as separate private emails/);
   assert.match(service, /cc: cc\.length > 0 \? cc : undefined/);
   assert.match(service, /tahin591@gmail\.com/);
   assert.match(service, /env\.INBOUND_FORWARD_TO/);
@@ -97,6 +101,19 @@ test("inbound email attachment retrieval falls back to Resend attachment listing
   assert.match(thread, /attachment-preview/);
   assert.match(thread, /Reply/);
   assert.match(thread, /isSafeInlineImageContentType/);
+});
+
+test("sent attachment route falls back to Resend when the private R2 copy is missing", async () => {
+  const [route, service] = await Promise.all([
+    source("src/pages/api/admin/emails/sent/[id]/attachments/[attachmentId].ts"),
+    source("src/lib/server/email-service.ts"),
+  ]);
+
+  assert.match(route, /getSentEmailAttachmentByMetadata/);
+  assert.match(route, /remoteAttachment\.download_url/);
+  assert.match(route, /isStoredSentAttachmentOwnedByEmail/);
+  assert.match(service, /emails\.attachments\.list/);
+  assert.match(service, /emails\.attachments\.get/);
 });
 
 test("homepage edit bar and mailbox expose the new management shortcuts", async () => {

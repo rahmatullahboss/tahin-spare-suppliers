@@ -7,7 +7,9 @@ import type {
 } from "../src/lib/server/email-service.ts";
 import {
   buildStoredSentAttachmentManifest,
+  isStoredSentAttachmentOwnedByEmail,
   parseStoredSentAttachments,
+  sentAttachmentStoragePrefix,
 } from "../src/lib/server/sent-email-attachments.ts";
 
 const inlineImages: InlineEmailImageInput[] = [
@@ -101,4 +103,16 @@ test("buildStoredSentAttachmentManifest sanitizes generated identity into a priv
   assert.match(manifest[0].storageKey, /^email\/sent\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/);
   assert.equal(manifest[0].storageKey.includes(".."), false);
   assert.equal(manifest[0].storageKey.includes("/../../"), false);
+});
+
+test("sent attachment ownership uses the same sanitizer as storage creation", () => {
+  const emailId = "..sent/email unsafe--";
+  const [attachment] = buildStoredSentAttachmentManifest(emailId, [], fileAttachments);
+
+  assert.equal(
+    attachment.storageKey.startsWith(sentAttachmentStoragePrefix(emailId)),
+    true
+  );
+  assert.equal(isStoredSentAttachmentOwnedByEmail(emailId, attachment), true);
+  assert.equal(isStoredSentAttachmentOwnedByEmail("another-email", attachment), false);
 });
