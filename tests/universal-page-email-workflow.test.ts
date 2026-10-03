@@ -49,7 +49,7 @@ test("email composer exposes reliable photo and attachment pickers on mobile and
   assert.match(compose, /grid-template-columns: 1fr 1fr/);
 });
 
-test("email composer supports multiple To recipients, CC and forwarding inbound mail to the original mailbox", async () => {
+test("email composer supports private bulk To recipients, single-recipient CC and inbound forwarding", async () => {
   const [compose, sendApi, service, env] = await Promise.all([
     source("src/pages/admin/emails/send.astro"),
     source("src/pages/api/admin/emails/index.ts"),
@@ -58,11 +58,15 @@ test("email composer supports multiple To recipients, CC and forwarding inbound 
   ]);
 
   assert.match(compose, /id="cc"/);
-  assert.match(compose, /one@example\.com, two@example\.com/);
+  assert.match(compose, /Up to 100/);
   assert.match(compose, /JSON\.stringify\(\{[\s\S]*to,[\s\S]*cc,[\s\S]*subject/);
-  assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.to\)/);
+  assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.to, MAX_BULK_RECIPIENTS\)/);
   assert.match(sendApi, /normalizeEmailAddresses\(requestBody\.cc/);
+  assert.match(sendApi, /sendBulkEmails/);
+  assert.match(sendApi, /\$\$\{offset \+ 1\}/);
   assert.match(sendApi, /cc_address/);
+  assert.match(service, /to: \[recipient\]/);
+  assert.match(service, /resend\.batch\.send/);
   assert.match(service, /cc: cc\.length > 0 \? cc : undefined/);
   assert.match(service, /tahin591@gmail\.com/);
   assert.match(service, /env\.INBOUND_FORWARD_TO/);

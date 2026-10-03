@@ -200,7 +200,7 @@ export const POST: APIRoute = async (context) => {
           result.resendId,
           ""
         );
-        return `(${offset + 1}, ${offset + 2}, ${offset + 3}, ${offset + 4}, ${offset + 5}, ${offset + 6}, ${offset + 7}, ${offset + 8}, ${offset + 9})`;
+        return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9})`;
       }).join(", ");
 
       const savedRows = await sql.query(
