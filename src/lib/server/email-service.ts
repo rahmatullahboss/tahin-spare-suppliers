@@ -53,6 +53,8 @@ export interface SendBulkEmailInput {
   from?: string;
   replyTo?: string;
   headers?: Record<string, string>;
+  inlineImages?: InlineEmailImageInput[];
+  fileAttachments?: EmailFileAttachmentInput[];
   idempotencyKey?: string;
 }
 
@@ -71,7 +73,10 @@ const DEFAULT_FROM = "Tahin Spare Suppliers <sales@tahinspare.com>";
 const DEFAULT_INBOUND_FORWARD_TO = "tahin591@gmail.com";
 export const MAX_RECIPIENTS_PER_EMAIL = 50;
 export const MAX_BULK_RECIPIENTS = 100;
+export const MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS = 40;
 const EMAIL_ADDRESS_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PRIVATE_BULK_CONCURRENCY = 5;
+const PRIVATE_BULK_THROTTLE_MS = 600;
 
 export function normalizeEmailAddresses(
   value: unknown,
@@ -114,6 +119,19 @@ export function buildBulkEmailPayloads(input: SendBulkEmailInput) {
     replyTo: input.replyTo,
     headers: input.headers,
   }));
+}
+
+export function getBulkRecipientLimit(input: {
+  inlineImages?: InlineEmailImageInput[];
+  fileAttachments?: EmailFileAttachmentInput[];
+}): number {
+  const hasAttachments =
+    (input.inlineImages?.length ?? 0) > 0
+    || (input.fileAttachments?.length ?? 0) > 0;
+
+  return hasAttachments
+    ? MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS
+    : MAX_BULK_RECIPIENTS;
 }
 
 export function getResendClient(env: RuntimeEnv): Resend {
@@ -267,6 +285,39 @@ export function prepareEmailAttachments(
   return attachments;
 }
 
+async function sendPreparedEmail(
+  resend: Resend,
+  input: Omit<SendEmailInput, "to" | "cc" | "inlineImages" | "fileAttachments"> & {
+    to: string[];
+    cc: string[];
+    attachments: Attachment[];
+  }
+): Promise<EmailResult> {
+  const payload = {
+    from: input.from ?? DEFAULT_FROM,
+    to: input.to,
+    cc: input.cc.length > 0 ? input.cc : undefined,
+    subject: input.subject,
+    html: input.html,
+    text: input.text,
+    replyTo: input.replyTo,
+    headers: input.headers,
+    attachments: input.attachments.length > 0 ? input.attachments : undefined,
+  };
+  const result = input.idempotencyKey
+    ? await resend.emails.send(payload, { idempotencyKey: input.idempotencyKey })
+    : await resend.emails.send(payload);
+
+  if (result.error || !result.data?.id) {
+    throw new Error(result.error?.message ?? "Resend did not accept the email.");
+  }
+
+  return {
+    id: crypto.randomUUID(),
+    resendId: result.data.id,
+  };
+}
+
 export async function sendEmail(
   env: RuntimeEnv,
   input: SendEmailInput
@@ -284,29 +335,12 @@ export async function sendEmail(
     throw new Error("Multiple To recipients are not allowed in a single email. Use private bulk sending instead.");
   }
 
-  const payload = {
-    from: input.from ?? DEFAULT_FROM,
+  return sendPreparedEmail(resend, {
+    ...input,
     to,
-    cc: cc.length > 0 ? cc : undefined,
-    subject: input.subject,
-    html: input.html,
-    text: input.text,
-    replyTo: input.replyTo,
-    headers: input.headers,
-    attachments: attachments.length > 0 ? attachments : undefined,
-  };
-  const result = input.idempotencyKey
-    ? await resend.emails.send(payload, { idempotencyKey: input.idempotencyKey })
-    : await resend.emails.send(payload);
-
-  if (result.error || !result.data?.id) {
-    throw new Error(result.error?.message ?? "Resend did not accept the email.");
-  }
-
-  return {
-    id: crypto.randomUUID(),
-    resendId: result.data.id,
-  };
+    cc,
+    attachments,
+  });
 }
 
 export async function sendBulkEmails(
@@ -314,6 +348,64 @@ export async function sendBulkEmails(
   input: SendBulkEmailInput
 ): Promise<BulkEmailResult[]> {
   const resend = getResendClient(env);
+  const recipients = normalizeEmailAddresses(input.to, MAX_BULK_RECIPIENTS);
+  if (recipients.length < 2) {
+    throw new Error("Bulk email requires at least two recipients.");
+  }
+
+  const recipientLimit = getBulkRecipientLimit(input);
+  if (recipients.length > recipientLimit) {
+    throw new Error(
+      `Maximum ${recipientLimit} recipients are allowed per attachment-enabled bulk request.`
+    );
+  }
+
+  const hasAttachments = recipientLimit === MAX_BULK_RECIPIENTS_WITH_ATTACHMENTS;
+  if (hasAttachments) {
+    const attachments = prepareEmailAttachments(
+      input.html,
+      input.inlineImages,
+      input.fileAttachments
+    );
+    const results: BulkEmailResult[] = [];
+
+    for (let start = 0; start < recipients.length; start += PRIVATE_BULK_CONCURRENCY) {
+      const group = recipients.slice(start, start + PRIVATE_BULK_CONCURRENCY);
+      const groupResults = await Promise.all(
+        group.map(async (recipient, groupIndex) => {
+          const recipientIndex = start + groupIndex;
+          const idempotencyKey = input.idempotencyKey
+            ? `${input.idempotencyKey}/recipient-${recipientIndex + 1}`
+            : undefined;
+          const result = await sendPreparedEmail(resend, {
+            subject: input.subject,
+            html: input.html,
+            text: input.text,
+            from: input.from,
+            replyTo: input.replyTo,
+            headers: input.headers,
+            idempotencyKey,
+            to: [recipient],
+            cc: [],
+            attachments,
+          });
+
+          return {
+            ...result,
+            to: recipient,
+          };
+        })
+      );
+      results.push(...groupResults);
+
+      if (start + PRIVATE_BULK_CONCURRENCY < recipients.length) {
+        await new Promise((resolve) => setTimeout(resolve, PRIVATE_BULK_THROTTLE_MS));
+      }
+    }
+
+    return results;
+  }
+
   const payloads = buildBulkEmailPayloads(input);
   const result = input.idempotencyKey
     ? await resend.batch.send(payloads, { idempotencyKey: input.idempotencyKey })
