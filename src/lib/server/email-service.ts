@@ -280,6 +280,9 @@ export async function sendEmail(
   const to = normalizeEmailAddresses(input.to);
   const cc = normalizeEmailAddresses(input.cc ?? []);
   if (to.length === 0) throw new Error("At least one recipient is required.");
+  if (to.length > 1) {
+    throw new Error("Multiple To recipients are not allowed in a single email. Use private bulk sending instead.");
+  }
 
   const payload = {
     from: input.from ?? DEFAULT_FROM,
