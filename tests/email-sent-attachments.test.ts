@@ -7,6 +7,7 @@ import type {
 } from "../src/lib/server/email-service.ts";
 import {
   buildStoredSentAttachmentManifest,
+  findStoredSentAttachment,
   isStoredSentAttachmentOwnedByEmail,
   parseStoredSentAttachments,
   sentAttachmentStoragePrefix,
@@ -115,4 +116,22 @@ test("sent attachment ownership uses the same sanitizer as storage creation", ()
   );
   assert.equal(isStoredSentAttachmentOwnedByEmail(emailId, attachment), true);
   assert.equal(isStoredSentAttachmentOwnedByEmail("another-email", attachment), false);
+});
+
+test("row-scoped lookup supports shared bulk attachment storage", () => {
+  const [attachment] = buildStoredSentAttachmentManifest(
+    "bulk-request-123",
+    [],
+    fileAttachments
+  );
+  const rowAttachmentsJson = JSON.stringify([attachment]);
+
+  assert.equal(
+    isStoredSentAttachmentOwnedByEmail("recipient-row-email-id", attachment),
+    false
+  );
+  assert.deepEqual(
+    findStoredSentAttachment(rowAttachmentsJson, attachment.id),
+    attachment
+  );
 });

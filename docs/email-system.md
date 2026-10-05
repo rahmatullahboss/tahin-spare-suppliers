@@ -55,9 +55,9 @@ Admin-sent attachments are persisted for the application mailbox independently o
 
 1. Resend accepts the outbound message using the request idempotency key.
 2. Only inline images still referenced by `cid:` in the final HTML body are retained.
-3. Inline images and normal file attachments are stored in the private `MEDIA_BUCKET` R2 binding under `email/sent/<local-email-id>/<attachment-id>`.
+3. Inline images and normal file attachments are stored in the private `MEDIA_BUCKET` R2 binding. Single-recipient sends use `email/sent/<local-email-id>/<attachment-id>`; bulk sends may share one batch-scoped object set across recipient rows to avoid duplicating the same file bytes.
 4. Safe attachment metadata is stored in `sent_emails.attachments_json`; raw attachment bytes are not stored in Postgres.
-5. `/api/admin/emails/sent/:id/attachments/:attachmentId` verifies the admin session and serves the corresponding private R2 object.
+5. `/api/admin/emails/sent/:id/attachments/:attachmentId` verifies the admin session, resolves the attachment only from that sent-email row's validated manifest, and serves the corresponding private R2 object.
 6. Safe raster images may render inline; all other formats download as attachments.
 
 R2 object keys are implementation details and must never be exposed through unauthenticated routes. If database persistence fails after R2 staging, staged objects are deleted on a best-effort basis. If a request is retried after Resend already accepted the message, the Resend idempotency key and stored `resend_id` prevent a duplicate outbound email.

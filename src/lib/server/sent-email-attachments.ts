@@ -97,6 +97,14 @@ export function parseStoredSentAttachments(value: unknown): StoredSentAttachment
   }
 }
 
+export function findStoredSentAttachment(
+  value: unknown,
+  attachmentId: string
+): StoredSentAttachment | null {
+  if (!attachmentId) return null;
+  return parseStoredSentAttachments(value).find((item) => item.id === attachmentId) ?? null;
+}
+
 export function isStoredSentAttachmentOwnedByEmail(
   emailId: string,
   attachment: StoredSentAttachment

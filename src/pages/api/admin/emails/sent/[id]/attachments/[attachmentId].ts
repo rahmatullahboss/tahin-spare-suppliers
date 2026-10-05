@@ -4,8 +4,7 @@ import { ensureSchema, getDb } from "../../../../../../../lib/server/db";
 import { isSafeInlineImageContentType } from "../../../../../../../lib/server/email-content";
 import { getSentEmailAttachmentByMetadata } from "../../../../../../../lib/server/email-service";
 import {
-  isStoredSentAttachmentOwnedByEmail,
-  parseStoredSentAttachments,
+  findStoredSentAttachment,
 } from "../../../../../../../lib/server/sent-email-attachments";
 
 export const prerender = false;
@@ -37,9 +36,11 @@ export const GET: APIRoute = async (context) => {
       return Response.json({ error: "Email not found" }, { status: 404 });
     }
 
-    const attachments = parseStoredSentAttachments(rows[0]?.attachments_json);
-    const attachment = attachments.find((item) => item.id === attachmentId);
-    if (!attachment || !isStoredSentAttachmentOwnedByEmail(emailId, attachment)) {
+    // The selected sent_emails row is the authorization scope for its manifest.
+    // Bulk sends intentionally share one private R2 object set across recipient
+    // rows, so the storage prefix is not always the row's local email id.
+    const attachment = findStoredSentAttachment(rows[0]?.attachments_json, attachmentId);
+    if (!attachment) {
       return Response.json({ error: "Attachment not found" }, { status: 404 });
     }
 
