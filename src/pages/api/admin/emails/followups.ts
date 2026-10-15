@@ -7,7 +7,8 @@ import { normalizeEmailSubject } from "../../../../lib/server/email-thread";
 import { appendEmailSignature, getEmailSignatureSettings, renderEmailSignatureHtml } from "../../../../lib/server/email-signature";
 import {
   defaultFollowupBody, defaultFollowupSubject, getEligibleFollowupCandidate,
-  listFollowupCandidates, resolveSourceMessageId, safeMessageId
+  listFollowupCandidates, countFollowupCandidates, FOLLOWUP_PAGE_SIZE,
+  resolveSourceMessageId, safeMessageId
 } from "../../../../lib/server/email-followups";
 
 export const prerender = false;
@@ -56,8 +57,12 @@ export const GET: APIRoute = async (context) => {
        WHERE status = 'sending'
          AND updated_at < NOW() - INTERVAL '15 minutes'`
     );
-    const [candidates, drafts] = await Promise.all([
-      listFollowupCandidates(sql),
+    const requestedPage = Number(context.url.searchParams.get('page') ?? '1');
+    const page = Number.isSafeInteger(requestedPage) && requestedPage >= 1
+      ? Math.min(requestedPage, 10000) : 1;
+    const [candidates, candidateCount, drafts] = await Promise.all([
+      listFollowupCandidates(sql, page),
+      countFollowupCandidates(sql),
       sql.query(`SELECT f.id, f.source_sent_id, f.recipient, f.subject, f.body, f.status,
                         f.send_error, f.created_at, f.updated_at, f.approved_at, f.sent_at,
                         s.subject AS original_subject, s.created_at AS original_sent_at
@@ -65,7 +70,8 @@ export const GET: APIRoute = async (context) => {
                  WHERE f.status IN ('draft','approved','sending','uncertain')
                  ORDER BY f.created_at DESC LIMIT 200`)
     ]);
-    return Response.json({ candidates, drafts });
+    return Response.json({ candidates, candidateCount, page,
+      totalPages: Math.max(1, Math.ceil(candidateCount / FOLLOWUP_PAGE_SIZE)), drafts });
   } catch (error) {
     console.error("Follow-up list error:", error);
     return Response.json({ error: "Could not load follow-ups." }, { status: 500 });

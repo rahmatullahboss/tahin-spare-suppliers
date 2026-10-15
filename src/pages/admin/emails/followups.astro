@@ -39,6 +39,12 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
           <tbody id="candidate-rows"><tr><td colspan="4">Loading…</td></tr></tbody>
         </table>
       </div>
+      <nav class="candidate-pagination" aria-label="Unanswered client pages">
+        <button type="button" id="candidate-prev" class="secondary">← Previous</button>
+        <span id="candidate-page-info">Page 1</span>
+        <button type="button" id="candidate-next" class="secondary">Next →</button>
+        <span id="candidate-selected-count" aria-live="polite">0 selected (max 50 per batch)</span>
+      </nav>
     </section>
 
     <section class="followups-panel">
@@ -93,6 +99,8 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
   .status.approved { color: #046b45; background: #e6f5ee; }
   .status.uncertain { color: #9d4700; background: #fff1dd; }
   .helper { font-size: 13px; color: #63718a; margin: 12px 0 0; }
+  .candidate-pagination { display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:#63718a; }
+  #candidate-selected-count { margin-left:auto;font-weight:700; }
   @media (max-width: 780px) {
     .followups-top { align-items: flex-start; flex-direction: column; }
     .draft-grid { grid-template-columns: 1fr; }
@@ -105,7 +113,7 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
 <script>
   type Candidate = { id: string; to_address: string; subject: string; created_at: string };
   type Draft = { id: string; source_sent_id: string; recipient: string; subject: string; body: string; status: string; original_subject: string; original_sent_at: string; send_error?: string };
-  type Data = { candidates: Candidate[]; drafts: Draft[]; error?: string };
+  type Data = { candidates: Candidate[]; drafts: Draft[]; candidateCount: number; page: number; totalPages: number; error?: string };
   type Result = { id: string; ok: boolean; error?: string };
   const endpoint = "/api/admin/emails/followups";
   const $ = (id: string) => document.getElementById(id);
@@ -113,6 +121,16 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
   const draftList = $("draft-list")!;
   const status = $("followups-status")!;
   let busy = false;
+  let candidatePage = 1;
+  let candidateTotalPages = 1;
+  const selectedCandidates = new Set<string>();
+  function renderCandidateSelection(): void {
+    document.querySelectorAll<HTMLInputElement>('.candidate-select').forEach((el) => { el.checked = selectedCandidates.has(el.value); });
+    $('candidate-selected-count')!.textContent = `${selectedCandidates.size} selected (max 50 per batch)`;
+    const visible = [...document.querySelectorAll<HTMLInputElement>('.candidate-select')];
+    const selectAll = $('select-all-candidates') as HTMLInputElement;
+    selectAll.checked = visible.length > 0 && visible.every((el) => el.checked);
+  }
   const escape = (v: unknown): string => String(v ?? "").replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c] ?? c));
@@ -133,6 +151,9 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
     document.querySelectorAll<HTMLButtonElement>(".followups-shell button").forEach((button) => {
       button.disabled = value;
     });
+    // Preserve first/last page navigation bounds after a refresh.
+    ($('candidate-prev') as HTMLButtonElement).disabled = value || candidatePage <= 1;
+    ($('candidate-next') as HTMLButtonElement).disabled = value || candidatePage >= candidateTotalPages;
   }
   async function request(action: string, ids?: string[], method = "POST", extra?: Record<string, unknown>): Promise<{ error?: string; results?: Result[] }> {
     const res = await fetch(endpoint, {
@@ -147,10 +168,15 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
     if (busy) return;
     setBusy(true);
     try {
-      const res = await fetch(endpoint, { cache: "no-store" });
+      const res = await fetch(`${endpoint}?page=${candidatePage}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Could not load client follow-ups.");
       const data = await res.json() as Data;
-      $("candidate-summary")!.textContent = `${data.candidates.length} eligible conversations`;
+      candidatePage = data.page;
+      candidateTotalPages = data.totalPages;
+      $('candidate-page-info')!.textContent = `Page ${candidatePage} of ${candidateTotalPages}`;
+      ($('candidate-prev') as HTMLButtonElement).disabled = candidatePage <= 1;
+      ($('candidate-next') as HTMLButtonElement).disabled = candidatePage >= candidateTotalPages;
+      $("candidate-summary")!.textContent = `${data.candidateCount} eligible conversations · ${data.candidates.length} shown`;
       $("draft-summary")!.textContent = `${data.drafts.length} pending drafts`;
       candidateRows.innerHTML = data.candidates.length
         ? data.candidates.map((c) => `<tr>
@@ -159,6 +185,7 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
           <td><a href="/admin/emails/thread/sent/${encodeURIComponent(c.id)}">${escape(c.subject)}</a></td>
           <td>${escape(day(c.created_at))}</td></tr>`).join("")
         : '<tr><td colspan="4">No unanswered conversations are due now.</td></tr>';
+      renderCandidateSelection();
       draftList.innerHTML = data.drafts.length ? data.drafts.map((d) => `
         <article class="draft-card" data-draft-id="${escape(d.id)}">
           <div class="draft-head">
@@ -211,22 +238,43 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
     report(`${success} draft(s) ${action === "approve" ? "approved" : "saved"}. ${errors.slice(0, 3).join("; ")}`, errors.length > 0);
   }
   $("reload")?.addEventListener("click", () => void load());
+  $('candidate-prev')?.addEventListener('click', () => {
+    if (candidatePage > 1 && !busy) { candidatePage -= 1; void load(); }
+  });
+  $('candidate-next')?.addEventListener('click', () => {
+    if (candidatePage < candidateTotalPages && !busy) { candidatePage += 1; void load(); }
+  });
+  candidateRows.addEventListener('change', (event) => {
+    const element = event.target;
+    if (!(element instanceof HTMLInputElement) || !element.classList.contains('candidate-select')) return;
+    if (element.checked && selectedCandidates.size >= 50) {
+      element.checked = false;
+      report('Select no more than 50 clients per batch.', true);
+    } else if (element.checked) selectedCandidates.add(element.value);
+    else selectedCandidates.delete(element.value);
+    renderCandidateSelection();
+  });
   $("select-all-candidates")?.addEventListener("change", (event) => {
     const checked = (event.target as HTMLInputElement).checked;
-    document.querySelectorAll<HTMLInputElement>(".candidate-select").forEach((el) => { el.checked = checked; });
+    document.querySelectorAll<HTMLInputElement>(".candidate-select").forEach((el) => {
+      if (checked && selectedCandidates.size < 50) selectedCandidates.add(el.value);
+      if (!checked) selectedCandidates.delete(el.value);
+    });
+    renderCandidateSelection();
   });
   $("select-all-drafts")?.addEventListener("change", (event) => {
     const checked = (event.target as HTMLInputElement).checked;
     document.querySelectorAll<HTMLInputElement>(".draft-select").forEach((el) => { el.checked = checked; });
   });
   $("create-drafts")?.addEventListener("click", async () => {
-    const ids = selected(".candidate-select");
+    const ids = [...selectedCandidates];
     if (!ids.length) return report("Choose unanswered clients first.", true);
     if (ids.length > 50) return report("Create at most 50 drafts at a time.", true);
     setBusy(true);
     try {
       const data = await request("create", ids);
       const failures = (data.results ?? []).filter((r) => !r.ok);
+      for (const result of data.results ?? []) if (result.ok) selectedCandidates.delete(result.id);
       setBusy(false);
       await load();
       report(`${ids.length - failures.length} draft(s) created. ${failures.slice(0, 3).map((r) => r.error).join("; ")}`, failures.length > 0);
