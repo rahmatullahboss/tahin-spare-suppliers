@@ -326,11 +326,12 @@ export async function listContent(
     WHERE pca.product_id = p.id
   ), '[]'::jsonb) AS additional_categories FROM products p`;
   let query = type === "products" ? productSelect : `SELECT * FROM ${config.table}`;
+  if (type === "blog") query += " WHERE deleted_at IS NULL";
   const params: (string | number)[] = [];
   const columnPrefix = type === "products" ? "p." : "";
 
   if (options?.search) {
-    query += ` WHERE ${columnPrefix}${config.titleColumn} ILIKE $1 OR ${columnPrefix}${config.excerptColumn} ILIKE $1`;
+    query += ` ${type === "blog" ? "AND" : "WHERE"} (${columnPrefix}${config.titleColumn} ILIKE $1 OR ${columnPrefix}${config.excerptColumn} ILIKE $1)`;
     params.push(`%${options.search}%`);
   }
 
@@ -398,10 +399,11 @@ export async function countContent(env: RuntimeEnv, type: ContentType, search?: 
   const config = CONTENT_TABLES[type];
 
   let query = `SELECT COUNT(*) as total FROM ${config.table}`;
+  if (type === "blog") query += " WHERE deleted_at IS NULL";
   const params: string[] = [];
 
   if (search) {
-    query += ` WHERE ${config.titleColumn} ILIKE $1 OR ${config.excerptColumn} ILIKE $1`;
+    query += ` ${type === "blog" ? "AND" : "WHERE"} (${config.titleColumn} ILIKE $1 OR ${config.excerptColumn} ILIKE $1)`;
     params.push(`%${search}%`);
   }
 
@@ -418,7 +420,7 @@ export async function getContentBySlug(env: RuntimeEnv, type: ContentType, slug:
         SELECT jsonb_agg(jsonb_build_object('category', pca.category_name, 'subcategory', pca.subcategory_name) ORDER BY pca.category_name)
         FROM product_category_assignments pca WHERE pca.product_id = p.id
       ), '[]'::jsonb) AS additional_categories FROM products p WHERE p.slug = $1 LIMIT 1`
-    : `SELECT * FROM ${table} WHERE slug = $1 LIMIT 1`;
+    : `SELECT * FROM ${table} WHERE slug = $1 ${type === "blog" ? "AND deleted_at IS NULL" : ""} LIMIT 1`;
   const rows = await sql.query(query, [slug]);
   return rows[0] ? mapRecord(type, rows[0]) : null;
 }
@@ -559,7 +561,7 @@ export async function updateContent(
          image_key = $6,
          gallery_images = $7::jsonb,
          updated_at = NOW()
-     WHERE id = $8
+     WHERE id = $8 ${type === "blog" ? "AND deleted_at IS NULL" : ""}
      RETURNING *`,
     [slug, input.title, excerpt, content, imageUrl, imageKey, galleryJson, id]
   );
@@ -571,5 +573,9 @@ export async function deleteContent(env: RuntimeEnv, type: ContentType, id: stri
   await ensureSchema(env);
   const sql = getDb(env);
   const { table } = CONTENT_TABLES[type];
+  if (type === "blog") {
+    await sql.query("UPDATE blog_posts SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL", [id]);
+    return;
+  }
   await sql.query(`DELETE FROM ${table} WHERE id = $1`, [id]);
 }
