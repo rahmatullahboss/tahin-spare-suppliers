@@ -1,0 +1,265 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../../lib/server/env";
+import { isAuthenticated } from "../../../lib/server/session";
+
+const env = getRuntimeEnv(Astro.locals);
+if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
+  return Astro.redirect("/admin/login");
+}
+---
+
+<AdminLayout title="Bulk Follow-ups" active="emails">
+  <main class="followups-shell">
+    <div class="followups-top">
+      <div>
+        <a class="back-link" href="/admin/emails">← Back to mailbox</a>
+        <h1>Client follow-ups</h1>
+        <p>Find emails unanswered for 7 days, draft together, review each message, then explicitly approve and send.</p>
+      </div>
+      <button type="button" id="reload" class="secondary">Refresh replies</button>
+    </div>
+    <div class="safety-note">
+      <strong>No automatic sending.</strong> Creating or approving a draft never sends mail. Only the separate
+      “Send selected approved” action sends. Each reply uses the original email thread.
+    </div>
+    <p id="followups-status" role="status" aria-live="polite"></p>
+
+    <section class="followups-panel">
+      <div class="panel-header">
+        <div><h2>Unanswered for 7+ days</h2><p id="candidate-summary">Checking replies…</p></div>
+        <div class="actions">
+          <label class="select-all"><input type="checkbox" id="select-all-candidates" /> Select all shown</label>
+          <button type="button" id="create-drafts" class="primary">Create selected drafts</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Select</th><th scope="col">Client</th><th scope="col">Original subject</th><th scope="col">Last email</th></tr></thead>
+          <tbody id="candidate-rows"><tr><td colspan="4">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="followups-panel">
+      <div class="panel-header">
+        <div><h2>Review all follow-up drafts</h2><p id="draft-summary">Loading drafts…</p></div>
+        <div class="actions">
+          <label class="select-all"><input type="checkbox" id="select-all-drafts" /> Select all drafts</label>
+          <button type="button" id="save-drafts" class="secondary">Save edits</button>
+          <button type="button" id="approve-drafts" class="secondary">Approve selected</button>
+          <button type="button" id="send-drafts" class="primary">Send selected approved</button>
+        </div>
+      </div>
+      <div id="draft-list" class="draft-list"></div>
+      <p class="helper">Review the subject and message of each client. Edit any message before approving. For safety, an edited approved draft returns to Draft until approved again. At most 15 approved follow-ups can be sent per click.</p>
+    </section>
+  </main>
+</AdminLayout>
+
+<style>
+  .followups-shell { max-width: 1200px; margin: 0 auto; padding-bottom: 40px; color: #243047; }
+  .followups-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 18px; }
+  .followups-top h1 { font-size: clamp(26px, 4vw, 36px); margin: 12px 0 6px; letter-spacing: -.04em; }
+  .followups-top p { margin: 0; color: #617088; line-height: 1.5; max-width: 690px; }
+  .back-link { text-decoration: none; color: #176695; font-weight: 700; }
+  .safety-note { padding: 14px 18px; border: 1px solid #b9d1ed; background: #f0f7ff; border-radius: 12px; line-height: 1.6; }
+  #followups-status { margin: 16px 0; min-height: 20px; font-weight: 600; white-space: pre-line; }
+  .followups-panel { background: #fff; border: 1px solid #dde4ee; border-radius: 16px; padding: 18px; margin: 18px 0; box-shadow: 0 7px 24px #253d5710; }
+  .panel-header { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+  .panel-header h2 { margin: 0 0 4px; font-size: 20px; }
+  .panel-header p { margin: 0; color: #68758b; }
+  .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .select-all { display: flex; gap: 7px; align-items: center; font-size: 14px; }
+  .primary, .secondary { min-height: 42px; border-radius: 9px; padding: 9px 14px; font-weight: 700; cursor: pointer; border: 1px solid #b9c5d5; }
+  .primary { background: #166098; color: white; border-color: #166098; }
+  .secondary { background: #fff; color: #214760; }
+  button:disabled { opacity: .5; cursor: wait; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 500px; }
+  th { text-align: left; background: #f6f8fb; color: #5d6b81; }
+  td, th { border-bottom: 1px solid #e5e9f0; padding: 12px; vertical-align: middle; font-size: 14px; }
+  .draft-list { display: grid; gap: 14px; }
+  .draft-card { border: 1px solid #dce4ed; border-radius: 12px; padding: 15px; display: grid; gap: 12px; }
+  .draft-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .draft-person { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .draft-person a { color: #11649a; overflow-wrap: anywhere; }
+  .draft-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 13px; }
+  .draft-grid label { display: grid; gap: 5px; font-size: 13px; font-weight: 700; color: #475569; }
+  .draft-grid input, .draft-grid textarea { display: block; width: 100%; min-height: 42px; border: 1px solid #bfcbd8; border-radius: 8px; padding: 10px; background: #fff; font: 14px/1.5 inherit; color: #233044; }
+  .draft-grid textarea { min-height: 135px; resize: vertical; font-family: inherit; }
+  .draft-meta { color: #63718a; font-size: 12px; }
+  .status { border-radius: 40px; background: #eef3f7; padding: 5px 10px; font-weight: 700; font-size: 12px; }
+  .status.approved { color: #046b45; background: #e6f5ee; }
+  .status.uncertain { color: #9d4700; background: #fff1dd; }
+  .helper { font-size: 13px; color: #63718a; margin: 12px 0 0; }
+  @media (max-width: 780px) {
+    .followups-top { align-items: flex-start; flex-direction: column; }
+    .draft-grid { grid-template-columns: 1fr; }
+    .actions { width: 100%; }
+    .actions button { flex: 1 1 auto; }
+    .followups-panel { padding: 12px; }
+  }
+</style>
+
+<script>
+  type Candidate = { id: string; to_address: string; subject: string; created_at: string };
+  type Draft = { id: string; source_sent_id: string; recipient: string; subject: string; body: string; status: string; original_subject: string; original_sent_at: string; send_error?: string };
+  type Data = { candidates: Candidate[]; drafts: Draft[]; error?: string };
+  type Result = { id: string; ok: boolean; error?: string };
+  const endpoint = "/api/admin/emails/followups";
+  const $ = (id: string) => document.getElementById(id);
+  const candidateRows = $("candidate-rows")!;
+  const draftList = $("draft-list")!;
+  const status = $("followups-status")!;
+  let busy = false;
+  const escape = (v: unknown): string => String(v ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c] ?? c));
+  const day = (v: string): string => {
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  };
+  function report(message: string, error = false): void {
+    status.textContent = message;
+    status.style.color = error ? "#ae311b" : "#145f4a";
+  }
+  function selected(selector: string): string[] {
+    return [...document.querySelectorAll<HTMLInputElement>(selector)]
+      .filter((el) => el.checked).map((el) => el.value);
+  }
+  function setBusy(value: boolean): void {
+    busy = value;
+    document.querySelectorAll<HTMLButtonElement>(".followups-shell button").forEach((button) => {
+      button.disabled = value;
+    });
+  }
+  async function request(action: string, ids?: string[], method = "POST", extra?: Record<string, unknown>): Promise<{ error?: string; results?: Result[] }> {
+    const res = await fetch(endpoint, {
+      method, headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, ids, ...extra })
+    });
+    const data = await res.json() as { error?: string; results?: Result[] };
+    if (!res.ok) throw new Error(data.error || "Request failed");
+    return data;
+  }
+  async function load(): Promise<void> {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch(endpoint, { cache: "no-store" });
+      if (!res.ok) throw new Error("Could not load client follow-ups.");
+      const data = await res.json() as Data;
+      $("candidate-summary")!.textContent = `${data.candidates.length} eligible conversations`;
+      $("draft-summary")!.textContent = `${data.drafts.length} pending drafts`;
+      candidateRows.innerHTML = data.candidates.length
+        ? data.candidates.map((c) => `<tr>
+          <td><input type="checkbox" aria-label="Select ${escape(c.to_address)}" class="candidate-select" value="${escape(c.id)}" /></td>
+          <td>${escape(c.to_address)}</td>
+          <td><a href="/admin/emails/thread/sent/${encodeURIComponent(c.id)}">${escape(c.subject)}</a></td>
+          <td>${escape(day(c.created_at))}</td></tr>`).join("")
+        : '<tr><td colspan="4">No unanswered conversations are due now.</td></tr>';
+      draftList.innerHTML = data.drafts.length ? data.drafts.map((d) => `
+        <article class="draft-card" data-draft-id="${escape(d.id)}">
+          <div class="draft-head">
+            <div class="draft-person">
+              <input type="checkbox" class="draft-select" value="${escape(d.id)}" aria-label="Select draft for ${escape(d.recipient)}" />
+              <strong>${escape(d.recipient)}</strong>
+              <span class="status ${escape(d.status)}">${escape(d.status)}</span>
+            </div>
+            <a href="/admin/emails/thread/sent/${encodeURIComponent(d.source_sent_id)}">View original thread ↗</a>
+          </div>
+          <div class="draft-meta">Original: ${escape(d.original_subject)} · ${escape(day(d.original_sent_at))}</div>
+          <div class="draft-grid">
+            <label>Subject<input class="draft-subject" maxlength="250" value="${escape(d.subject)}" ${["draft","approved"].includes(d.status) ? "" : "disabled"} /></label>
+            <label>Follow-up message<textarea class="draft-body" maxlength="30000" ${["draft","approved"].includes(d.status) ? "" : "disabled"}>${escape(d.body)}</textarea></label>
+          </div>
+          ${d.send_error ? `<div class="draft-meta">Send needs manual review: ${escape(d.send_error)}</div>` : ""}
+        </article>`).join("")
+        : '<p>No drafts yet. Select clients above to generate drafts.</p>';
+      report("List refreshed. No email was sent.");
+    } catch (error) {
+      report(error instanceof Error ? error.message : "Loading failed", true);
+    } finally { setBusy(false); }
+  }
+  function getDraftContents(id: string): { subject: string; body: string } {
+    const item = [...document.querySelectorAll<HTMLElement>("[data-draft-id]")].find((el) => el.dataset.draftId === id);
+    if (!item) throw new Error("Draft is not in the current list.");
+    const subject = item.querySelector<HTMLInputElement>(".draft-subject")?.value.trim() ?? "";
+    const body = item.querySelector<HTMLTextAreaElement>(".draft-body")?.value.trim() ?? "";
+    if (!subject || !body) throw new Error("Subject and message are required.");
+    return { subject, body };
+  }
+  async function batchDraftUpdate(action: "save" | "approve"): Promise<void> {
+    if (busy) return;
+    const ids = selected(".draft-select");
+    if (!ids.length) return report("Select drafts to review first.", true);
+    setBusy(true);
+    let success = 0;
+    const errors: string[] = [];
+    for (const id of ids) {
+      try {
+        const detail = getDraftContents(id);
+        await request(action, undefined, "PATCH", { id, ...detail });
+        success += 1;
+      } catch (error) {
+        errors.push(error instanceof Error ? error.message : "Update failed");
+      }
+    }
+    setBusy(false);
+    await load();
+    report(`${success} draft(s) ${action === "approve" ? "approved" : "saved"}. ${errors.slice(0, 3).join("; ")}`, errors.length > 0);
+  }
+  $("reload")?.addEventListener("click", () => void load());
+  $("select-all-candidates")?.addEventListener("change", (event) => {
+    const checked = (event.target as HTMLInputElement).checked;
+    document.querySelectorAll<HTMLInputElement>(".candidate-select").forEach((el) => { el.checked = checked; });
+  });
+  $("select-all-drafts")?.addEventListener("change", (event) => {
+    const checked = (event.target as HTMLInputElement).checked;
+    document.querySelectorAll<HTMLInputElement>(".draft-select").forEach((el) => { el.checked = checked; });
+  });
+  $("create-drafts")?.addEventListener("click", async () => {
+    const ids = selected(".candidate-select");
+    if (!ids.length) return report("Choose unanswered clients first.", true);
+    if (ids.length > 50) return report("Create at most 50 drafts at a time.", true);
+    setBusy(true);
+    try {
+      const data = await request("create", ids);
+      const failures = (data.results ?? []).filter((r) => !r.ok);
+      setBusy(false);
+      await load();
+      report(`${ids.length - failures.length} draft(s) created. ${failures.slice(0, 3).map((r) => r.error).join("; ")}`, failures.length > 0);
+    } catch (error) { setBusy(false); report(error instanceof Error ? error.message : "Failed", true); }
+  });
+  $("save-drafts")?.addEventListener("click", () => void batchDraftUpdate("save"));
+  $("approve-drafts")?.addEventListener("click", () => void batchDraftUpdate("approve"));
+  $("send-drafts")?.addEventListener("click", async () => {
+    const ids = selected(".draft-select");
+    if (!ids.length) return report("Select the approved drafts to send.", true);
+    if (ids.length > 15) return report("Send at most 15 approved follow-ups per click.", true);
+    const cards = [...document.querySelectorAll<HTMLElement>("[data-draft-id]")];
+    const unapproved = ids.filter((id) => {
+      const card = cards.find((el) => el.dataset.draftId === id);
+      return !card?.querySelector(".status.approved");
+    });
+    if (unapproved.length) return report("All selected drafts must be approved before sending.", true);
+    const unsaved = ids.some((id) => {
+      const card = cards.find((el) => el.dataset.draftId === id);
+      const subject = card?.querySelector<HTMLInputElement>(".draft-subject");
+      const body = card?.querySelector<HTMLTextAreaElement>(".draft-body");
+      return subject?.value !== subject?.defaultValue || body?.value !== body?.defaultValue;
+    });
+    if (unsaved) return report("You have unsaved edits. Save, review and approve again before sending.", true);
+    if (!window.confirm(`Send ${ids.length} approved follow-up email(s) now? This is the final sending authorization.`)) return;
+    setBusy(true);
+    try {
+      const data = await request("send", ids);
+      const failures = (data.results ?? []).filter((r) => !r.ok);
+      setBusy(false);
+      await load();
+      report(`${ids.length - failures.length} sent. ${failures.length} need review. ${failures.slice(0, 3).map((r) => r.error).join("; ")}`, failures.length > 0);
+    } catch (error) { setBusy(false); report(error instanceof Error ? error.message : "Send failed", true); }
+  });
+  void load();
+</script>
