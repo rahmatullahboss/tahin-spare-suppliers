@@ -38,10 +38,10 @@ The prior `DELETE /api/blog/:id` immediately deleted the blog post DB row and it
 ## Verification / outstanding production acceptance
 
 - Astro/Cloudflare build passed locally on 2026-10-15.
-- New focused follow-up and blog recovery contract tests: 6/6 passed.
-- Full test suite at latest run: 178 passed, 1 unrelated failure because local `@modelcontextprotocol/sdk` dependency was unavailable for a Search Console MCP test.
-- No production deployment, production Neon migrations, external email dispatch, or live recipient verification was performed by this implementation.
+- New focused follow-up and blog recovery contract tests: 7/7 passed after pagination coverage.
+- Full test suite at latest run: 180/180 passed; clean npm install and `npm audit --omit=dev` found 0 vulnerabilities. Cloudflare Wrangler dry-run passed.
+- Production deployment is confirmed for merged security-fix commit `fdfea73a4778041b9e9b41d350c46b64b069dd0a` (2026-10-15); GitHub Verify and Cloudflare deploy/smoke jobs passed. Read-only Neon checks confirmed `email_followup_drafts` and `blog_posts.deleted_at` exist. No external client follow-up emails or live send/thread verification were performed. The follow-up pagination improvement in this document requires its own deployment.
 - Before production launch, deploy the new build in an authorized change window and confirm schema migration, a signed inbound reply, old Resend `message_id` lookup, due queue, bulk draft editing, approval-only behavior, an explicitly approved controlled send, SMTP inbox thread grouping (Gmail/Outlook), and Trash/Restore with a test post.
 - Pay attention to concurrent incoming replies during an in-flight Resend send; provider acceptance and receiving are two independent systems. The server rechecks reply eligibility immediately before sending but cannot roll back an already accepted message.
 - Legacy threads without a retrievable original RFC Message-ID are intentionally blocked to preserve truthful threading.
-- The due page currently displays the newest 200 eligible conversations per request. Larger-scale pagination can be added when the client list exceeds this limit.
+- The unanswered queue uses server-side pagination (100 per page) with an exact total count; selected clients are preserved across pages, limited to 50 selected per batch. No hard 200-conversation truncation.

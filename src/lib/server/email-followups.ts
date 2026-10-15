@@ -59,9 +59,11 @@ const sqlSubject = (column: string): string =>
   `lower(btrim(regexp_replace(${column}, '^(\\s*(re|fw|fwd)\\s*:\\s*)+', '', 'i')))`;
 const emailFromInbound = "lower(substring(i.from_address from '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}'))";
 
-export function eligibleFollowupQuery(single = false, ignorePendingDraft = false): string {
+export const FOLLOWUP_PAGE_SIZE = 100;
+
+export function eligibleFollowupQuery(single = false, ignorePendingDraft = false, countOnly = false): string {
   const sameSubject = `${sqlSubject("s2.subject")} = ${sqlSubject("s.subject")}`;
-  return `SELECT s.id, s.to_address, s.subject, s.created_at, s.resend_id, s.message_id, s.delivery_status
+  return `SELECT ${countOnly ? "COUNT(*) AS total" : "s.id, s.to_address, s.subject, s.created_at, s.resend_id, s.message_id, s.delivery_status"}
     FROM sent_emails s
     WHERE s.created_at <= NOW() - INTERVAL '7 days'
       AND s.resend_id IS NOT NULL AND s.resend_id <> ''
@@ -101,13 +103,18 @@ export function eligibleFollowupQuery(single = false, ignorePendingDraft = false
         WHERE f.source_sent_id = s.id AND f.status IN ('draft','approved','sending','uncertain')
       )`}
       ${single ? "AND s.id = $1" : ""}
-    ORDER BY s.created_at DESC
-    LIMIT ${single ? "1" : "200"}`;
+    ${countOnly ? "" : `ORDER BY s.created_at DESC, s.id DESC LIMIT ${single ? "1" : FOLLOWUP_PAGE_SIZE} ${single ? "" : "OFFSET $1"}`}`;
 }
 
-export async function listFollowupCandidates(sql: Sql): Promise<FollowupCandidate[]> {
-  const rows = await sql.query(eligibleFollowupQuery());
+export async function listFollowupCandidates(sql: Sql, page = 1): Promise<FollowupCandidate[]> {
+  const safePage = Math.max(1, Math.min(10000, Math.floor(page) || 1));
+  const rows = await sql.query(eligibleFollowupQuery(), [(safePage - 1) * FOLLOWUP_PAGE_SIZE]);
   return rows as unknown as FollowupCandidate[];
+}
+
+export async function countFollowupCandidates(sql: Sql): Promise<number> {
+  const rows = await sql.query(eligibleFollowupQuery(false, false, true));
+  return Number(rows[0]?.total ?? 0);
 }
 
 export async function getEligibleFollowupCandidate(sql: Sql, id: string, ignorePendingDraft = false): Promise<FollowupCandidate | null> {

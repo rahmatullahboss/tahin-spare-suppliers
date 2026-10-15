@@ -50,6 +50,22 @@ test("email schemas have persistent draft and threaded reply metadata", async ()
   assert.match(schema, /message_id TEXT/);
 });
 
+test("unanswered follow-up queue paginates the full eligible set and preserves batch selections", async () => {
+  const helper = await read("src/lib/server/email-followups.ts");
+  const api = await read("src/pages/api/admin/emails/followups.ts");
+  const page = await read("src/pages/admin/emails/followups.astro");
+  assert.match(helper, /COUNT\(\*\) AS total/);
+  assert.match(helper, /OFFSET \$1/);
+  assert.match(helper, /FOLLOWUP_PAGE_SIZE = 100/);
+  assert.match(api, /countFollowupCandidates\(sql\)/);
+  assert.match(api, /totalPages:/);
+  assert.match(page, /id="candidate-next"/);
+  assert.match(page, /id="candidate-prev"/);
+  assert.match(page, /selectedCandidates = new Set<string>\(\)/);
+  assert.match(page, /selectedCandidates\.add\(el\.value\)/);
+  assert.match(page, /selectedCandidates\.delete\(result\.id\)/);
+});
+
 test("blog admin uses true server-side pagination instead of hiding older posts", async () => {
   const editor = await read("src/components/admin/ContentEditor.astro");
   const repo = await read("src/lib/server/repository.ts");
