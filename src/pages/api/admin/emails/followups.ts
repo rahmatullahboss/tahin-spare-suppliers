@@ -127,8 +127,18 @@ export const PATCH: APIRoute = async (context) => {
     }
     const result = await sql.query(
       `UPDATE email_followup_drafts
-       SET subject = $2, body = $3, status = $4, updated_at = NOW(),
-           approved_at = CASE WHEN $4 = 'approved' THEN NOW() ELSE NULL END
+       SET subject = $2, body = $3,
+           status = CASE
+             WHEN $4 = 'approved' THEN 'approved'
+             WHEN subject IS DISTINCT FROM $2 OR body IS DISTINCT FROM $3 THEN 'draft'
+             ELSE status
+           END,
+           updated_at = NOW(),
+           approved_at = CASE
+             WHEN $4 = 'approved' THEN NOW()
+             WHEN subject IS DISTINCT FROM $2 OR body IS DISTINCT FROM $3 THEN NULL
+             ELSE approved_at
+           END
        WHERE id = $1 AND status IN ('draft','approved') RETURNING id, status`,
       [id, subject, emailBody, action === "approve" ? "approved" : "draft"]
     );
@@ -154,24 +164,31 @@ export const POST: APIRoute = async (context) => {
     const sql = getDb(env);
     const results: { id: string; ok: boolean; error?: string }[] = [];
     if (action === "create") {
-      for (const id of ids) {
-        try {
-          const source = await getEligibleFollowupCandidate(sql, id);
-          if (!source) throw new Error("Client already replied, or email is not due.");
-          await resolveSourceMessageId(env, source);
-          const draftId = crypto.randomUUID();
-          const inserted = await sql.query(
-            `INSERT INTO email_followup_drafts
-               (id, source_sent_id, recipient, subject, body)
-             VALUES ($1, $2, $3, $4, $5)
-             ON CONFLICT DO NOTHING RETURNING id`,
-            [draftId, source.id, source.to_address, defaultFollowupSubject(source.subject), defaultFollowupBody()]
-          );
-          if (!inserted.length) throw new Error("Follow-up already drafted.");
-          results.push({ id, ok: true });
-        } catch (error) {
-          results.push({ id, ok: false, error: error instanceof Error ? error.message : "Could not create draft." });
-        }
+      // A full 50-client batch previously performed all database + provider
+      // round trips serially. Bound concurrency to avoid long Worker requests
+      // without flooding Resend or Neon, while retaining per-client results.
+      for (let start = 0; start < ids.length; start += 4) {
+        const group = ids.slice(start, start + 4);
+        const groupResults = await Promise.all(group.map(async (id) => {
+          try {
+            const source = await getEligibleFollowupCandidate(sql, id);
+            if (!source) throw new Error("Client already replied, or email is not due.");
+            await resolveSourceMessageId(env, source);
+            const draftId = crypto.randomUUID();
+            const inserted = await sql.query(
+              `INSERT INTO email_followup_drafts
+                 (id, source_sent_id, recipient, subject, body)
+               VALUES ($1, $2, $3, $4, $5)
+               ON CONFLICT DO NOTHING RETURNING id`,
+              [draftId, source.id, source.to_address, defaultFollowupSubject(source.subject), defaultFollowupBody()]
+            );
+            if (!inserted.length) throw new Error("Follow-up already drafted.");
+            return { id, ok: true };
+          } catch (error) {
+            return { id, ok: false, error: error instanceof Error ? error.message : "Could not create draft." };
+          }
+        }));
+        results.push(...groupResults);
       }
       return Response.json({ results });
     }

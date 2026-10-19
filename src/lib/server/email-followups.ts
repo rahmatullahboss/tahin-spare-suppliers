@@ -1,7 +1,7 @@
 import type { RuntimeEnv } from "./env";
 import { getDb } from "./db";
 import { getResendClient } from "./email-service";
-import { extractEmailAddress, makeReplySubject, normalizeEmailSubject } from "./email-thread";
+import { extractEmailAddress, makeReplySubject, normalizeEmailSubject, normalizedEmailSubjectSql as sqlSubject } from "./email-thread";
 
 type Sql = ReturnType<typeof getDb>;
 
@@ -55,8 +55,7 @@ export function defaultFollowupSubject(subject: string): string {
   return makeReplySubject(subject);
 }
 
-const sqlSubject = (column: string): string =>
-  `lower(btrim(regexp_replace(${column}, '^(\\s*(re|fw|fwd)\\s*:\\s*)+', '', 'i')))`;
+
 const emailFromInbound = "lower(substring(i.from_address from '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}'))";
 
 export const FOLLOWUP_PAGE_SIZE = 100;

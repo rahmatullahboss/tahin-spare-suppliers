@@ -7,6 +7,7 @@ import {
   extractEmailAddress,
   makeReplySubject,
   normalizeEmailSubject,
+  normalizedEmailSubjectSql,
 } from "../../../../../lib/server/email-thread";
 import {
   isSafeInlineImageContentType,
@@ -103,15 +104,14 @@ const subjectKey = normalizeEmailSubject(anchor.subject);
 
 // Query this conversation directly rather than fetching the last 500 emails
 // globally: older client threads must not disappear as the mailbox grows.
-const normalizedSubjectSql = (column: string) =>
-  `lower(btrim(regexp_replace(${column}, '^(\\s*(re|fw|fwd)\\s*:\\s*)+', '', 'i')))`;
+
 const [inboundRows, sentRows] = await Promise.all([
   sql.query(
     `SELECT id, from_address, to_address, '' as cc_address, subject, body, html_body, attachments_json,
             created_at, '' as in_reply_to_inbound_id
      FROM inbound_emails
      WHERE lower(substring(from_address from '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}')) = $1
-       AND ${normalizedSubjectSql("subject")} = $2
+       AND ${normalizedEmailSubjectSql("subject")} = $2
      ORDER BY created_at DESC
      LIMIT 500`,
     [customerEmail, subjectKey]
@@ -120,7 +120,7 @@ const [inboundRows, sentRows] = await Promise.all([
     `SELECT id, from_address, to_address, cc_address, subject, body, '' as html_body,
             attachments_json, created_at, in_reply_to_inbound_id
      FROM sent_emails
-     WHERE lower(to_address) = $1 AND ${normalizedSubjectSql("subject")} = $2
+     WHERE lower(to_address) = $1 AND ${normalizedEmailSubjectSql("subject")} = $2
      ORDER BY created_at DESC
      LIMIT 500`,
     [customerEmail, subjectKey]
