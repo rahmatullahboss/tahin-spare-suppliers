@@ -51,7 +51,8 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
       <div class="panel-header">
         <div><h2>Review all follow-up drafts</h2><p id="draft-summary">Loading drafts…</p></div>
         <div class="actions">
-          <label class="select-all"><input type="checkbox" id="select-all-drafts" /> Select all drafts</label>
+          <label class="select-all"><input type="checkbox" id="select-all-drafts" /> Select editable drafts</label>
+          <button type="button" id="select-approved-drafts" class="secondary">Select approved (up to 15)</button>
           <button type="button" id="save-drafts" class="secondary">Save edits</button>
           <button type="button" id="approve-drafts" class="secondary">Approve selected</button>
           <button type="button" id="send-drafts" class="primary">Send selected approved</button>
@@ -124,6 +125,32 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
   let candidatePage = 1;
   let candidateTotalPages = 1;
   const selectedCandidates = new Set<string>();
+  // Preserve draft selections across save → approve → send refreshes.
+  // Selections are kept only in this page session, never on the server.
+  const selectedDrafts = new Set<string>();
+  function dirtyDraftIds(): string[] {
+    return [...document.querySelectorAll<HTMLElement>("[data-draft-id]")]
+      .filter((card) => {
+        const subject = card.querySelector<HTMLInputElement>(".draft-subject");
+        const body = card.querySelector<HTMLTextAreaElement>(".draft-body");
+        return (subject && !subject.disabled && subject.value !== subject.defaultValue)
+          || (body && !body.disabled && body.value !== body.defaultValue);
+      }).map((card) => card.dataset.draftId ?? "").filter(Boolean);
+  }
+  function renderDraftSelection(): void {
+    document.querySelectorAll<HTMLInputElement>(".draft-select").forEach((checkbox) => {
+      const card = checkbox.closest<HTMLElement>("[data-draft-id]");
+      const editable = !!card?.querySelector(".status.approved, .status.draft");
+      checkbox.disabled = !editable;
+      checkbox.checked = editable && selectedDrafts.has(checkbox.value);
+    });
+    const editable = [...document.querySelectorAll<HTMLInputElement>(".draft-select")].filter((checkbox) => !checkbox.disabled);
+    ($("select-all-drafts") as HTMLInputElement).checked =
+      editable.length > 0 && editable.every((checkbox) => checkbox.checked);
+  }
+  function confirmDiscardEdits(): boolean {
+    return !dirtyDraftIds().length || window.confirm("You have unsaved follow-up edits. Discard them and reload the list?");
+  }
   function renderCandidateSelection(): void {
     document.querySelectorAll<HTMLInputElement>('.candidate-select').forEach((el) => { el.checked = selectedCandidates.has(el.value); });
     $('candidate-selected-count')!.textContent = `${selectedCandidates.size} selected (max 50 per batch)`;
@@ -186,6 +213,8 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
           <td>${escape(day(c.created_at))}</td></tr>`).join("")
         : '<tr><td colspan="4">No unanswered conversations are due now.</td></tr>';
       renderCandidateSelection();
+      const validDraftIds = new Set(data.drafts.filter((d) => ["draft", "approved"].includes(d.status)).map((d) => d.id));
+      for (const id of selectedDrafts) if (!validDraftIds.has(id)) selectedDrafts.delete(id);
       draftList.innerHTML = data.drafts.length ? data.drafts.map((d) => `
         <article class="draft-card" data-draft-id="${escape(d.id)}">
           <div class="draft-head">
@@ -204,6 +233,7 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
           ${d.send_error ? `<div class="draft-meta">Send needs manual review: ${escape(d.send_error)}</div>` : ""}
         </article>`).join("")
         : '<p>No drafts yet. Select clients above to generate drafts.</p>';
+      renderDraftSelection();
       report("List refreshed. No email was sent.");
     } catch (error) {
       report(error instanceof Error ? error.message : "Loading failed", true);
@@ -221,23 +251,33 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
     if (busy) return;
     const ids = selected(".draft-select");
     if (!ids.length) return report("Select drafts to review first.", true);
+    const unselectedDirty = dirtyDraftIds().filter((id) => !ids.includes(id));
+    if (unselectedDirty.length) return report(
+      `You have ${unselectedDirty.length} unsaved unselected draft(s). Select and save them first, or discard edits before continuing.`, true
+    );
     setBusy(true);
     let success = 0;
     const errors: string[] = [];
-    for (const id of ids) {
-      try {
+    // Review large batches with bounded concurrency, rather than keeping the
+    // page busy for a sequential request per client.
+    for (let start = 0; start < ids.length; start += 4) {
+      const slice = ids.slice(start, start + 4);
+      const updates = await Promise.allSettled(slice.map(async (id) => {
         const detail = getDraftContents(id);
         await request(action, undefined, "PATCH", { id, ...detail });
-        success += 1;
-      } catch (error) {
-        errors.push(error instanceof Error ? error.message : "Update failed");
+      }));
+      for (const result of updates) {
+        if (result.status === "fulfilled") success += 1;
+        else errors.push(result.reason instanceof Error ? result.reason.message : "Update failed");
       }
+      report(`${success + errors.length} of ${ids.length} draft(s) processed. No email was sent.`, errors.length > 0);
     }
     setBusy(false);
-    await load();
-    report(`${success} draft(s) ${action === "approve" ? "approved" : "saved"}. ${errors.slice(0, 3).join("; ")}`, errors.length > 0);
+    if (!errors.length) await load();
+    // Failed edits must stay visible for correction and retry; never discard them on partial failures.
+    report(`${success} draft(s) ${action === "approve" ? "approved" : "saved"}. ${errors.slice(0, 3).join("; ")}${errors.length ? " Unsaved content is preserved; retry or refresh after review." : ""}`, errors.length > 0);
   }
-  $("reload")?.addEventListener("click", () => void load());
+  $("reload")?.addEventListener("click", () => { if (confirmDiscardEdits()) void load(); });
   $('candidate-prev')?.addEventListener('click', () => {
     if (candidatePage > 1 && !busy) { candidatePage -= 1; void load(); }
   });
@@ -264,11 +304,37 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
   });
   $("select-all-drafts")?.addEventListener("change", (event) => {
     const checked = (event.target as HTMLInputElement).checked;
-    document.querySelectorAll<HTMLInputElement>(".draft-select").forEach((el) => { el.checked = checked; });
+    document.querySelectorAll<HTMLInputElement>(".draft-select").forEach((el) => {
+      if (el.disabled) return;
+      if (checked) selectedDrafts.add(el.value);
+      else selectedDrafts.delete(el.value);
+    });
+    renderDraftSelection();
+  });
+  draftList.addEventListener("change", (event) => {
+    const element = event.target;
+    if (!(element instanceof HTMLInputElement) || !element.classList.contains("draft-select")) return;
+    if (element.checked) selectedDrafts.add(element.value);
+    else selectedDrafts.delete(element.value);
+    renderDraftSelection();
+  });
+  $("select-approved-drafts")?.addEventListener("click", () => {
+    let count = 0;
+    selectedDrafts.clear();
+    document.querySelectorAll<HTMLInputElement>(".draft-select").forEach((el) => {
+      const card = el.closest<HTMLElement>("[data-draft-id]");
+      if (card?.querySelector(".status.approved") && count < 15) {
+        selectedDrafts.add(el.value);
+        count += 1;
+      }
+    });
+    renderDraftSelection();
+    report(count ? `${count} approved follow-up(s) selected. Review them before final send confirmation.` : "No approved follow-ups to select.", !count);
   });
   $("create-drafts")?.addEventListener("click", async () => {
     const ids = [...selectedCandidates];
     if (!ids.length) return report("Choose unanswered clients first.", true);
+    if (!confirmDiscardEdits()) return;
     if (ids.length > 50) return report("Create at most 50 drafts at a time.", true);
     setBusy(true);
     try {
@@ -299,6 +365,9 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
       return subject?.value !== subject?.defaultValue || body?.value !== body?.defaultValue;
     });
     if (unsaved) return report("You have unsaved edits. Save, review and approve again before sending.", true);
+    if (dirtyDraftIds().some((id) => !ids.includes(id))) return report(
+      "Other drafts have unsaved edits. Save them before sending; otherwise a refresh would discard them.", true
+    );
     if (!window.confirm(`Send ${ids.length} approved follow-up email(s) now? This is the final sending authorization.`)) return;
     setBusy(true);
     try {
