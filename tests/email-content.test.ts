@@ -3,6 +3,8 @@ import test from "node:test";
 
 import {
   isSafeInlineImageContentType,
+  parseInboundAttachments,
+  recoverEmbeddedInlineImage,
   sanitizeEmailHeader,
   sanitizeEmailHtml,
   type InboundEmailAttachment
@@ -78,6 +80,61 @@ test("sanitizeEmailHtml does not inline active image formats", () => {
   );
 
   assert.doesNotMatch(html, /attachment-svg|cid:/i);
+});
+
+test("received images embedded as base64 map to their unique manifest sizes even when filenames repeat", () => {
+  const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
+  const first = Uint8Array.from([...pngSignature, 1, 2, 3]);
+  const second = Uint8Array.from([...pngSignature, 4, 5, 6, 7, 8]);
+  const third = Uint8Array.from([...pngSignature, 9, 10, 11, 12, 13, 14, 15]);
+  const attachments = parseInboundAttachments(JSON.stringify([first, second, third].map((bytes, index) => ({
+    id: `image-${index + 1}`,
+    filename: "image.png",
+    content_type: "image/png",
+    content_id: `<image-${index + 1}>`,
+    content_disposition: "inline",
+    size: bytes.length
+  }))));
+  const body = [first, second, third].map((bytes) =>
+    `<img src="data:image/png;base64,${Buffer.from(bytes).toString("base64")}" alt="image.png">`
+  ).join("");
+  const html = sanitizeEmailHtml(body, attachments, "email-1");
+
+  for (let i = 1; i <= 3; i += 1) {
+    assert.match(html, new RegExp(`src="/api/admin/emails/inbound/email-1/attachments/image-${i}"`));
+    const recovered = recoverEmbeddedInlineImage(body, attachments, `image-${i}`);
+    assert.ok(recovered);
+    assert.deepEqual(recovered.bytes, [first, second, third][i - 1]);
+    assert.equal(recovered.contentType, "image/png");
+  }
+  assert.doesNotMatch(html, /data:image|base64/);
+});
+
+test("embedded images fail closed when the size is ambiguous or metadata absent", () => {
+  const bytes = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 4, 5, 6, 7]);
+  const body = `<img src="data:image/png;base64,${bytes.toString("base64")}">`;
+  const duplicate = parseInboundAttachments(JSON.stringify([1, 2].map((index) => ({
+    id: `duplicate-${index}`,
+    filename: "image.png",
+    content_type: "image/png",
+    content_disposition: "inline",
+    size: bytes.length
+  }))));
+  assert.doesNotMatch(sanitizeEmailHtml(body, duplicate, "email-1"), /\/attachments\//);
+  assert.equal(recoverEmbeddedInlineImage(body, duplicate, "duplicate-1"), null);
+  assert.doesNotMatch(sanitizeEmailHtml(body, [], "email-1"), /data:image/);
+});
+
+test("embedded image recovery checks actual raster signature", () => {
+  const bytes = Buffer.from("malicious markup");
+  const body = `<img src="data:image/png;base64,${bytes.toString("base64")}">`;
+  const manifest = parseInboundAttachments(JSON.stringify([{
+    id: "spoofed",
+    filename: "image.png",
+    content_type: "image/png",
+    size: bytes.length
+  }]));
+  assert.equal(recoverEmbeddedInlineImage(body, manifest, "spoofed"), null);
 });
 
 test("safe inline image types are limited to passive raster formats", () => {

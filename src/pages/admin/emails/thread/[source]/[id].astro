@@ -887,10 +887,33 @@ function formatTimestamp(value: string): string {
 </style>
 
 <script>
-  document.querySelectorAll(".message-body img").forEach((image) => {
-    image.addEventListener("click", () => {
-      if (image instanceof HTMLImageElement && image.src) {
-        window.open(image.src, "_blank", "noopener,noreferrer");
+  document.querySelectorAll<HTMLImageElement>(".message-body img").forEach((image) => {
+    const showUnavailable = () => {
+      if (!image.isConnected) return;
+      const notice = document.createElement("span");
+      notice.className = "inline-image-unavailable";
+      notice.textContent = `${image.alt || "Image"} — image unavailable`;
+      const enclosingLink = image.closest("a");
+      if (enclosingLink && enclosingLink.textContent?.trim() === "" && enclosingLink.querySelectorAll("img").length === 1) {
+        enclosingLink.replaceWith(notice);
+      } else {
+        image.replaceWith(notice);
+      }
+    };
+
+    image.addEventListener("error", showUnavailable, { once: true });
+    if (image.complete && image.naturalWidth === 0) showUnavailable();
+
+    image.addEventListener("click", (event) => {
+      event.preventDefault();
+      const rawSrc = image.getAttribute("src")?.trim();
+      if (!rawSrc || image.naturalWidth === 0) return;
+      try {
+        const url = new URL(rawSrc, window.location.href);
+        if (!["http:", "https:"].includes(url.protocol) || url.href === window.location.href) return;
+        window.open(url.href, "_blank", "noopener,noreferrer");
+      } catch {
+        // Malformed sender-controlled URL: never open the current page.
       }
     });
   });
