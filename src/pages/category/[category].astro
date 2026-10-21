@@ -1,6 +1,8 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CategoryIntroSection from '../../components/CategoryIntroSection.astro';
+import { getCategoryIntroCopy, getCategoryIntroImage } from '../../lib/category-intro';
 import { getBrandLogoAsset } from '../../lib/brand-logos';
 import { shouldShowCategoryBrandDirectory } from '../../lib/category-brand-directory';
 import { resolveCategorySeo, toUrlSlug } from '../../lib/seo';
@@ -39,6 +41,8 @@ const displayBrands = [...new Set(
 const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
 
 const categorySeo = resolveCategorySeo({ slug: currentCategory.slug, value: currentCategory.value });
+const categoryIntro = getCategoryIntroCopy(currentCategory.slug, currentCategory.value);
+const categoryIntroImage = getCategoryIntroImage(currentCategory.imageUrl, categoryProducts.map((product) => product.imageUrl));
 
 const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduce((groups, product) => {
   const brand = product.brand?.trim();
@@ -95,6 +99,13 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
     { name: 'Marine Equipment', href: '/products' },
     { name: currentCategory.value, href: `/category/${currentCategory.slug}` }
   ]} />
+
+  <CategoryIntroSection
+    name={currentCategory.value}
+    imageUrl={categoryIntroImage}
+    imageAlt={categoryIntroImage === '/images/warehouse.webp' ? 'Marine equipment supply warehouse' : `${currentCategory.value} equipment example`}
+    copy={categoryIntro}
+  />
 
   {subcategories.length > 0 && (
     <section class="section subcategories-section">

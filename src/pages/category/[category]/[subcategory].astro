@@ -1,6 +1,8 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CategoryIntroSection from '../../../components/CategoryIntroSection.astro';
+import { getCategoryIntroCopy, getCategoryIntroImage } from '../../../lib/category-intro';
 import { toUrlSlug } from '../../../lib/seo';
 import { getRuntimeEnv } from '../../../lib/server/env';
 import { listProductSummaries } from '../../../lib/server/repository';
@@ -34,6 +36,11 @@ const displayBrands = [...new Set(
     .filter((brand) => brand.length > 0)
 )];
 const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
+const categoryIntro = getCategoryIntroCopy(currentSubcategory.slug, currentSubcategory.value, parent.value);
+const categoryIntroImage = getCategoryIntroImage(
+  currentSubcategory.imageUrl,
+  filteredProducts.map((product) => product.imageUrl)
+);
 
 ---
 <MainLayout
@@ -56,6 +63,13 @@ const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'bran
     { name: parent.value, href: `/category/${parent.slug}` },
     { name: currentSubcategory.value, href: `/category/${parent.slug}/${currentSubcategory.slug}` }
   ]} />
+
+  <CategoryIntroSection
+    name={currentSubcategory.value}
+    imageUrl={categoryIntroImage}
+    imageAlt={categoryIntroImage === '/images/warehouse.webp' ? 'Marine equipment supply warehouse' : `${currentSubcategory.value} equipment example`}
+    copy={categoryIntro}
+  />
 
   <section class="section">
     <div class="container">
