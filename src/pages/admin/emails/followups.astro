@@ -230,7 +230,7 @@ if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) {
             <label>Subject<input class="draft-subject" maxlength="250" value="${escape(d.subject)}" ${["draft","approved"].includes(d.status) ? "" : "disabled"} /></label>
             <label>Follow-up message<textarea class="draft-body" maxlength="30000" ${["draft","approved"].includes(d.status) ? "" : "disabled"}>${escape(d.body)}</textarea></label>
           </div>
-          ${d.send_error ? `<div class="draft-meta">Send needs manual review: ${escape(d.send_error)}</div>` : ""}
+          ${d.send_error ? `<div class="draft-meta">${d.status === "uncertain" ? "Send needs manual review" : "Previous send check failed"}: ${escape(d.send_error)}</div>` : ""}
         </article>`).join("")
         : '<p>No drafts yet. Select clients above to generate drafts.</p>';
       renderDraftSelection();

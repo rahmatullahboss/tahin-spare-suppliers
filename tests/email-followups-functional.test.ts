@@ -83,6 +83,11 @@ class FakeDb {
     if (sql.includes("SET status = 'uncertain'")) {
       const d = this.drafts.get(String(values[0])); if(d?.status === "sending"){d.status="uncertain"; d.send_error=values[1];} return [];
     }
+    if (sql.includes("SET status = 'approved', send_error = $2")) {
+      const d = this.drafts.get(String(values[0]));
+      if (d?.status === "sending" && !d.resend_id) { d.status = "approved"; d.send_error = values[1]; }
+      return [];
+    }
     throw new Error(`Unexpected DB query: ${sql.slice(0,110)}`);
   }
 }
@@ -191,6 +196,21 @@ test("functional follow-up: reply before send stops delivery", async () => {
   assert.equal((result.results as Row[])[0].ok,false);
   assert.equal(env.db.drafts.get(id)?.status,"replied");
   assert.equal(inputs(env).length,0);
+});
+
+test("functional follow-up: pre-provider validation failure preserves approval and never sends", async () => {
+  const route = await handlers(); const env = setup();
+  await route.POST(context("POST", { action: "create", ids: ["source-001"] }));
+  const id = [...env.db.drafts.keys()][0];
+  await route.PATCH(context("PATCH", { action: "approve", id, subject: "Re: Marine engine quotation", body: "Hello" }));
+  // Simulate a stale/invalid subject discovered only during final preflight.
+  const draft = env.db.drafts.get(id)!;
+  draft.subject = "Re: Unrelated topic";
+  const result = await json(await route.POST(context("POST", { action: "send", ids: [id] })));
+  assert.equal((result.results as Row[])[0].ok, false);
+  assert.equal(inputs(env).length, 0);
+  assert.equal(draft.status, "approved");
+  assert.match(String(draft.send_error), /no longer matches/);
 });
 
 test("functional follow-up: ambiguous provider failure is uncertain and never auto-retried", async () => {
