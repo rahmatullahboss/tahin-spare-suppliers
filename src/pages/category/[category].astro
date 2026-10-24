@@ -5,7 +5,7 @@ import CategoryIntroSection from '../../components/CategoryIntroSection.astro';
 import { getCategoryIntroCopy, getCategoryIntroImage } from '../../lib/category-intro';
 import { getBrandLogoAsset } from '../../lib/brand-logos';
 import { shouldShowCategoryBrandDirectory } from '../../lib/category-brand-directory';
-import { resolveCategorySeo, toUrlSlug } from '../../lib/seo';
+import { resolveCategoryBuyerGuide, resolveCategorySeo, toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
 import { listProductSummaries } from '../../lib/server/repository';
 import { findCategoryBySlug, listSubcategories } from '../../lib/server/categories';
@@ -41,6 +41,7 @@ const displayBrands = [...new Set(
 const brandSummary = displayBrands.length > 0 ? displayBrands.join(', ') : 'brands that match your requested maker and model';
 
 const categorySeo = resolveCategorySeo({ slug: currentCategory.slug, value: currentCategory.value });
+const categoryBuyerGuide = categoryProducts.length > 0 ? resolveCategoryBuyerGuide(currentCategory.slug) : undefined;
 const categoryIntro = getCategoryIntroCopy(currentCategory.slug, currentCategory.value);
 const categoryIntroImage = getCategoryIntroImage(currentCategory.imageUrl, categoryProducts.map((product) => product.imageUrl));
 
@@ -204,6 +205,13 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
         </>
       )}
 
+      {categoryBuyerGuide && (
+        <p class="category-guide-link">
+          <strong>{categoryBuyerGuide.prompt}</strong>
+          <a href={categoryBuyerGuide.href}>{categoryBuyerGuide.title} →</a>
+        </p>
+      )}
+
       <!-- FAQ Section for AI SEO -->
       <div class="faq-section mt-5">
         <h3 class="reveal">Frequently Asked Questions</h3>
@@ -305,6 +313,9 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
 </script>
 
 <style>
+  .category-guide-link { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem; margin: 2rem 0; padding: 1rem 1.25rem; background: #f8fafc; border-left: 3px solid #b11623; border-radius: 5px; }
+  .category-guide-link strong { color: #1f2937; }
+  .category-guide-link a { font-weight: 700; color: #b11623; text-underline-offset: 3px; }
   .page-hero {
     position: relative;
     height: 250px;
