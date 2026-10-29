@@ -23,16 +23,26 @@ export async function ensureSchema(env: RuntimeEnv) {
   if (!schemaReady.has(env.DATABASE_URL)) {
     const promise = (async () => {
       const sql = getDb(env);
-      const [, versionRows] = await sql.transaction([
-        sql`CREATE TABLE IF NOT EXISTS app_schema_meta (
+      // Hot paths do only a read on a cold Worker isolate, not a DDL transaction.
+      // Schema creation remains available for newly provisioned installations.
+      let deployedVersion = "";
+      try {
+        const rows = await sql.query("SELECT version FROM app_schema_meta WHERE key = 'main' LIMIT 1");
+        deployedVersion = String(rows?.[0]?.version ?? "");
+      } catch (error) {
+        const code = (error as { code?: string })?.code;
+        const message = error instanceof Error ? error.message : "";
+        if (code !== "42P01" && !/relation .*app_schema_meta.* does not exist/i.test(message)) {
+          throw error;
+        }
+        await sql`CREATE TABLE IF NOT EXISTS app_schema_meta (
           key TEXT PRIMARY KEY,
           version TEXT NOT NULL,
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        )`,
-        sql`SELECT version FROM app_schema_meta WHERE key = 'main' LIMIT 1`,
-      ]);
+        )`;
+      }
 
-      if (String(versionRows?.[0]?.version ?? "") === SCHEMA_VERSION) {
+      if (deployedVersion === SCHEMA_VERSION) {
         return;
       }
 

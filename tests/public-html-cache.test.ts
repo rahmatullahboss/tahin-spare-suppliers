@@ -14,9 +14,18 @@ test("only anonymous, canonical public HTML is cache eligible", () => {
   for (const path of ["/", "/products", "/products/engine", "/category/spare-parts", "/brands/yamaha", "/blog/tips", "/inventory/marine-spare-parts"]) {
     assert.equal(isAnonymousCatalogRequest(req(path)), true, path);
   }
-  for (const path of ["/admin", "/admin/emails", "/api/products", "/api/admin/enquiries", "/contact", "/enquiry", "/products/engine?preview=1", "/not-found"]) {
+  for (const path of ["/admin", "/admin/emails", "/api/admin/enquiries", "/contact", "/enquiry", "/products/engine?preview=1", "/not-found"]) {
     assert.equal(isAnonymousCatalogRequest(req(path)), false, path);
   }
+  assert.equal(isAnonymousCatalogRequest(req("/api/products")), true);
+  assert.equal(isAnonymousCatalogRequest(req("/api/products?page=2&limit=20")), true);
+  assert.equal(isAnonymousCatalogRequest(req("/api/page-content/home/hero")), true);
+  assert.equal(isAnonymousCatalogRequest(req("/sitemap.xml")), true);
+  assert.equal(isAnonymousCatalogRequest(req("/products?utm_source=google&gclid=abc")), true);
+  assert.equal(isAnonymousCatalogRequest(req("/api/products?search=engine")), false);
+  assert.equal(isAnonymousCatalogRequest(req("/api/products?limit=1000")), false);
+  assert.equal(isAnonymousCatalogRequest(req("/api/page-overrides?page=%2Fadmin")), false);
+  assert.equal(isAnonymousCatalogRequest(req("/products?sort=price")), false);
   assert.equal(isAnonymousCatalogRequest(req("/", { method: "POST" })), false);
   assert.equal(isAnonymousCatalogRequest(req("/", { headers: { Authorization: "Bearer secret" } })), false);
   assert.equal(isAnonymousCatalogRequest(req("/", { headers: { Cookie: "theme=dark; tahin_admin_session=abc" } })), false);
@@ -83,6 +92,63 @@ test("authenticated requests bypass the cache and failed CMS writes do not inval
   assert.equal(puts, 0);
   assert.equal(isCatalogMutation(req("/api/page-content/home/hero", { method: "PUT" })), true);
   assert.equal(isCatalogMutation(req("/api/admin/category-presentation", { method: "PATCH" })), true);
+});
+
+test("public JSON, XML and tracking links are cached only for safe requests", async () => {
+  const versions = new Map<string, string>();
+  const cacheEntries = new Map<string, Response>();
+  let revisionReads = 0;
+  const versionStore: CacheVersionStore = {
+    get: async (key) => { revisionReads++; return versions.get(key) ?? null; },
+    put: async (key, value) => { versions.set(key, value); },
+  };
+  const cache: EdgeResponseCache = {
+    match: async (request) => cacheEntries.get(request.url)?.clone(),
+    put: async (request, response) => { cacheEntries.set(request.url, response.clone()); },
+  };
+  let renders = 0;
+  const rendering = async (request: Request) => {
+    renders++;
+    if (request.url.includes("sitemap")) return new Response("<urlset/>", {headers: {"content-type":"application/xml"}});
+    if (request.url.includes("/api/")) return Response.json({ products: 1 });
+    return html("tracked");
+  };
+  for (const path of ["/api/products?page=1&limit=20", "/sitemap.xml", "/products?utm_source=facebook"]) {
+    const request = req(path);
+    const options = { request, render: () => rendering(request), versionStore, cache };
+    assert.equal((await serveCatalogHtml(options)).headers.get("X-Tahin-Catalogue-Cache"), "MISS");
+    assert.equal((await serveCatalogHtml(options)).headers.get("X-Tahin-Catalogue-Cache"), "HIT");
+  }
+  const clean = await serveCatalogHtml({
+    request: req("/products"),
+    render: async () => html("should not render"),
+    versionStore, cache,
+  });
+  assert.equal(clean.headers.get("X-Tahin-Catalogue-Cache"), "HIT");
+  assert.equal(renders, 3);
+  // Within a Worker isolate, KV lookups are memoized, not repeated per visitor.
+  assert.equal(revisionReads, 1);
+});
+
+test("cache can never publish an authenticated JSON response or an error", async () => {
+  let stored = 0;
+  const store: CacheVersionStore = { get: async () => "v", put: async () => {} };
+  const cache: EdgeResponseCache = {
+    match: async () => undefined,
+    put: async () => { stored++; },
+  };
+  const privateJson = await serveCatalogHtml({
+    request: req("/api/products", { headers: { Cookie: "tahin_admin_session=abc" } }),
+    render: async () => Response.json({ private: true }),
+    versionStore: store, cache,
+  });
+  assert.equal(privateJson.headers.get("X-Tahin-Catalogue-Cache"), null);
+  await serveCatalogHtml({
+    request: req("/api/products"),
+    render: async () => Response.json({ error: "failure" }, { status: 500 }),
+    versionStore: store, cache,
+  });
+  assert.equal(stored, 0);
 });
 
 test("KV lookup outage renders normally instead of serving a stale page", async () => {
