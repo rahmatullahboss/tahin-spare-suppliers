@@ -1,6 +1,7 @@
 import { defineMiddleware } from 'astro:middleware';
 import { env } from 'cloudflare:workers';
 import { getCanonicalRedirectUrl } from './lib/canonical-url';
+import { invalidateCatalogOnWrite, serveCatalogHtml } from './lib/server/cache-policy';
 
 const RASTER_CONTENT_TYPES = new Map([
   ['.jpg', 'image/jpeg'],
@@ -83,6 +84,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  const response = await next();
+  const cacheStore = env.SESSION;
+  const edgeCache = typeof caches !== 'undefined' ? caches.default : undefined;
+  const response = await serveCatalogHtml({
+    request: context.request,
+    render: () => next(),
+    versionStore: cacheStore,
+    cache: edgeCache,
+    waitUntil: context.locals.cfContext?.waitUntil
+      ? (promise) => context.locals.cfContext!.waitUntil(promise)
+      : undefined,
+  });
+
+  try {
+    await invalidateCatalogOnWrite(context.request, response, cacheStore);
+  } catch (error) {
+    // The data write already succeeded; do not turn it into a misleading 500.
+    // A cached old revision may remain until TTL if KV is unavailable.
+    console.error('Catalogue cache invalidation failed after a successful write', error);
+  }
   return addSecurityHeaders(response);
 });
