@@ -153,6 +153,44 @@ export function resolveCategorySeo(source: { slug: string; value: string }): { t
   };
 }
 
+export type CategoryBuyerGuide = Readonly<{
+  href: string;
+  title: string;
+  prompt: string;
+}>;
+
+const CATEGORY_BUYER_GUIDES: Readonly<Record<string, CategoryBuyerGuide>> = Object.freeze({
+  "spare-parts": {
+    href: "/blog/marine-spare-parts-identification-checklist",
+    title: "Marine spare-parts identification checklist",
+    prompt: "Need help checking maker, model and part numbers?"
+  },
+  "turbocharger": {
+    href: "/blog/how-to-identify-marine-turbocharger",
+    title: "Marine turbocharger identification guide",
+    prompt: "Not sure which turbocharger or component fits?"
+  },
+  "marine-gearbox": {
+    href: "/blog/marine-gearbox-identification-checklist",
+    title: "Marine gearbox identification checklist",
+    prompt: "Checking gearbox ratio, rotation and serial number?"
+  },
+  "marine-propulsion-engine": {
+    href: "/blog/reconditioned-marine-engine-buying-checklist",
+    title: "Reconditioned marine-engine buying checklist",
+    prompt: "Comparing the condition and scope of a reconditioned engine?"
+  },
+  "hydraulic-deck-crane-equipment": {
+    href: "/blog/marine-hydraulic-power-unit-hpu-quote-checklist",
+    title: "Hydraulic power-unit quote checklist",
+    prompt: "Enquiring about a hydraulic power unit?"
+  }
+});
+
+export function resolveCategoryBuyerGuide(slug: string): CategoryBuyerGuide | undefined {
+  return CATEGORY_BUYER_GUIDES[slug];
+}
+
 const LEGACY_PRODUCT_REDIRECTS: Readonly<Record<string, string>> = Object.freeze({
   "connecting-rod-for-man-b-w-5l-16-24": "/products/man-b-w-5l16-24-genuine-spare-parts-5l-6l",
   "cummins-vta-28-d-m-marine-engine-815hp": "/products/cummins-vta28-dm-815hp-marine-engine",

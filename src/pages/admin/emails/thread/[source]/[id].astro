@@ -893,7 +893,6 @@ function formatTimestamp(value: string): string {
       const notice = document.createElement("span");
       notice.className = "inline-image-unavailable";
       notice.textContent = `${image.alt || "Image"} — image unavailable`;
-      // An empty sender-supplied image link should not remain clickable.
       const enclosingLink = image.closest("a");
       if (enclosingLink && enclosingLink.textContent?.trim() === "" && enclosingLink.querySelectorAll("img").length === 1) {
         enclosingLink.replaceWith(notice);
@@ -914,7 +913,7 @@ function formatTimestamp(value: string): string {
         if (!["http:", "https:"].includes(url.protocol) || url.href === window.location.href) return;
         window.open(url.href, "_blank", "noopener,noreferrer");
       } catch {
-        // Ignore malformed sender-controlled image URLs.
+        // Malformed sender-controlled URL: never open the current page.
       }
     });
   });

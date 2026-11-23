@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { createPostgresSql } from "./pg-adapter";
 import schemaSql from "./schema.sql?raw";
 import type { RuntimeEnv } from "./env";
 
@@ -15,24 +16,42 @@ function schemaFingerprint(value: string): string {
 
 const SCHEMA_VERSION = schemaFingerprint(schemaSql);
 
-export function getDb(env: RuntimeEnv) {
+export function getDb(env: RuntimeEnv): ReturnType<typeof neon> {
+  if (env.DB_PROVIDER === "aiven") {
+    if (!env.AIVEN_HYPERDRIVE?.connectionString) {
+      throw new Error("Aiven selected, but AIVEN_HYPERDRIVE binding is unavailable");
+    }
+    return createPostgresSql(env.AIVEN_HYPERDRIVE.connectionString) as unknown as ReturnType<typeof neon>;
+  }
   return neon(env.DATABASE_URL);
 }
 
 export async function ensureSchema(env: RuntimeEnv) {
-  if (!schemaReady.has(env.DATABASE_URL)) {
+  const databaseKey = env.DB_PROVIDER === "aiven" ? env.AIVEN_HYPERDRIVE?.connectionString : env.DATABASE_URL;
+  if (!databaseKey) throw new Error("Active database connection is missing");
+  if (!schemaReady.has(databaseKey)) {
     const promise = (async () => {
       const sql = getDb(env);
-      const [, versionRows] = await sql.transaction([
-        sql`CREATE TABLE IF NOT EXISTS app_schema_meta (
+      // Hot paths do only a read on a cold Worker isolate, not a DDL transaction.
+      // Schema creation remains available for newly provisioned installations.
+      let deployedVersion = "";
+      try {
+        const rows = await sql.query("SELECT version FROM app_schema_meta WHERE key = 'main' LIMIT 1");
+        deployedVersion = String(rows?.[0]?.version ?? "");
+      } catch (error) {
+        const code = (error as { code?: string })?.code;
+        const message = error instanceof Error ? error.message : "";
+        if (code !== "42P01" && !/relation .*app_schema_meta.* does not exist/i.test(message)) {
+          throw error;
+        }
+        await sql`CREATE TABLE IF NOT EXISTS app_schema_meta (
           key TEXT PRIMARY KEY,
           version TEXT NOT NULL,
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        )`,
-        sql`SELECT version FROM app_schema_meta WHERE key = 'main' LIMIT 1`,
-      ]);
+        )`;
+      }
 
-      if (String(versionRows?.[0]?.version ?? "") === SCHEMA_VERSION) {
+      if (deployedVersion === SCHEMA_VERSION) {
         return;
       }
 
@@ -53,17 +72,17 @@ export async function ensureSchema(env: RuntimeEnv) {
       `;
     })();
 
-    schemaReady.set(env.DATABASE_URL, promise);
+    schemaReady.set(databaseKey, promise);
 
     try {
       await promise;
     } catch (error) {
-      schemaReady.delete(env.DATABASE_URL);
+      schemaReady.delete(databaseKey);
       throw error;
     }
 
     return;
   }
 
-  await schemaReady.get(env.DATABASE_URL);
+  await schemaReady.get(databaseKey);
 }

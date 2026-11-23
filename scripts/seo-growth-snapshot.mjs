@@ -1,4 +1,5 @@
 import { writeFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 
 const DEFAULT_BASE_URL = "https://tahinspare.com";
 const DEFAULT_TIMEOUT_MS = 12000;
@@ -104,6 +105,23 @@ async function fetchText(url, timeoutMs) {
 
 async function crawlOne(urlValue, canonicalOrigin, timeoutMs) {
   const started = performance.now();
+  // Never fetch a URL from an untrusted sitemap that points off our public origin.
+  const url = new URL(urlValue);
+  if (url.origin !== canonicalOrigin || !["http:", "https:"].includes(url.protocol)) {
+    return {
+      url: urlValue,
+      type: classifyUrl(urlValue),
+      status: 0,
+      durationMs: 0,
+      contentType: "",
+      offCanonicalHost: true,
+      noindexInSitemap: false,
+      canonical: null,
+      canonicalMismatch: false,
+      missingCanonical: false,
+      error: "Off-origin sitemap URL was not fetched",
+    };
+  }
   try {
     const { response, text } = await fetchText(urlValue, timeoutMs);
     const contentType = response.headers.get("content-type") || "";
@@ -116,9 +134,10 @@ async function crawlOne(urlValue, canonicalOrigin, timeoutMs) {
       && canonicalAbsolute
       && normalizedUrl(canonicalAbsolute) !== normalizedUrl(urlValue)
     );
-    const noindexInSitemap = response.status === 200 && isHtml && hasNoindex(text);
+    const noindexInSitemap = response.status === 200
+      && (response.headers.get("x-robots-tag")?.toLowerCase().includes("noindex") === true
+        || (isHtml && hasNoindex(text)));
     const missingCanonical = response.status === 200 && isHtml && !canonicalAbsolute;
-    const url = new URL(urlValue);
 
     return {
       url: urlValue,
@@ -174,7 +193,7 @@ function countByType(results) {
   }, {});
 }
 
-async function buildSnapshot(options) {
+export async function buildSnapshot(options) {
   const generatedAt = new Date().toISOString();
   const canonicalOrigin = new URL(options.baseUrl).origin;
   const sitemapUrl = `${options.baseUrl}/sitemap.xml`;
@@ -192,6 +211,13 @@ async function buildSnapshot(options) {
   const sitemapUrls = sitemapResult.response.status === 200
     ? extractSitemapUrls(sitemapResult.text)
     : [];
+  const seenSitemapUrls = new Set();
+  const duplicateSitemapUrls = sitemapUrls.filter((url) => {
+    const normalized = normalizedUrl(url);
+    if (seenSitemapUrls.has(normalized)) return true;
+    seenSitemapUrls.add(normalized);
+    return false;
+  });
   const crawlResults = await crawlSitemapUrls(
     sitemapUrls,
     canonicalOrigin,
@@ -215,8 +241,11 @@ async function buildSnapshot(options) {
   };
 
   const critical = {
+    homepageUnavailable: homepageResult.response.status !== 200,
     sitemapUnavailable: sitemapResult.response.status !== 200,
+    sitemapEmpty: sitemapUrls.length === 0,
     robotsUnavailable: robotsResult.response.status !== 200,
+    duplicateSitemapUrls: duplicateSitemapUrls.length,
     non200InSitemap: non200.length,
     noindexInSitemap: noindexInSitemap.length,
     canonicalMismatch: canonicalMismatch.length,
@@ -245,6 +274,7 @@ async function buildSnapshot(options) {
       missingCanonicalCount: missingCanonical.length,
       offCanonicalHostCount: offCanonicalHost.length,
       fetchErrorCount: fetchErrors.length,
+      duplicateCount: duplicateSitemapUrls.length,
     },
     anomalies: {
       non200,
@@ -253,6 +283,7 @@ async function buildSnapshot(options) {
       missingCanonical,
       offCanonicalHost,
       fetchErrors,
+      duplicateSitemapUrls,
     },
     critical,
     healthy: !Object.values(critical).some((value) => value === true || (typeof value === "number" && value > 0)),
@@ -270,7 +301,9 @@ async function main() {
   if (!snapshot.healthy) process.exitCode = 1;
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}

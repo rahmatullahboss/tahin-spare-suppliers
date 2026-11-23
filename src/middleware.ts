@@ -1,6 +1,7 @@
 import { defineMiddleware } from 'astro:middleware';
 import { env } from 'cloudflare:workers';
 import { getCanonicalRedirectUrl } from './lib/canonical-url';
+import { invalidateCatalogOnWrite, serveCatalogHtml } from './lib/server/cache-policy';
 
 const RASTER_CONTENT_TYPES = new Map([
   ['.jpg', 'image/jpeg'],
@@ -47,6 +48,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const isRasterAsset = [...RASTER_CONTENT_TYPES.keys()].some((extension) => pathname.endsWith(extension));
 
     if (isRasterAsset) {
+      // Image content is public. CDN-cache it at the edge to avoid repeat R2 reads.
+      // Bypass range/query requests; never cache uploads or arbitrary API content.
+      const imageCache = context.request.method === 'GET' && !context.request.headers.has('Range') && !url.search
+        ? (typeof caches !== 'undefined' ? caches.default : undefined)
+        : undefined;
+      if (imageCache) {
+        try {
+          const hit = await imageCache.match(context.request);
+          if (hit) return addSecurityHeaders(hit);
+        } catch (error) {
+          console.error('Image edge cache lookup failed', error);
+        }
+      }
       const bucket = env.MEDIA_BUCKET;
       const mediaBaseUrl = env.MEDIA_PUBLIC_URL?.replace(/\/$/, '');
 
@@ -66,7 +80,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
               headers.set(key, value);
             }
 
-            return new Response(object.body, { headers });
+            const imageResponse = new Response(object.body, { headers });
+            if (imageCache) {
+              const stored = imageResponse.clone();
+              // Keep edge copy for seven days; the browser keeps immutable image URLs.
+              stored.headers.set('Cache-Control', 'public, max-age=604800');
+              const saving = imageCache.put(context.request, stored).catch((error: unknown) => {
+                console.error('Image edge cache write failed', error);
+              });
+              if (context.locals.cfContext?.waitUntil) context.locals.cfContext.waitUntil(saving);
+              else await saving;
+            }
+            return imageResponse;
           }
         } catch {
           // R2 error — fall through to CDN or next()
@@ -83,6 +108,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  const response = await next();
+  const cacheStore = env.SESSION;
+  const edgeCache = typeof caches !== 'undefined' ? caches.default : undefined;
+  const response = await serveCatalogHtml({
+    request: context.request,
+    render: () => next(),
+    versionStore: cacheStore,
+    cache: edgeCache,
+    waitUntil: context.locals.cfContext?.waitUntil
+      ? (promise) => context.locals.cfContext!.waitUntil(promise)
+      : undefined,
+  });
+
+  try {
+    await invalidateCatalogOnWrite(context.request, response, cacheStore);
+  } catch (error) {
+    // The data write already succeeded; do not turn it into a misleading 500.
+    // A cached old revision may remain until TTL if KV is unavailable.
+    console.error('Catalogue cache invalidation failed after a successful write', error);
+  }
   return addSecurityHeaders(response);
 });

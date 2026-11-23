@@ -4,6 +4,7 @@ import { ensureSchema, getDb } from "../../../../../../../lib/server/db";
 import {
   isSafeInlineImageContentType,
   parseInboundAttachments,
+  recoverEmbeddedInlineImage,
 } from "../../../../../../../lib/server/email-content";
 import { getReceivedEmailAttachment } from "../../../../../../../lib/server/email-service";
 
@@ -47,17 +48,35 @@ export const GET: APIRoute = async (context) => {
       return Response.json({ error: "Attachment not found" }, { status: 404 });
     }
 
-    const remoteAttachment = await getReceivedEmailAttachment(
-      env,
-      resendEmailId,
-      attachmentId
-    );
-    const remoteResponse = await fetch(remoteAttachment.download_url);
-    if (!remoteResponse.ok || !remoteResponse.body) {
+    let responseBody: BodyInit | null = null;
+    let contentType = attachment.contentType;
+    try {
+      const remoteAttachment = await getReceivedEmailAttachment(env, resendEmailId, attachmentId);
+      const remoteResponse = await fetch(remoteAttachment.download_url);
+      if (remoteResponse.ok && remoteResponse.body) {
+        responseBody = remoteResponse.body;
+        contentType = remoteAttachment.content_type || attachment.contentType;
+      }
+    } catch {
+      // Retained legacy inline data may outlive provider attachment availability.
+    }
+
+    if (!responseBody && isSafeInlineImageContentType(attachment.contentType)) {
+      const sourceRows = await sql.query(
+        `SELECT html_body FROM inbound_emails WHERE id = $1 LIMIT 1`,
+        [emailId]
+      );
+      const html = typeof sourceRows[0]?.html_body === "string" ? sourceRows[0].html_body : "";
+      const recovered = recoverEmbeddedInlineImage(html, attachments, attachmentId);
+      if (recovered) {
+        responseBody = recovered.bytes as BodyInit;
+        contentType = recovered.contentType;
+      }
+    }
+    if (!responseBody) {
       return Response.json({ error: "Attachment download failed" }, { status: 502 });
     }
 
-    const contentType = remoteAttachment.content_type || attachment.contentType;
     const inlineSafe = isSafeInlineImageContentType(contentType);
     const download = context.url.searchParams.get("download") === "1" || !inlineSafe;
     const headers = new Headers();
@@ -68,7 +87,7 @@ export const GET: APIRoute = async (context) => {
     headers.set("Cross-Origin-Resource-Policy", "same-origin");
     headers.set("X-Content-Type-Options", "nosniff");
 
-    return new Response(remoteResponse.body, { headers });
+    return new Response(responseBody, { headers });
   } catch (error) {
     console.error("Get inbound attachment error:", error);
     return Response.json({ error: "Failed to fetch attachment" }, { status: 500 });

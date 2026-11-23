@@ -199,6 +199,7 @@ export const POST: APIRoute = async (context) => {
     const signature = renderEmailSignatureHtml(signatureSettings);
     for (const id of ids) {
       let claimed: Draft | undefined;
+      let providerAttempted = false;
       try {
         const rows = await sql.query(
           `UPDATE email_followup_drafts
@@ -224,6 +225,9 @@ export const POST: APIRoute = async (context) => {
         const originalMessageId = safeMessageId(source.message_id) ||
           await resolveSourceMessageId(env, source);
         if (!originalMessageId) throw new Error("Cannot find original Message-ID.");
+        // After this boundary the provider may have accepted the email even if
+        // the request fails. Such errors must be reconciled, never retried.
+        providerAttempted = true;
         const result = await sendEmail(env, {
           to: claimed.recipient,
           subject: claimed.subject,
@@ -253,11 +257,20 @@ export const POST: APIRoute = async (context) => {
       } catch (error) {
         const message = error instanceof Error ? error.message : "Delivery state uncertain.";
         if (claimed) {
-          // Never silently retry after an ambiguous provider result.
-          await sql.query(
-            "UPDATE email_followup_drafts SET status = 'uncertain', send_error = $2, updated_at = NOW() WHERE id = $1 AND status = 'sending'",
-            [id, message.slice(0, 1000)]
-          ).catch((saveError: unknown) => console.error("Could not persist uncertain send:", saveError));
+          if (providerAttempted) {
+            // Do not replay an ambiguous send: Resend may already have accepted it.
+            await sql.query(
+              "UPDATE email_followup_drafts SET status = 'uncertain', send_error = $2, updated_at = NOW() WHERE id = $1 AND status = 'sending'",
+              [id, message.slice(0, 1000)]
+            ).catch((saveError: unknown) => console.error("Could not persist uncertain send:", saveError));
+          } else {
+            // Preflight failed before contacting Resend. The approved draft is
+            // safe to edit and retry after the operator fixes the problem.
+            await sql.query(
+              "UPDATE email_followup_drafts SET status = 'approved', send_error = $2, updated_at = NOW() WHERE id = $1 AND status = 'sending' AND resend_id = ''",
+              [id, message.slice(0, 1000)]
+            ).catch((saveError: unknown) => console.error("Could not restore preflight draft:", saveError));
+          }
         }
         results.push({ id, ok: false, error: message });
       }

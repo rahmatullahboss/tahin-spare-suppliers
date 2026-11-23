@@ -1,0 +1,109 @@
+---
+import type { CategoryIntroCopy } from "../lib/category-intro";
+
+interface Props {
+  name: string;
+  imageUrl: string;
+  imageAlt?: string;
+  copy: CategoryIntroCopy;
+}
+
+const { name, imageUrl, copy, imageAlt = `Representative image for ${name}` } = Astro.props;
+---
+
+<!-- Keep existing top-level section positions stable for previously saved page edits. -->
+<div class="category-intro-shell" data-category-intro-wrapper>
+<section class="category-intro section" aria-label={`About ${name}`} data-category-intro>
+  <div class="container category-intro-layout">
+    <figure class="category-intro-media">
+      <img src={imageUrl} alt={imageAlt} width="800" height="600" loading="eager" decoding="async" />
+    </figure>
+    <div class="category-intro-copy">
+      <span class="category-intro-eyebrow">Equipment overview</span>
+      <h2>{copy.heading}</h2>
+      <p class="category-intro-lead">{copy.description}</p>
+      <p>{copy.uses}</p>
+      <p class="category-intro-guidance">{copy.guidance}</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<style>
+  .category-intro {
+    background: #fff;
+    padding: clamp(32px, 5vw, 72px) 0;
+    border-bottom: 1px solid #eef0f3;
+  }
+  .category-intro-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 60px);
+  }
+  .category-intro-media {
+    margin: 0;
+    min-width: 0;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #f2f4f7;
+    border: 1px solid #e5e7eb;
+  }
+  .category-intro-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .category-intro-copy { min-width: 0; }
+  .category-intro-eyebrow {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #b11623;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.35;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+  .category-intro-copy h2 {
+    margin: 0 0 19px;
+    font-size: clamp(26px, 2.7vw, 36px);
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    font-weight: 800;
+    color: #172033;
+    overflow-wrap: anywhere;
+  }
+  .category-intro-copy p {
+    margin: 0 0 13px;
+    color: #4b5563;
+    font-size: clamp(15px, 1.4vw, 16px);
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+  }
+  .category-intro-copy .category-intro-lead {
+    color: #202a3a;
+    font-weight: 550;
+  }
+  .category-intro-copy .category-intro-guidance {
+    padding-left: 15px;
+    border-left: 3px solid #b11623;
+    color: #39475a;
+    margin-top: 18px;
+    margin-bottom: 0;
+  }
+  @media (max-width: 780px) {
+    .category-intro-layout { grid-template-columns: 1fr; }
+    .category-intro-media { max-height: 400px; }
+    .category-intro-copy h2 { margin-bottom: 14px; }
+  }
+  @media (max-width: 480px) {
+    .category-intro { padding: 28px 0 36px; }
+    .category-intro-media { aspect-ratio: 5 / 4; border-radius: 10px; }
+    .category-intro-copy p { line-height: 1.65; }
+  }
+</style>

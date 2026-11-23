@@ -1,0 +1,44 @@
+name: Weekly SEO Monitor
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-crawl-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Crawl production SEO contract
+        id: crawl
+        continue-on-error: true
+        run: npm run seo:snapshot -- --output seo-growth-snapshot.json
+
+      - name: Summarize SEO health and measurement state
+        if: always()
+        run: node scripts/seo-snapshot-summary.mjs seo-growth-snapshot.json
+
+      - name: Preserve SEO crawl evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-growth-snapshot
+          path: seo-growth-snapshot.json
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Flag unhealthy production crawl
+        if: steps.crawl.outcome != 'success'
+        run: exit 1
