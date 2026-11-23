@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
     "smoke:production": "node scripts/smoke-production.mjs",
+    "smoke:supabase": "node --experimental-strip-types scripts/supabase-smoke.mjs",
     "seo:snapshot": "node scripts/seo-growth-snapshot.mjs",
     "search-console:auth": "node scripts/search-console-auth.mjs",
     "search-console:mcp": "node scripts/search-console-mcp.mjs",

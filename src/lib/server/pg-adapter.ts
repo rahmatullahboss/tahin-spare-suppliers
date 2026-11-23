@@ -51,11 +51,15 @@ type AdapterSql = {
   unsafe(text: string): RawFragment;
 };
 
-export function createPostgresSql(connectionString: string): AdapterSql {
-  if (!connectionString) throw new Error("Aiven Hyperdrive connection string is missing");
+export function createPostgresSql(connectionString: string, options: { requireTls?: boolean } = {}): AdapterSql {
+  if (!connectionString) throw new Error("PostgreSQL connection string is missing");
+  const createClient = () => new pg.Client({
+    connectionString,
+    ...(options.requireTls ? { ssl: { rejectUnauthorized: true }, connectionTimeoutMillis: 10000 } : {}),
+  });
 
   const run: SqlExecute = async (text, values) => {
-    const client = new pg.Client({ connectionString });
+    const client = createClient();
     await client.connect();
     try {
       const result = await client.query(text, [...values]);
@@ -84,7 +88,7 @@ export function createPostgresSql(connectionString: string): AdapterSql {
   tagged.unsafe = (text) => new RawFragment(text);
 
   tagged.transaction = async (statements) => {
-    const client = new pg.Client({ connectionString });
+    const client = createClient();
     await client.connect();
     try {
       await client.query("BEGIN");

@@ -1,9 +1,11 @@
 import { env as cfEnv } from 'cloudflare:workers';
 
 export type RuntimeEnv = {
-  DATABASE_URL: string;
-  DB_PROVIDER?: "neon" | "aiven";
+  DATABASE_URL?: string;
+  DB_PROVIDER?: "neon" | "aiven" | "supabase";
   AIVEN_HYPERDRIVE?: { connectionString: string };
+  SUPABASE_HYPERDRIVE?: { connectionString: string };
+  SUPABASE_DATABASE_URL?: string;
   ADMIN_PASSWORD: string;
   SESSION_SECRET: string;
   MEDIA_PUBLIC_URL: string;

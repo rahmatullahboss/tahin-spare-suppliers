@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { createPostgresSql } from "./pg-adapter";
+import { resolveSupabaseConnection } from "./supabase-connection";
 import schemaSql from "./schema.sql?raw";
 import type { RuntimeEnv } from "./env";
 
@@ -17,17 +18,24 @@ function schemaFingerprint(value: string): string {
 const SCHEMA_VERSION = schemaFingerprint(schemaSql);
 
 export function getDb(env: RuntimeEnv): ReturnType<typeof neon> {
+  if (env.DB_PROVIDER === "supabase") {
+    const connection = resolveSupabaseConnection(env);
+    return createPostgresSql(connection.connectionString, { requireTls: connection.requireTls }) as unknown as ReturnType<typeof neon>;
+  }
   if (env.DB_PROVIDER === "aiven") {
     if (!env.AIVEN_HYPERDRIVE?.connectionString) {
       throw new Error("Aiven selected, but AIVEN_HYPERDRIVE binding is unavailable");
     }
     return createPostgresSql(env.AIVEN_HYPERDRIVE.connectionString) as unknown as ReturnType<typeof neon>;
   }
+  if (!env.DATABASE_URL) throw new Error("Neon database URL is missing");
   return neon(env.DATABASE_URL);
 }
 
 export async function ensureSchema(env: RuntimeEnv) {
-  const databaseKey = env.DB_PROVIDER === "aiven" ? env.AIVEN_HYPERDRIVE?.connectionString : env.DATABASE_URL;
+  const databaseKey = env.DB_PROVIDER === "supabase"
+    ? resolveSupabaseConnection(env).connectionString
+    : env.DB_PROVIDER === "aiven" ? env.AIVEN_HYPERDRIVE?.connectionString : env.DATABASE_URL;
   if (!databaseKey) throw new Error("Active database connection is missing");
   if (!schemaReady.has(databaseKey)) {
     const promise = (async () => {
@@ -44,6 +52,9 @@ export async function ensureSchema(env: RuntimeEnv) {
         if (code !== "42P01" && !/relation .*app_schema_meta.* does not exist/i.test(message)) {
           throw error;
         }
+        if (env.DB_PROVIDER === "supabase") {
+          throw new Error("Supabase schema metadata missing: restore reviewed schema before cutover");
+        }
         await sql`CREATE TABLE IF NOT EXISTS app_schema_meta (
           key TEXT PRIMARY KEY,
           version TEXT NOT NULL,
@@ -53,6 +64,11 @@ export async function ensureSchema(env: RuntimeEnv) {
 
       if (deployedVersion === SCHEMA_VERSION) {
         return;
+      }
+      // Supabase has a restricted backend role. Schema updates must be applied
+      // as reviewed migrations, never by the public request path.
+      if (env.DB_PROVIDER === "supabase") {
+        throw new Error("Supabase schema mismatch: apply reviewed migration before cutover");
       }
 
       const statements = schemaSql
