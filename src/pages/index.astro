@@ -3,6 +3,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 import Icon from '../components/Icon.astro';
 import InlinePageEditor from '../components/admin/InlinePageEditor.astro';
 import { BUSINESS_PROFILE } from '../lib/business-profile';
+import { normalizeHomepageCtaUrl } from '../lib/page-content';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
 import { listBrands } from '../lib/server/brands';
@@ -31,7 +32,7 @@ const homepageBrands = managedBrands.filter((brand) => brand.displayLogoUrl);
           <span class="text-dark">{homeContent.hero.headlineMain.split('\n').map((line, index) => <>{index > 0 && <br/>}{line}</>)}</span>
         </h1>
         <p class="hero-desc">{homeContent.hero.description}</p>
-        <a href={homeContent.hero.ctaUrl} class="btn btn-quote-solid" data-ga-event="request_quote_click" data-ga-item="homepage-hero">{homeContent.hero.ctaText}</a>
+        <a href={normalizeHomepageCtaUrl(homeContent.hero.ctaUrl)} class="btn btn-quote-solid" data-ga-event="request_quote_click" data-ga-item="homepage-hero">{homeContent.hero.ctaText}</a>
       </div>
       <div class="hero-right">
         <div class="hero-slider" id="heroSlider">
@@ -191,7 +192,7 @@ const homepageBrands = managedBrands.filter((brand) => brand.displayLogoUrl);
           ))}
         </div>
         <div class="export-cta reveal">
-          <a href={homeContent["export-logistics"].ctaUrl} class="btn btn-quote-solid">{homeContent["export-logistics"].ctaText}</a>
+          <a href={normalizeHomepageCtaUrl(homeContent["export-logistics"].ctaUrl)} class="btn btn-quote-solid">{homeContent["export-logistics"].ctaText}</a>
         </div>
       </div>
     </div>

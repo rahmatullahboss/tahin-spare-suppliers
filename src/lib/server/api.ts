@@ -141,7 +141,7 @@ export function createDetailHandler(type: ContentType): APIRoute {
 
       if (context.request.method === "DELETE") {
         await deleteContent(env, type, id);
-        await deleteMediaKeys(env.MEDIA_BUCKET, contentMediaKeys(existingItem));
+        if (type !== "blog") await deleteMediaKeys(env.MEDIA_BUCKET, contentMediaKeys(existingItem));
 
         queueContentChange(context, env, type, [existingItem?.slug]);
         return Response.json({ ok: true });

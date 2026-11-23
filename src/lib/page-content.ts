@@ -1,3 +1,30 @@
+/** Keep CMS-managed quote links usable even when older saved values are malformed. */
+export function normalizeHomepageCtaUrl(value: unknown): string {
+  const fallback = "/enquiry";
+  if (typeof value !== "string") return fallback;
+  const candidate = value.trim();
+  if (!candidate) return fallback;
+
+  // A prior CMS value such as https://enquiry points to an invalid external host.
+  if (/^\/?enquiry\/?$/i.test(candidate)) return fallback;
+  if (candidate.startsWith("/") && !candidate.startsWith("//")) return candidate;
+
+  try {
+    const url = new URL(candidate);
+    if (
+      (url.protocol === "https:" || url.protocol === "http:") &&
+      (url.hostname.includes(".") || url.hostname === "localhost") &&
+      !url.username &&
+      !url.password
+    ) {
+      return candidate;
+    }
+  } catch {
+    // A malformed or non-absolute link cannot be used as the quote destination.
+  }
+  return fallback;
+}
+
 export const HOMEPAGE_SECTION_ORDER = [
   "hero",
   "who-we-are",

@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getRuntimeEnv } from "../../../../lib/server/env";
 import { ensureSchema, getDb } from "../../../../lib/server/db";
+import { readInboundThreadHeaders, blockAnsweredFollowups } from "../../../../lib/server/email-followups";
 import {
   forwardInboundEmail,
   getReceivedEmail,
@@ -49,9 +50,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
           const sql = getDb(env);
           await sql.query(
             `UPDATE sent_emails
-             SET delivery_status = $2, delivery_error = $3, last_event_at = NOW()
+             SET delivery_status = $2, delivery_error = $3, last_event_at = NOW(),
+                 message_id = CASE WHEN $4 <> '' THEN $4 ELSE message_id END
              WHERE resend_id = $1`,
-            [emailId, eventType.replace(/^email\./, ""), errorMessage.slice(0, 2000)]
+            [emailId, eventType.replace(/^email\./, ""), errorMessage.slice(0, 2000),
+              typeof eventData.message_id === "string" ? eventData.message_id : ""]
           );
         }
       }
@@ -63,13 +66,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const sql = getDb(env);
     const received = await getReceivedEmail(env, payload.data.email_id);
     const id = crypto.randomUUID();
+    const headers = readInboundThreadHeaders(received.headers);
 
     await sql.query(
       `INSERT INTO inbound_emails (
          id, from_address, to_address, subject, body, resend_email_id,
-         message_id, html_body, attachments_json, created_at, forward_status
+         message_id, html_body, attachments_json, created_at, forward_status,
+         in_reply_to_message_id, references_header
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'pending')
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'pending', $11, $12)
        ON CONFLICT DO NOTHING`,
       [
         id,
@@ -82,8 +87,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         received.html ?? "",
         JSON.stringify(received.attachments ?? []),
         received.created_at,
+        headers.inReplyTo,
+        headers.references,
       ]
     );
+
+    await blockAnsweredFollowups(sql, received.from, received.subject, headers, received.created_at);
 
     const claimed = await sql.query(
       `UPDATE inbound_emails

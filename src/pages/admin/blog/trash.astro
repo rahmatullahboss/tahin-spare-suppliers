@@ -1,0 +1,59 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getRuntimeEnv } from "../../../lib/server/env";
+import { isAuthenticated } from "../../../lib/server/session";
+const env = getRuntimeEnv(Astro.locals);
+if (!await isAuthenticated(Astro.cookies, env.SESSION_SECRET)) return Astro.redirect("/admin/login");
+---
+<AdminLayout title="Blog Trash" active="blog">
+  <section style="max-width:930px;margin:0 auto">
+    <a href="/admin/blog">← Back to posts</a>
+    <h1>Blog Trash</h1>
+    <p>Removed blog posts remain here so they can be restored without losing text, photos or their original URL.</p>
+    <div id="trash-feedback" role="status"></div>
+    <div id="trash-list">Loading…</div>
+  </section>
+</AdminLayout>
+<style>
+  #trash-list { margin-top:24px; display:grid; gap:12px; }
+  .trash-row { border:1px solid #dbe4ee; border-radius:12px; background:white; padding:16px; display:flex; gap:16px; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+  .trash-row small { display:block; color:#64748b; margin-top:6px; overflow-wrap:anywhere; }
+  .trash-row button { padding:10px 18px; min-height:42px; border-radius:8px; background:#125f94; color:white; border:0; font-weight:700; cursor:pointer; }
+</style>
+<script>
+  type Post = { id: string; title: string; slug: string; deleted_at: string };
+  const list = document.getElementById("trash-list")!;
+  const message = document.getElementById("trash-feedback")!;
+  const esc = (value: string): string => value.replace(/[&<>"']/g, (c) => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[c] ?? c));
+  async function load(): Promise<void> {
+    try {
+      const response = await fetch("/api/admin/blog-trash", { cache:"no-store" });
+      if (!response.ok) throw new Error("Could not load Trash.");
+      const data = await response.json() as { items: Post[] };
+      list.innerHTML = data.items.length ? data.items.map((post) =>
+        `<div class="trash-row"><div><strong>${esc(post.title)}</strong><small>/blog/${esc(post.slug)} · Deleted ${esc(new Date(post.deleted_at).toLocaleString())}</small></div><button type="button" data-restore="${esc(post.id)}">Restore post</button></div>`
+      ).join("") : "<p>Trash is empty.</p>";
+    } catch (error) { message.textContent = error instanceof Error ? error.message : "Failed"; }
+  }
+  list.addEventListener("click", async (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-restore]");
+    if (!button || !button.dataset.restore) return;
+    button.disabled = true;
+    try {
+      const response = await fetch("/api/admin/blog-trash", {
+        method:"POST", headers: { "Content-Type":"application/json" },
+        body:JSON.stringify({ id:button.dataset.restore })
+      });
+      const data = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(data.error || "Restore failed.");
+      message.textContent = "Post restored.";
+      await load();
+    } catch (error) {
+      message.textContent = error instanceof Error ? error.message : "Restore failed.";
+      button.disabled = false;
+    }
+  });
+  void load();
+</script>

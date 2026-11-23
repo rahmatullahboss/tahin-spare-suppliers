@@ -558,7 +558,7 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       itemsEl.querySelectorAll("[data-delete-id]").forEach((button) => {
         button.addEventListener("click", async () => {
           const id = button.getAttribute("data-delete-id");
-          if (!id || !confirm(`Delete this ${itemLabel.toLowerCase()}?`)) return;
+          if (!id || !confirm(type === "blog" ? "Move this blog post to Trash? You can restore it later." : `Delete this ${itemLabel.toLowerCase()}?`)) return;
           const response = await fetch(`${endpoint}/${id}`, { method: "DELETE" });
           if (response.ok) {
             await loadItems();
@@ -619,19 +619,24 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
     function goToPage(page) {
       if (page < 1 || page > totalPages) return;
       currentPage = page;
-      renderCurrentPage();
+      if (type === "blog") void loadItems();
+      else renderCurrentPage();
     }
 
     function renderCurrentPage() {
       const start = (currentPage - 1) * PAGE_SIZE;
-      const pageItems = allItems.slice(start, start + PAGE_SIZE);
+      const pageItems = type === "blog" ? allItems : allItems.slice(start, start + PAGE_SIZE);
       renderItems(pageItems);
       renderPagination();
     }
 
     const loadItems = async () => {
       try {
-        const params = new URLSearchParams({ page: String(currentPage), limit: '500' });
+        const params = new URLSearchParams({
+          page: String(type === 'blog' ? currentPage : 1),
+          limit: String(type === 'blog' ? PAGE_SIZE : 500),
+        });
+        if (type === 'blog' && searchQuery) params.set('search', searchQuery);
         const response = await fetch(`${endpoint}?${params}`);
         if (!response.ok) {
           const row = document.createElement("tr");
@@ -645,11 +650,14 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
         }
         const data = await response.json();
         allItems = data.items || [];
-        totalPages = Math.ceil(allItems.length / PAGE_SIZE) || 1;
-        if (currentPage > totalPages) currentPage = totalPages;
+        totalPages = Math.ceil((type === 'blog' ? Number(data.total ?? allItems.length) : allItems.length) / PAGE_SIZE) || 1;
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+          if (type === 'blog') return await loadItems();
+        }
         renderCurrentPage();
 
-        if (countEl) countEl.textContent = String(data.total || allItems.length);
+        if (countEl) countEl.textContent = String(data.total ?? allItems.length);
 
       } catch (err) {
         console.error("loadItems failed:", err);
@@ -668,6 +676,11 @@ const categoryOptions = categories.length > 0 ? categories : mergeCategories();
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
         searchQuery = searchInput.value.trim().toLowerCase();
+        if (type === 'blog') {
+          currentPage = 1;
+          void loadItems();
+          return;
+        }
         const filtered = allItems.filter(item => 
           item.title?.toLowerCase().includes(searchQuery) ||
           item.brand?.toLowerCase().includes(searchQuery) ||

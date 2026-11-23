@@ -7,6 +7,7 @@ import {
   extractEmailAddress,
   makeReplySubject,
   normalizeEmailSubject,
+  normalizedEmailSubjectSql,
 } from "../../../../../lib/server/email-thread";
 import {
   isSafeInlineImageContentType,
@@ -101,20 +102,28 @@ const anchor = toMessage(anchorResult[0] as DbRow, source);
 const customerEmail = extractEmailAddress(source === "inbound" ? anchor.from : anchor.to);
 const subjectKey = normalizeEmailSubject(anchor.subject);
 
+// Query this conversation directly rather than fetching the last 500 emails
+// globally: older client threads must not disappear as the mailbox grows.
+
 const [inboundRows, sentRows] = await Promise.all([
   sql.query(
     `SELECT id, from_address, to_address, '' as cc_address, subject, body, html_body, attachments_json,
             created_at, '' as in_reply_to_inbound_id
      FROM inbound_emails
+     WHERE lower(substring(from_address from '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}')) = $1
+       AND ${normalizedEmailSubjectSql("subject")} = $2
      ORDER BY created_at DESC
-     LIMIT 500`
+     LIMIT 500`,
+    [customerEmail, subjectKey]
   ),
   sql.query(
     `SELECT id, from_address, to_address, cc_address, subject, body, '' as html_body,
             attachments_json, created_at, in_reply_to_inbound_id
      FROM sent_emails
+     WHERE lower(to_address) = $1 AND ${normalizedEmailSubjectSql("subject")} = $2
      ORDER BY created_at DESC
-     LIMIT 500`
+     LIMIT 500`,
+    [customerEmail, subjectKey]
   ),
 ]);
 
@@ -878,10 +887,34 @@ function formatTimestamp(value: string): string {
 </style>
 
 <script>
-  document.querySelectorAll(".message-body img").forEach((image) => {
-    image.addEventListener("click", () => {
-      if (image instanceof HTMLImageElement && image.src) {
-        window.open(image.src, "_blank", "noopener,noreferrer");
+  document.querySelectorAll<HTMLImageElement>(".message-body img").forEach((image) => {
+    const showUnavailable = () => {
+      if (!image.isConnected) return;
+      const notice = document.createElement("span");
+      notice.className = "inline-image-unavailable";
+      notice.textContent = `${image.alt || "Image"} — image unavailable`;
+      // An empty sender-supplied image link should not remain clickable.
+      const enclosingLink = image.closest("a");
+      if (enclosingLink && enclosingLink.textContent?.trim() === "" && enclosingLink.querySelectorAll("img").length === 1) {
+        enclosingLink.replaceWith(notice);
+      } else {
+        image.replaceWith(notice);
+      }
+    };
+
+    image.addEventListener("error", showUnavailable, { once: true });
+    if (image.complete && image.naturalWidth === 0) showUnavailable();
+
+    image.addEventListener("click", (event) => {
+      event.preventDefault();
+      const rawSrc = image.getAttribute("src")?.trim();
+      if (!rawSrc || image.naturalWidth === 0) return;
+      try {
+        const url = new URL(rawSrc, window.location.href);
+        if (!["http:", "https:"].includes(url.protocol) || url.href === window.location.href) return;
+        window.open(url.href, "_blank", "noopener,noreferrer");
+      } catch {
+        // Ignore malformed sender-controlled image URLs.
       }
     });
   });

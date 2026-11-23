@@ -80,6 +80,50 @@ test("sanitizeEmailHtml does not inline active image formats", () => {
   assert.doesNotMatch(html, /attachment-svg|cid:/i);
 });
 
+test("sanitizeEmailHtml resolves encoded, bracketed CID image and image links", () => {
+  const html = sanitizeEmailHtml(
+    '<a href="cid:%3CPHOTO-1%3E"><img src="CID:%3CPhoto-1%3E" alt="image.png"></a>',
+    attachments,
+    "inbound-1"
+  );
+
+  const safeUrl = "/api/admin/emails/inbound/inbound-1/attachments/attachment-1";
+  assert.match(html, new RegExp(`href="${safeUrl}"`));
+  assert.match(html, new RegExp(`src="${safeUrl}"`));
+  assert.doesNotMatch(html, /cid:/i);
+});
+
+test("sanitizeEmailHtml resolves only unique matching relative attachment filenames", () => {
+  const matched = sanitizeEmailHtml(
+    '<a href="image.png"><img src="./image.png" alt="image.png"></a>',
+    [{ ...attachments[0], filename: "image.png", contentId: "" }],
+    "inbound-1"
+  );
+  assert.match(matched, /src="\/api\/admin\/emails\/inbound\/inbound-1\/attachments\/attachment-1"/);
+  assert.match(matched, /href="\/api\/admin\/emails\/inbound\/inbound-1\/attachments\/attachment-1"/);
+
+  const ambiguous = sanitizeEmailHtml(
+    '<img src="image.png" alt="image.png">',
+    [
+      { ...attachments[0], filename: "image.png", contentId: "" },
+      { ...attachments[0], id: "attachment-2", filename: "image.png", contentId: "" },
+    ],
+    "inbound-1"
+  );
+  assert.doesNotMatch(ambiguous, /\/attachments\/attachment-[12]/);
+});
+
+test("sanitizeEmailHtml removes unresolvable CID image links instead of navigating to the current page", () => {
+  const html = sanitizeEmailHtml(
+    '<a href="cid:missing"><img src="cid:missing" alt="image.png"></a>',
+    [],
+    "inbound-1"
+  );
+  assert.doesNotMatch(html, /href=""/);
+  assert.doesNotMatch(html, /cid:/i);
+  assert.doesNotMatch(html, /\/attachments\//);
+});
+
 test("safe inline image types are limited to passive raster formats", () => {
   assert.equal(isSafeInlineImageContentType("image/jpeg"), true);
   assert.equal(isSafeInlineImageContentType("image/png; charset=binary"), true);

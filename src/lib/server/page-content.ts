@@ -1,4 +1,4 @@
-import { HOMEPAGE_DEFAULTS, HOMEPAGE_SECTION_ORDER, type HomepageContent, type HomepageSectionKey } from "../page-content";
+import { HOMEPAGE_DEFAULTS, HOMEPAGE_SECTION_ORDER, normalizeHomepageCtaUrl, type HomepageContent, type HomepageSectionKey } from "../page-content";
 import type { RuntimeEnv } from "./env";
 import { ensureSchema, getDb } from "./db";
 
@@ -93,6 +93,9 @@ export async function getHomepageContent(env: RuntimeEnv): Promise<HomepageConte
     const stored = byKey.get(key);
     if (stored) content[key] = deepMerge(content[key], stored) as never;
   }
+  // Normalize legacy values on read; no production data migration is required.
+  content.hero.ctaUrl = normalizeHomepageCtaUrl(content.hero.ctaUrl);
+  content["export-logistics"].ctaUrl = normalizeHomepageCtaUrl(content["export-logistics"].ctaUrl);
   return content;
 }
 
@@ -113,6 +116,7 @@ export async function saveHomepageSection(env: RuntimeEnv, section: HomepageSect
   }
 
   const merged = deepMerge(HOMEPAGE_DEFAULTS[section], sanitized);
+  if ("ctaUrl" in merged) merged.ctaUrl = normalizeHomepageCtaUrl(merged.ctaUrl);
   await ensureSchema(env);
   const sql = getDb(env);
   const rows = await sql.query(

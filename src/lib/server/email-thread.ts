@@ -13,6 +13,11 @@ export function normalizeEmailSubject(subject: string): string {
     .toLowerCase();
 }
 
+/** Mirror normalizeEmailSubject in SQL so replies with extra whitespace stay matched. */
+export function normalizedEmailSubjectSql(column: string): string {
+  return `lower(btrim(regexp_replace(regexp_replace(${column}, '^(\\s*(re|fw|fwd)\\s*:\\s*)+', '', 'i'), '\\s+', ' ', 'g')))`;
+}
+
 export function makeReplySubject(subject: string): string {
   const trimmed = subject.trim();
   return /^re\s*:/i.test(trimmed) ? trimmed : `Re: ${trimmed}`;

@@ -37,6 +37,7 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS model_number TEXT NOT NULL DEFAULT
 ALTER TABLE products ADD COLUMN IF NOT EXISTS image_key TEXT NOT NULL DEFAULT '';
 ALTER TABLE parts ADD COLUMN IF NOT EXISTS image_key TEXT NOT NULL DEFAULT '';
 ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS image_key TEXT NOT NULL DEFAULT '';
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery_images JSONB NOT NULL DEFAULT '[]'::jsonb;
 ALTER TABLE parts ADD COLUMN IF NOT EXISTS gallery_images JSONB NOT NULL DEFAULT '[]'::jsonb;
 ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS gallery_images JSONB NOT NULL DEFAULT '[]'::jsonb;
@@ -95,6 +96,9 @@ ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS attachments_json TEXT NOT NULL 
 ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS delivery_status TEXT NOT NULL DEFAULT 'accepted';
 ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS delivery_error TEXT NOT NULL DEFAULT '';
 ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS last_event_at TIMESTAMPTZ;
+ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS message_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS in_reply_to_sent_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE sent_emails ADD COLUMN IF NOT EXISTS followup_draft_id TEXT NOT NULL DEFAULT '';
 
 CREATE TABLE IF NOT EXISTS inbound_emails (
   id TEXT PRIMARY KEY,
@@ -115,6 +119,28 @@ ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS forward_attempts INTEGER NOT
 ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS forward_attempted_at TIMESTAMPTZ;
 ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS forwarded_at TIMESTAMPTZ;
 ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS forward_error TEXT NOT NULL DEFAULT '';
+ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS in_reply_to_message_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS references_header TEXT NOT NULL DEFAULT '';
+
+CREATE TABLE IF NOT EXISTS email_followup_drafts (
+  id TEXT PRIMARY KEY,
+  source_sent_id TEXT NOT NULL REFERENCES sent_emails(id),
+  recipient TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft'
+    CHECK (status IN ('draft','approved','sending','sent','uncertain','replied','cancelled')),
+  resend_id TEXT NOT NULL DEFAULT '',
+  send_error TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  approved_at TIMESTAMPTZ,
+  sent_at TIMESTAMPTZ
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_followup_active_source
+  ON email_followup_drafts (source_sent_id)
+  WHERE status IN ('draft','approved','sending','uncertain');
+CREATE INDEX IF NOT EXISTS idx_followup_status ON email_followup_drafts (status, created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_sent_emails_created ON sent_emails(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_sent_emails_reply_to_inbound ON sent_emails(in_reply_to_inbound_id);
