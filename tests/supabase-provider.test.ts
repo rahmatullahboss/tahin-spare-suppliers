@@ -75,6 +75,15 @@ test("Wrong database, owner role, plaintext, disabled TLS and absent credentials
   assert.throws(() => resolveSupabaseConnection({}));
 });
 
+test("Actual Singapore pooler format and safe field-specific diagnostics", () => {
+  const uri = valid.replace("aws-0-", "aws-1-").replace("postgres://", "postgresql://");
+  assert.equal(new URL(resolveSupabaseConnection({ SUPABASE_DATABASE_URL: ` ${uri}\n` }).connectionString).hostname, "aws-1-ap-southeast-1.pooler.supabase.com");
+  assert.throws(() => resolveSupabaseConnection({ SUPABASE_DATABASE_URL: uri.replace("tahin_worker.", "postgres.") }), /Wrong username/);
+  assert.throws(() => resolveSupabaseConnection({ SUPABASE_DATABASE_URL: uri.replace(":placeholder@", ":%5BNEW-PASSWORD%5D@") }), /Password placeholder/);
+  assert.throws(() => resolveSupabaseConnection({ SUPABASE_DATABASE_URL: `${uri}&user=postgres` }), /Unexpected connection option/);
+  assert.throws(() => resolveSupabaseConnection({}), /missing from the active Preview runtime/);
+});
+
 test("A legacy preview Hyperdrive is optional, while direct pooler takes precedence", () => {
   const fallback = resolveSupabaseConnection({
     SUPABASE_HYPERDRIVE: { connectionString: "postgres://preview-only" },

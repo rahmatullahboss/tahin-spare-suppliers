@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers';
 import { getCanonicalRedirectUrl } from './lib/canonical-url';
 import { ensureSchema, getDb } from './lib/server/db';
 import { getRuntimeEnv } from './lib/server/env';
+import { SupabaseConfigurationError } from './lib/server/supabase-connection';
 import { invalidateCatalogOnWrite, serveCatalogHtml } from './lib/server/cache-policy';
 
 const RASTER_CONTENT_TYPES = new Map([
@@ -61,7 +62,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
         // credential, connection URI, or database row in an HTTP response/log.
         const code = (error as { code?: string })?.code;
         const message = error instanceof Error ? error.message : '';
-        const reason = stage === 'connection configuration' ? 'Check restricted worker role and shared pooler URI'
+        const reason = error instanceof SupabaseConfigurationError ? error.message
+          : stage === 'connection configuration' ? 'Unexpected connection configuration error'
           : code === '28P01' || code === '28000' || /password authentication failed|tenant or user not found/i.test(message) ? 'Authentication rejected'
           : /certificate|TLS|SSL/i.test(message) ? 'TLS verification failed'
           : /timeout|timed out/i.test(message) ? 'Connection timeout'
