@@ -41,16 +41,36 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const headers = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' };
     const readMethod = context.request.method === 'GET' || context.request.method === 'HEAD';
     if (readMethod && url.pathname === '/migration-health') {
+      let stage = 'provider';
       try {
         const runtime = getRuntimeEnv(context.locals);
         if (runtime.DB_PROVIDER !== 'supabase') throw new Error('Wrong provider');
-        await ensureSchema(runtime);
+        stage = 'connection configuration';
         const sql = getDb(runtime);
-        const rows = await sql.query("SELECT current_user = 'tahin_worker' AS role_ok, EXISTS (SELECT 1 FROM products) AS catalog_ok");
-        if (rows[0]?.role_ok !== true || rows[0]?.catalog_ok !== true) throw new Error('Verification failed');
+        stage = 'database login';
+        const identity = await sql.query("SELECT current_user = 'tahin_worker' AS role_ok");
+        if (identity[0]?.role_ok !== true) throw new Error('Wrong role');
+        stage = 'schema verification';
+        await ensureSchema(runtime);
+        stage = 'catalogue read';
+        const rows = await sql.query('SELECT EXISTS (SELECT 1 FROM products) AS catalog_ok');
+        if (rows[0]?.catalog_ok !== true) throw new Error('Verification failed');
         return addSecurityHeaders(new Response('Supabase connection and schema: PASS', { headers }));
-      } catch {
-        return addSecurityHeaders(new Response('Supabase connection or schema verification: FAIL', { status: 503, headers }));
+      } catch (error) {
+        // Return only fixed diagnostic categories. Never expose a driver error,
+        // credential, connection URI, or database row in an HTTP response/log.
+        const code = (error as { code?: string })?.code;
+        const message = error instanceof Error ? error.message : '';
+        const reason = stage === 'connection configuration' ? 'Check restricted worker role and shared pooler URI'
+          : code === '28P01' || code === '28000' || /password authentication failed|tenant or user not found/i.test(message) ? 'Authentication rejected'
+          : /certificate|TLS|SSL/i.test(message) ? 'TLS verification failed'
+          : /timeout|timed out/i.test(message) ? 'Connection timeout'
+          : code === '42501' ? 'Permission denied'
+          : code === '42P01' ? 'Required table missing'
+          : code === 'ECONNREFUSED' || code === 'ENETUNREACH' || code === 'ENOTFOUND' ? 'Network connection failed'
+          : 'Verification failed';
+        console.warn('Supabase preview health:', stage, reason);
+        return addSecurityHeaders(new Response(`Supabase FAIL — ${stage}: ${reason}`, { status: 503, headers }));
       }
     }
     const publicPage = /^\/(?:about|services|brands|business-info|privacy|terms|products|parts|blog|anchor-and-chain|diesel-generator-sets|hydraulic-crane-equipment|marine-auxillary-engines|marine-gearbox|marine-propulsion-engines|marine-pump|marine-spare-parts)?\/?$/.test(url.pathname)
