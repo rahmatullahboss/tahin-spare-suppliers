@@ -6,6 +6,12 @@
   "observability": {
     "enabled": true
   },
+  "vars": {
+    "DB_PROVIDER": "supabase"
+  },
+  "hyperdrive": [
+    { "binding": "SUPABASE_HYPERDRIVE", "id": "4b2bf739409f4562b7d1a012a84d8a4f" }
+  ],
   "r2_buckets": [
     {
       "binding": "MEDIA_BUCKET",

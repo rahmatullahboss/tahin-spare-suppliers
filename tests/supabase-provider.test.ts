@@ -16,7 +16,7 @@ test("Preview restores public production images without redirecting private or u
 const source = async (file: string) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 const valid = "postgres://tahin_worker.xpfowzrwjbojbgtekoim:placeholder@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require";
 
-test("Supabase is explicit opt-in and does not change production Wrangler config", async () => {
+test("Supabase release config preserves production resources and isolates preview QA", async () => {
   const db = await source("src/lib/server/db.ts");
   const env = await source("src/lib/server/env.ts");
   const wrangler = await source("wrangler.jsonc");
@@ -27,7 +27,10 @@ test("Supabase is explicit opt-in and does not change production Wrangler config
   assert.match(env, /"neon" \| "aiven" \| "supabase"/);
   assert.match(env, /SUPABASE_DATABASE_URL\?: string/);
   const config = JSON.parse(wrangler);
-  assert.notEqual(config.vars?.DB_PROVIDER, "supabase");
+  assert.equal(config.vars?.DB_PROVIDER, "supabase");
+  assert.equal(config.vars?.TAHIN_PREVIEW_LOCKED, undefined);
+  assert.deepEqual(config.kv_namespaces, [{ binding: "SESSION", id: "e8d999cbc9f74919ab062abb24b976c9" }]);
+  assert.deepEqual(config.r2_buckets, [{ binding: "MEDIA_BUCKET", bucket_name: "tahin-spare-suppliers-media" }]);
   assert.equal(config.name, "tahin-spare-suppliers");
   const preview = config.previews;
   assert.equal(config.env?.["supabase-preview"], undefined);
@@ -42,7 +45,7 @@ test("Supabase is explicit opt-in and does not change production Wrangler config
   assert.equal(preview?.route, undefined);
   assert.equal(preview?.routes, undefined);
   assert.deepEqual(preview?.hyperdrive, [{ binding: "SUPABASE_HYPERDRIVE", id: "4b2bf739409f4562b7d1a012a84d8a4f" }]);
-  assert.equal(config.hyperdrive, undefined);
+  assert.deepEqual(config.hyperdrive, preview.hyperdrive);
   assert.deepEqual(preview?.kv_namespaces, [{ binding: "SESSION", id: "a497da7b883d4e01aaa3a087693e20ac" }]);
   assert.deepEqual(preview?.r2_buckets, [{ binding: "MEDIA_BUCKET", bucket_name: "tahin-spare-suppliers-supabase-preview-media-bucket" }]);
   assert.notEqual(preview.kv_namespaces[0].id, config.kv_namespaces[0].id);
