@@ -16,7 +16,18 @@ test("Supabase is explicit opt-in and does not change production Wrangler config
   assert.match(db, /createPostgresSql\(connection\.connectionString, \{ requireTls: connection\.requireTls \}\)/);
   assert.match(env, /"neon" \| "aiven" \| "supabase"/);
   assert.match(env, /SUPABASE_DATABASE_URL\?: string/);
-  assert.doesNotMatch(wrangler, /"DB_PROVIDER"\s*:\s*"supabase"/);
+  const config = JSON.parse(wrangler);
+  assert.notEqual(config.vars?.DB_PROVIDER, "supabase");
+  assert.equal(config.name, "tahin-spare-suppliers");
+  const preview = config.env?.["supabase-preview"];
+  assert.equal(preview?.vars?.DB_PROVIDER, "supabase");
+  assert.equal(preview?.name, "tahin-spare-suppliers-supabase-preview");
+  assert.equal(preview?.workers_dev, false);
+  assert.equal(preview?.preview_urls, false);
+  assert.equal(preview?.route, undefined);
+  assert.equal(preview?.routes, undefined);
+  assert.deepEqual(preview?.kv_namespaces, [{ binding: "SESSION" }]);
+  assert.deepEqual(preview?.r2_buckets, [{ binding: "MEDIA_BUCKET" }]);
   assert.doesNotMatch(wrangler, /"SUPABASE_DATABASE_URL"/);
 });
 

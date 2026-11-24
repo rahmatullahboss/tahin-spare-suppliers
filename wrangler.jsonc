@@ -17,5 +17,21 @@
       "binding": "SESSION",
       "id": "e8d999cbc9f74919ab062abb24b976c9"
     }
-  ]
+  ],
+  "env": {
+    "supabase-preview": {
+      "name": "tahin-spare-suppliers-supabase-preview",
+      "workers_dev": false,
+      "preview_urls": false,
+      "vars": {
+        "DB_PROVIDER": "supabase"
+      },
+      "kv_namespaces": [
+        { "binding": "SESSION" }
+      ],
+      "r2_buckets": [
+        { "binding": "MEDIA_BUCKET" }
+      ]
+    }
+  }
 }
