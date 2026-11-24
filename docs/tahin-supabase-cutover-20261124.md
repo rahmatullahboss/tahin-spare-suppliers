@@ -49,4 +49,10 @@ Cloudflare supports PostgreSQL TCP connections without Hyperdrive, but recommend
 - Native Preview supersedes the separate Worker configuration. The old private standalone Worker is retained temporarily pending final QA; do not delete its KV/R2 resources because the Native Preview now uses them.
 - Tests: 221 pass, 2 skip, 0 fail; Astro build passed. Actual database login and functional QA remain pending.
 
+## Read-only native Preview — 2026-11-24
+
+- Preview deployment bc26a7a4-764e-423e-bed2-17c94ade19fd replaces the blanket lock with TAHIN_PREVIEW_READ_ONLY=true. Public catalogue page reads are allowed after Access authentication; admin, APIs, forms and mutations remain denied. Responses are no-store and noindex.
+- Preview now has SUPABASE_DATABASE_URL bound. Cloudflare Access login redirects were verified on the root, migration-health and private routes. An authenticated operator must visit /migration-health to exercise the real Worker PostgreSQL login, schema and catalogue probe; an anonymous redirect does not prove database connectivity. The probe returns only pass/fail, no data or credentials.
+- Tests 221 pass, 2 skip, 0 fail; build passes. Production cutover remains blocked by runtime verification and latest data parity.
+
 No Cloudflare production routes, database provider flags, secrets, or deployments were modified by this migration stage.

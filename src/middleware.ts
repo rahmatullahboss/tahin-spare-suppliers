@@ -1,6 +1,8 @@
 import { defineMiddleware } from 'astro:middleware';
 import { env } from 'cloudflare:workers';
 import { getCanonicalRedirectUrl } from './lib/canonical-url';
+import { ensureSchema, getDb } from './lib/server/db';
+import { getRuntimeEnv } from './lib/server/env';
 import { invalidateCatalogOnWrite, serveCatalogHtml } from './lib/server/cache-policy';
 
 const RASTER_CONTENT_TYPES = new Map([
@@ -32,15 +34,35 @@ function addSecurityHeaders(response: Response): Response {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  // Do not expose copied customer/mail data on a public preview while
-  // the preview-only access policy and database credentials are pending.
-  if (env.TAHIN_PREVIEW_LOCKED === 'true') {
-    return addSecurityHeaders(new Response('Preview locked pending access verification.', {
-      status: 503,
-      headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' },
-    }));
-  }
   const url = new URL(context.request.url);
+  // Public catalogue QA only. No access to private records, forms, admin,
+  // webhooks, or mutation endpoints until authenticated QA is available.
+  if (env.TAHIN_PREVIEW_READ_ONLY === 'true' || env.TAHIN_PREVIEW_LOCKED === 'true') {
+    const headers = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' };
+    const readMethod = context.request.method === 'GET' || context.request.method === 'HEAD';
+    if (readMethod && url.pathname === '/migration-health') {
+      try {
+        const runtime = getRuntimeEnv(context.locals);
+        if (runtime.DB_PROVIDER !== 'supabase') throw new Error('Wrong provider');
+        await ensureSchema(runtime);
+        const sql = getDb(runtime);
+        const rows = await sql.query("SELECT current_user = 'tahin_worker' AS role_ok, EXISTS (SELECT 1 FROM products) AS catalog_ok");
+        if (rows[0]?.role_ok !== true || rows[0]?.catalog_ok !== true) throw new Error('Verification failed');
+        return addSecurityHeaders(new Response('Supabase connection and schema: PASS', { headers }));
+      } catch {
+        return addSecurityHeaders(new Response('Supabase connection or schema verification: FAIL', { status: 503, headers }));
+      }
+    }
+    const publicPage = /^\/(?:about|services|brands|business-info|privacy|terms|products|parts|blog|anchor-and-chain|diesel-generator-sets|hydraulic-crane-equipment|marine-auxillary-engines|marine-gearbox|marine-propulsion-engines|marine-pump|marine-spare-parts)?\/?$/.test(url.pathname)
+      || /^\/(?:products|parts|brands|blog|inventory|category)\/[a-z0-9-]+\/?$/.test(url.pathname)
+      || /^\/category\/[a-z0-9-]+\/[a-z0-9-]+\/?$/.test(url.pathname);
+    if (!readMethod || !publicPage) {
+      return addSecurityHeaders(new Response('Read-only migration preview: this route is unavailable.', { status: 403, headers }));
+    }
+    const response = addSecurityHeaders(await next());
+    for (const [key, value] of Object.entries(headers)) response.headers.set(key, value);
+    return response;
+  }
   const canonicalRedirectUrl = getCanonicalRedirectUrl(url);
   if (canonicalRedirectUrl) {
     return addSecurityHeaders(new Response(null, {

@@ -21,7 +21,7 @@
   "previews": {
     "vars": {
       "DB_PROVIDER": "supabase",
-      "TAHIN_PREVIEW_LOCKED": "true"
+      "TAHIN_PREVIEW_READ_ONLY": "true"
     },
     "kv_namespaces": [
       { "binding": "SESSION", "id": "a497da7b883d4e01aaa3a087693e20ac" }
