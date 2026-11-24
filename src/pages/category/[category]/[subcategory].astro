@@ -10,7 +10,7 @@ import { findSubcategoryBySlug } from '../../../lib/server/categories';
 
 const { category, subcategory } = Astro.params;
 const env = getRuntimeEnv(Astro.locals);
-const result = await findSubcategoryBySlug(env, category ?? '', subcategory ?? '');
+const result = await findSubcategoryBySlug(env, category ?? '', subcategory ?? '', Astro.locals);
 
 if (!result) {
   return new Response('Subcategory not found', {

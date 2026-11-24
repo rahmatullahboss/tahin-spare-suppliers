@@ -5,7 +5,7 @@ import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
 
 const env = getRuntimeEnv(Astro.locals);
-const categories = await listAllCategories(env);
+const categories = await listAllCategories(env, Astro.locals);
 ---
 <MainLayout
   title="Marine Engines, Generators & Spare Parts | Tahin Spare Suppliers"

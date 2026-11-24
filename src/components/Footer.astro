@@ -4,7 +4,7 @@ import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
 
-const footerCategories = await listAllCategories(getRuntimeEnv(Astro.locals));
+const footerCategories = await listAllCategories(getRuntimeEnv(Astro.locals), Astro.locals);
 ---
 <footer class="site-footer">
   <div class="footer-top">

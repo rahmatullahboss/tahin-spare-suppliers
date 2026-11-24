@@ -12,7 +12,7 @@ import { isAuthenticated } from '../lib/server/session';
 
 const env = getRuntimeEnv(Astro.locals);
 const [categories, homeContent, managedBrands, authenticated] = await Promise.all([
-  listAllCategories(env),
+  listAllCategories(env, Astro.locals),
   getHomepageContent(env),
   listBrands(env),
   isAuthenticated(Astro.cookies, env.SESSION_SECRET),

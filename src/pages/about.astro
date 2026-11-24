@@ -6,7 +6,7 @@ import { getCategoryBuyingGuidance } from '../lib/category-buying-guidance';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
 
-const offerCategories = await listAllCategories(getRuntimeEnv(Astro.locals));
+const offerCategories = await listAllCategories(getRuntimeEnv(Astro.locals), Astro.locals);
 ---
 <MainLayout title="About Tahin Spare Suppliers | Marine Equipment Supplier" activeNav="about" description="Learn about Tahin Spare Suppliers, a Bangladesh-based marine engine, generator, hydraulic equipment and spare-parts supplier serving international buyers since 1990.">
   <section class="page-hero">

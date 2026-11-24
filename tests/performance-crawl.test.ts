@@ -17,9 +17,9 @@ test("public inventory hot paths use lightweight product summaries instead of fu
 
   assert.match(repository, /export async function listProductSummaries/);
   assert.match(repository, /SELECT p\.id, p\.slug, p\.name, p\.short_description, p\.image_url, p\.updated_at, p\.category, p\.subcategory, p\.brand, p\.model_number, p\.part_number, p\.image_alt FROM products p/);
-  assert.match(homepage, /listAllCategories\(env\)/);
+  assert.match(homepage, /listAllCategories\(env, Astro\.locals\)/);
   assert.doesNotMatch(homepage, /listProductSummaries/);
-  assert.match(productsHub, /listAllCategories\(env\)/);
+  assert.match(productsHub, /listAllCategories\(env, Astro\.locals\)/);
   assert.doesNotMatch(productsHub, /listProductSummaries/);
   assert.doesNotMatch(productsHub, /countContent\(env, 'parts'\)/);
   assert.match(brandsHub, /listBrands\(env\)/);
@@ -27,7 +27,9 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   assert.match(category, /listProductSummaries\(env, \{ category: currentCategory\.canonicalValue, limit: 1000 \}\)/);
   assert.match(subcategory, /listProductSummaries\(env, \{[\s\S]*category: parent\.canonicalValue,[\s\S]*subcategory: currentSubcategory\.value,[\s\S]*limit: 1000[\s\S]*\}\)/);
   assert.match(brand, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
-  assert.match(product, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
+  assert.match(product, /listRelatedProductSummaries\(env, product\)/);
+  assert.doesNotMatch(product, /listProductSummaries/);
+  assert.match(repository, /selectRelatedProductRows\(rows, product\)\.map/);
   assert.match(inventoryCombination, /listProductSummaries\(env, \{ category: currentCategory\.value, limit: 1000 \}\)/);
 });
 

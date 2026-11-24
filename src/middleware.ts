@@ -4,7 +4,6 @@ import { getCanonicalRedirectUrl, getPublicPreviewImageUrl } from './lib/canonic
 import { ensureSchema, getDb } from './lib/server/db';
 import { getRuntimeEnv } from './lib/server/env';
 import { SupabaseConfigurationError } from './lib/server/supabase-connection';
-import { runMigrationQa } from './lib/server/migration-qa';
 import { isCutoverReadAllowed } from './lib/cutover-fence';
 import { invalidateCatalogOnWrite, serveCatalogHtml } from './lib/server/cache-policy';
 
@@ -68,6 +67,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
       if (context.request.method !== 'POST' || context.request.headers.get('Origin') !== url.origin) return addSecurityHeaders(new Response('Forbidden', { status: 403, headers }));
       try {
+        const { runMigrationQa } = await import('./lib/server/migration-qa');
         const result = await runMigrationQa(getRuntimeEnv(context.locals));
         return addSecurityHeaders(new Response(result.join('\n'), { headers: { ...headers, 'Content-Type': 'text/plain; charset=utf-8' } }));
       } catch {

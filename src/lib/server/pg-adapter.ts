@@ -16,9 +16,15 @@ type SqlExecute = (text: string, values: SqlParams) => Promise<SqlRow[]>;
 
 // Preserve the existing HTTP database driver's ISO timestamp representation.
 function normalizeRows(rows: SqlRow[]): SqlRow[] {
-  return rows.map((row) => Object.fromEntries(
-    Object.entries(row).map(([key, value]) => [key, value instanceof Date ? value.toISOString() : value]),
-  ));
+  // pg owns these freshly decoded rows. Normalize only actual Date values,
+  // avoiding two intermediate arrays and a replacement object for every row.
+  for (const row of rows) {
+    for (const key of Object.keys(row)) {
+      const value = row[key];
+      if (value instanceof Date) row[key] = value.toISOString();
+    }
+  }
+  return rows;
 }
 
 class RawFragment {

@@ -5,7 +5,7 @@ import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
 
-const categories = await listAllCategories(getRuntimeEnv(Astro.locals));
+const categories = await listAllCategories(getRuntimeEnv(Astro.locals), Astro.locals);
 const requestedProduct = Astro.url.searchParams.get('product')?.trim() ?? '';
 const requestedBrand = Astro.url.searchParams.get('brand')?.trim() ?? '';
 const enquiryContext = requestedProduct

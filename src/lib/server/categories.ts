@@ -2,6 +2,7 @@ import { isReservedCategorySlug, mergeCategories, type CustomCategory, type Disp
 import { ensureSchema, getDb } from "./db";
 import type { RuntimeEnv } from "./env";
 import { slugify } from "./slug";
+import { createRequestMemo } from "./request-memo";
 
 type CategoryInput = {
   name: string;
@@ -60,7 +61,16 @@ export async function listCustomCategories(env: RuntimeEnv): Promise<CustomCateg
   return rows.map((row) => mapCustomCategory(row));
 }
 
-export async function listAllCategories(env: RuntimeEnv): Promise<DisplayCategory[]> {
+const categoriesByRequest = createRequestMemo<DisplayCategory[]>();
+
+// Only page rendering passes its request scope. Mutation readbacks remain uncached.
+export function listAllCategories(env: RuntimeEnv, requestScope?: object): Promise<DisplayCategory[]> {
+  return requestScope
+    ? categoriesByRequest(requestScope, () => loadAllCategories(env))
+    : loadAllCategories(env);
+}
+
+async function loadAllCategories(env: RuntimeEnv): Promise<DisplayCategory[]> {
   const baseCategories = mergeCategories(await listCustomCategories(env));
   await ensureSchema(env);
   const sql = getDb(env);
@@ -141,8 +151,8 @@ export async function reorderCategories(env: RuntimeEnv, orderedSlugs: string[])
   return listAllCategories(env);
 }
 
-export async function findCategoryBySlug(env: RuntimeEnv, slug: string): Promise<DisplayCategory | null> {
-  const categories = await listAllCategories(env);
+export async function findCategoryBySlug(env: RuntimeEnv, slug: string, requestScope?: object): Promise<DisplayCategory | null> {
+  const categories = await listAllCategories(env, requestScope);
   return categories.find((category) => category.slug === slug) ?? null;
 }
 
@@ -214,9 +224,10 @@ export async function updateCustomCategory(env: RuntimeEnv, id: string, input: C
 export async function findSubcategoryBySlug(
   env: RuntimeEnv,
   parentSlug: string,
-  subcategorySlug: string
+  subcategorySlug: string,
+  requestScope?: object
 ): Promise<{ parent: DisplayCategory; subcategory: DisplayCategory } | null> {
-  const parent = await findCategoryBySlug(env, parentSlug);
+  const parent = await findCategoryBySlug(env, parentSlug, requestScope);
   if (!parent || !parent.id) return null;
 
   const subcategories = await listSubcategories(env, parent.id);

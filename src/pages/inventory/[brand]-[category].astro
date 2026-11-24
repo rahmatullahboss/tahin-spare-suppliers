@@ -9,7 +9,7 @@ import { findCategoryBySlug } from '../../lib/server/categories';
 
 const { brand, category } = Astro.params;
 const env = getRuntimeEnv(Astro.locals);
-const currentCategory = await findCategoryBySlug(env, category ?? '');
+const currentCategory = await findCategoryBySlug(env, category ?? '', Astro.locals);
 
 if (!currentCategory || !brand) {
   return new Response('Inventory combination not found', {
