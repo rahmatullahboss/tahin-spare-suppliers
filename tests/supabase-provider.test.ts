@@ -31,6 +31,8 @@ test("Supabase is explicit opt-in and does not change production Wrangler config
   assert.ok(middleware.indexOf("if (env.TAHIN_PREVIEW_READ_ONLY") < middleware.indexOf("const canonicalRedirectUrl ="));
   assert.equal(preview?.route, undefined);
   assert.equal(preview?.routes, undefined);
+  assert.deepEqual(preview?.hyperdrive, [{ binding: "SUPABASE_HYPERDRIVE", id: "4b2bf739409f4562b7d1a012a84d8a4f" }]);
+  assert.equal(config.hyperdrive, undefined);
   assert.deepEqual(preview?.kv_namespaces, [{ binding: "SESSION", id: "a497da7b883d4e01aaa3a087693e20ac" }]);
   assert.deepEqual(preview?.r2_buckets, [{ binding: "MEDIA_BUCKET", bucket_name: "tahin-spare-suppliers-supabase-preview-media-bucket" }]);
   assert.notEqual(preview.kv_namespaces[0].id, config.kv_namespaces[0].id);

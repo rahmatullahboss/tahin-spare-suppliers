@@ -55,4 +55,10 @@ Cloudflare supports PostgreSQL TCP connections without Hyperdrive, but recommend
 - Preview now has SUPABASE_DATABASE_URL bound. Cloudflare Access login redirects were verified on the root, migration-health and private routes. An authenticated operator must visit /migration-health to exercise the real Worker PostgreSQL login, schema and catalogue probe; an anonymous redirect does not prove database connectivity. The probe returns only pass/fail, no data or credentials.
 - Tests 221 pass, 2 skip, 0 fail; build passes. Production cutover remains blocked by runtime verification and latest data parity.
 
+## Hyperdrive Native Preview — 2026-11-24
+
+- Hyperdrive tahin-supabase (4b2bf739409f4562b7d1a012a84d8a4f) uses the Supabase direct database host, port 5432, restricted tahin_worker login, TLS require, and disabled query caching. Created by the operator and verified with Wrangler.
+- Native Preview deployment ae09f6db-425c-48f9-94a4-ced152f9b1fa (number 12) confirms SUPABASE_HYPERDRIVE binding with that ID. The binding takes precedence over the existing direct-pooler secret. Production configuration has no Hyperdrive binding.
+- Tests: 222 pass, 2 skip, 0 fail; build passes. Authenticated /migration-health runtime probe remains pending; the binding alone does not certify database login or schema parity.
+
 No Cloudflare production routes, database provider flags, secrets, or deployments were modified by this migration stage.

@@ -23,6 +23,9 @@
       "DB_PROVIDER": "supabase",
       "TAHIN_PREVIEW_READ_ONLY": "true"
     },
+    "hyperdrive": [
+      { "binding": "SUPABASE_HYPERDRIVE", "id": "4b2bf739409f4562b7d1a012a84d8a4f" }
+    ],
     "kv_namespaces": [
       { "binding": "SESSION", "id": "a497da7b883d4e01aaa3a087693e20ac" }
     ],
