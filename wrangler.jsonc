@@ -7,7 +7,8 @@
     "enabled": true
   },
   "vars": {
-    "DB_PROVIDER": "supabase"
+    "DB_PROVIDER": "supabase",
+    "TAHIN_CUTOVER_FREEZE": "false"
   },
   "hyperdrive": [
     { "binding": "SUPABASE_HYPERDRIVE", "id": "4b2bf739409f4562b7d1a012a84d8a4f" }

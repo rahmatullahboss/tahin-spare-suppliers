@@ -5,6 +5,7 @@ import { ensureSchema, getDb } from './lib/server/db';
 import { getRuntimeEnv } from './lib/server/env';
 import { SupabaseConfigurationError } from './lib/server/supabase-connection';
 import { runMigrationQa } from './lib/server/migration-qa';
+import { isCutoverReadAllowed } from './lib/cutover-fence';
 import { invalidateCatalogOnWrite, serveCatalogHtml } from './lib/server/cache-policy';
 
 const RASTER_CONTENT_TYPES = new Map([
@@ -37,12 +38,31 @@ function addSecurityHeaders(response: Response): Response {
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const url = new URL(context.request.url);
+  const cutoverFrozen = env.TAHIN_CUTOVER_FREEZE === 'true';
+  if (cutoverFrozen) {
+    const headers = { 'Cache-Control': 'no-store', 'Retry-After': '60' };
+    if (url.pathname === '/migration-health' && (context.request.method === 'GET' || context.request.method === 'HEAD')) {
+      try {
+        const runtime = getRuntimeEnv(context.locals);
+        await ensureSchema(runtime);
+        const sql = getDb(runtime);
+        const result = await sql.query("SELECT EXISTS (SELECT 1 FROM products) AS catalog_ok, current_user = 'tahin_worker' AS role_ok");
+        if (result[0]?.catalog_ok !== true || (runtime.DB_PROVIDER === 'supabase' && result[0]?.role_ok !== true)) throw new Error('Health failed');
+        return addSecurityHeaders(new Response(`Migration health: ${runtime.DB_PROVIDER === 'supabase' ? 'supabase' : 'neon'} PASS; writes frozen`, { headers }));
+      } catch {
+        return addSecurityHeaders(new Response('Migration health: FAIL; writes frozen', { status: 503, headers }));
+      }
+    }
+    if (!isCutoverReadAllowed(context.request.method, url.pathname)) {
+      return addSecurityHeaders(new Response('Database maintenance; please retry shortly.', { status: 503, headers }));
+    }
+  }
   // Public catalogue QA only. No access to private records, forms, admin,
   // webhooks, or mutation endpoints until authenticated QA is available.
   if (env.TAHIN_PREVIEW_READ_ONLY === 'true' || env.TAHIN_PREVIEW_LOCKED === 'true') {
     const headers = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' };
     const readMethod = context.request.method === 'GET' || context.request.method === 'HEAD';
-    if (url.pathname === '/migration-qa' && env.TAHIN_PREVIEW_READ_ONLY === 'true' && url.hostname === 'supabase-migration-tahin-spare-suppliers.rahmatullahzisan.workers.dev') {
+    if (url.pathname === '/migration-qa' && env.TAHIN_MIGRATION_QA === 'true' && env.TAHIN_PREVIEW_READ_ONLY === 'true' && url.hostname === 'supabase-migration-tahin-spare-suppliers.rahmatullahzisan.workers.dev') {
       if (context.request.method === 'GET') {
         return addSecurityHeaders(new Response('<!doctype html><html lang="en"><meta charset="utf-8"><title>Migration QA</title><h1>Supabase migration QA</h1><p>Run synthetic database rollback and isolated image storage tests. No real mail is sent.</p><form method="post" action="/migration-qa"><button type="submit">Run migration QA</button></form></html>', { headers: { ...headers, 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': "default-src 'none'; form-action 'self'; frame-ancestors 'none'" } }));
       }
@@ -182,7 +202,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const cacheStore = env.SESSION;
   const edgeCache = typeof caches !== 'undefined' ? caches.default : undefined;
-  const response = await serveCatalogHtml({
+  const response = cutoverFrozen ? await next() : await serveCatalogHtml({
     request: context.request,
     render: () => next(),
     versionStore: cacheStore,

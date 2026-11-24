@@ -3,6 +3,13 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { resolveSupabaseConnection } from "../src/lib/server/supabase-connection.ts";
 import { getPublicPreviewImageUrl } from "../src/lib/canonical-url.ts";
+import { isCutoverReadAllowed } from "../src/lib/cutover-fence.ts";
+
+test("Cutover fence blocks writes, admin GET side effects and webhooks but preserves public reads", () => {
+  for (const path of ["/", "/category/spare-parts", "/images/marine-engine.webp", "/api/products", "/contact"]) assert.equal(isCutoverReadAllowed("GET", path), true);
+  for (const path of ["/admin", "/admin/emails/thread/inbound/id", "/api/admin/emails/inbound/id", "/api/admin/emails/followups", "/api/webhooks/resend/inbound", "/mcp", "/api/upload", "/migration-qa"]) assert.equal(isCutoverReadAllowed("GET", path), false);
+  for (const method of ["POST", "PUT", "PATCH", "DELETE", "OPTIONS"]) assert.equal(isCutoverReadAllowed(method, "/api/products"), false);
+});
 
 test("Preview restores public production images without redirecting private or unsafe paths", () => {
   for (const path of ["/images/marine-engine.webp", "/images/diesel-generator.webp", "/images/shipments/shipment-01.webp", "/images/brands/yanmar-1.svg"]) {
