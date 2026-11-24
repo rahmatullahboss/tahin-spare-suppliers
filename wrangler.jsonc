@@ -27,10 +27,10 @@
         "DB_PROVIDER": "supabase"
       },
       "kv_namespaces": [
-        { "binding": "SESSION" }
+        { "binding": "SESSION", "id": "a497da7b883d4e01aaa3a087693e20ac" }
       ],
       "r2_buckets": [
-        { "binding": "MEDIA_BUCKET" }
+        { "binding": "MEDIA_BUCKET", "bucket_name": "tahin-spare-suppliers-supabase-preview-media-bucket" }
       ]
     }
   }

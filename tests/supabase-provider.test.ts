@@ -26,8 +26,10 @@ test("Supabase is explicit opt-in and does not change production Wrangler config
   assert.equal(preview?.preview_urls, false);
   assert.equal(preview?.route, undefined);
   assert.equal(preview?.routes, undefined);
-  assert.deepEqual(preview?.kv_namespaces, [{ binding: "SESSION" }]);
-  assert.deepEqual(preview?.r2_buckets, [{ binding: "MEDIA_BUCKET" }]);
+  assert.deepEqual(preview?.kv_namespaces, [{ binding: "SESSION", id: "a497da7b883d4e01aaa3a087693e20ac" }]);
+  assert.deepEqual(preview?.r2_buckets, [{ binding: "MEDIA_BUCKET", bucket_name: "tahin-spare-suppliers-supabase-preview-media-bucket" }]);
+  assert.notEqual(preview.kv_namespaces[0].id, config.kv_namespaces[0].id);
+  assert.notEqual(preview.r2_buckets[0].bucket_name, config.r2_buckets[0].bucket_name);
   assert.doesNotMatch(wrangler, /"SUPABASE_DATABASE_URL"/);
 });
 

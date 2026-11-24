@@ -33,4 +33,11 @@ Cloudflare supports PostgreSQL TCP connections without Hyperdrive, but recommend
 - npm run build
 - npm run smoke:supabase (requires a real secret and network access)
 
-No Cloudflare production routes, database provider flags, secrets, or deployments were modified in this stage.
+## Preview deployment evidence — 2026-11-24
+
+- Private preview Worker deployed: tahin-spare-suppliers-supabase-preview. Version a882cc9c-e367-4c15-8299-e11f710272b9. Wrangler reported no public targets deployed.
+- Isolated KV SESSION and R2 MEDIA_BUCKET were provisioned successfully and are now explicitly pinned in wrangler.jsonc for subsequent deployments.
+- Cloudflare lists SUPABASE_DATABASE_URL on the production Worker, but the preview Worker has zero secrets. Cloudflare does not return secret values. Authorized operator must set the same valid restricted-role connection URI on the preview Worker separately. Do not copy or expose secret values through code or logs.
+- Remote PostgreSQL connection, protected runtime access, functional QA, and latest Neon data parity remain pending. Preview deployment is not production readiness.
+
+No Cloudflare production routes, database provider flags, secrets, or deployments were modified by this migration stage.
