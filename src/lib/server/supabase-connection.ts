@@ -13,6 +13,14 @@ export type SupabaseConnection = { connectionString: string; requireTls: boolean
 export class SupabaseConfigurationError extends Error {}
 
 export function resolveSupabaseConnection(env: SupabaseConnectionEnv): SupabaseConnection {
+  // An explicitly provisioned Hyperdrive binding takes precedence over the
+  // old pooler secret; never silently fall back if the binding is malformed.
+  if (env.SUPABASE_HYPERDRIVE) {
+    if (!env.SUPABASE_HYPERDRIVE.connectionString) {
+      throw new SupabaseConfigurationError("SUPABASE_HYPERDRIVE binding has no connection string");
+    }
+    return { connectionString: env.SUPABASE_HYPERDRIVE.connectionString, requireTls: false };
+  }
   if (env.SUPABASE_DATABASE_URL) {
     let parsed: URL;
     try {
@@ -52,9 +60,5 @@ export function resolveSupabaseConnection(env: SupabaseConnectionEnv): SupabaseC
     return { connectionString: parsed.toString(), requireTls: true };
   }
 
-  // Optional legacy preview Hyperdrive path, never mandatory for Supavisor.
-  if (env.SUPABASE_HYPERDRIVE?.connectionString) {
-    return { connectionString: env.SUPABASE_HYPERDRIVE.connectionString, requireTls: false };
-  }
   throw new SupabaseConfigurationError("SUPABASE_DATABASE_URL is missing from the active Preview runtime");
 }

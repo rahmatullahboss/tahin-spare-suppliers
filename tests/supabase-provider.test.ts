@@ -84,7 +84,7 @@ test("Actual Singapore pooler format and safe field-specific diagnostics", () =>
   assert.throws(() => resolveSupabaseConnection({}), /missing from the active Preview runtime/);
 });
 
-test("A legacy preview Hyperdrive is optional, while direct pooler takes precedence", () => {
+test("An explicit Hyperdrive binding takes precedence over a stale direct pooler secret", () => {
   const fallback = resolveSupabaseConnection({
     SUPABASE_HYPERDRIVE: { connectionString: "postgres://preview-only" },
   });
@@ -94,8 +94,9 @@ test("A legacy preview Hyperdrive is optional, while direct pooler takes precede
     SUPABASE_DATABASE_URL: valid,
     SUPABASE_HYPERDRIVE: { connectionString: "postgres://preview-only" },
   });
-  assert.equal(direct.requireTls, true);
-  assert.equal(new URL(direct.connectionString).hostname, "aws-0-ap-southeast-1.pooler.supabase.com");
+  assert.equal(direct.requireTls, false);
+  assert.equal(direct.connectionString, "postgres://preview-only");
+  assert.throws(() => resolveSupabaseConnection({ SUPABASE_DATABASE_URL: valid, SUPABASE_HYPERDRIVE: { connectionString: "" } }), /binding has no connection string/);
 });
 
 test("Supabase does not execute request-time DDL on missing or changed schema", async () => {
