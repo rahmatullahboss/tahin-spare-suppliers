@@ -32,6 +32,14 @@ function addSecurityHeaders(response: Response): Response {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  // Do not expose copied customer/mail data on a public preview while
+  // the preview-only access policy and database credentials are pending.
+  if (env.TAHIN_PREVIEW_LOCKED === 'true') {
+    return addSecurityHeaders(new Response('Preview locked pending access verification.', {
+      status: 503,
+      headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' },
+    }));
+  }
   const url = new URL(context.request.url);
   const canonicalRedirectUrl = getCanonicalRedirectUrl(url);
   if (canonicalRedirectUrl) {

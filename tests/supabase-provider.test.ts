@@ -19,11 +19,14 @@ test("Supabase is explicit opt-in and does not change production Wrangler config
   const config = JSON.parse(wrangler);
   assert.notEqual(config.vars?.DB_PROVIDER, "supabase");
   assert.equal(config.name, "tahin-spare-suppliers");
-  const preview = config.env?.["supabase-preview"];
+  const preview = config.previews;
+  assert.equal(config.env?.["supabase-preview"], undefined);
   assert.equal(preview?.vars?.DB_PROVIDER, "supabase");
-  assert.equal(preview?.name, "tahin-spare-suppliers-supabase-preview");
-  assert.equal(preview?.workers_dev, false);
-  assert.equal(preview?.preview_urls, false);
+  assert.equal(preview?.vars?.TAHIN_PREVIEW_LOCKED, "true");
+  assert.equal(config.vars?.TAHIN_PREVIEW_LOCKED, undefined);
+  const middleware = await source("src/middleware.ts");
+  assert.match(middleware, /if \(env\.TAHIN_PREVIEW_LOCKED === 'true'\)/);
+  assert.ok(middleware.indexOf("if (env.TAHIN_PREVIEW_LOCKED") < middleware.indexOf("const canonicalRedirectUrl ="));
   assert.equal(preview?.route, undefined);
   assert.equal(preview?.routes, undefined);
   assert.deepEqual(preview?.kv_namespaces, [{ binding: "SESSION", id: "a497da7b883d4e01aaa3a087693e20ac" }]);
