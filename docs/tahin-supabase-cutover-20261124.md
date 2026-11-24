@@ -61,4 +61,10 @@ Cloudflare supports PostgreSQL TCP connections without Hyperdrive, but recommend
 - Native Preview deployment ae09f6db-425c-48f9-94a4-ced152f9b1fa (number 12) confirms SUPABASE_HYPERDRIVE binding with that ID. The binding takes precedence over the existing direct-pooler secret. Production configuration has no Hyperdrive binding.
 - Tests: 222 pass, 2 skip, 0 fail; build passes. Authenticated /migration-health runtime probe remains pending; the binding alone does not certify database login or schema parity.
 
+## Public image parity and incremental sync — 2026-11-24
+
+- Comparison of all 15 application tables found 14 exact full-row checksum matches and one newly added contact message (Neon 147, Supabase 146). Row-level comparison found no changed or extra contact records. The missing row was inserted idempotently into Supabase; verified 147/147 and matching checksum. A final fresh parity check remains necessary at cutover.
+- Native Preview 37e43254-ef42-4637-9c71-18815cb40a6e (number 13) restores existing public image routes via canonical public production image URLs, without forwarding request credentials or exposing private attachments; read-only public contact/enquiry page navigation is allowed, writes and admin APIs remain blocked. The isolated preview storage and Hyperdrive binding are unchanged.
+- Representative production image requests returned HTTP 200 image/webp. Regression tests cover public image routes and rejection of encoded separators, traversal, arbitrary URLs, and non-image paths. 223 pass, 2 skip, 0 fail; build passed. Authenticated preview visual verification remains pending.
+
 No Cloudflare production routes, database provider flags, secrets, or deployments were modified by this migration stage.

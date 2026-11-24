@@ -1,6 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { env } from 'cloudflare:workers';
-import { getCanonicalRedirectUrl } from './lib/canonical-url';
+import { getCanonicalRedirectUrl, getPublicPreviewImageUrl } from './lib/canonical-url';
 import { ensureSchema, getDb } from './lib/server/db';
 import { getRuntimeEnv } from './lib/server/env';
 import { SupabaseConfigurationError } from './lib/server/supabase-connection';
@@ -75,7 +75,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
         return addSecurityHeaders(new Response(`Supabase FAIL — ${stage}: ${reason}`, { status: 503, headers }));
       }
     }
-    const publicPage = /^\/(?:about|services|brands|business-info|privacy|terms|products|parts|blog|anchor-and-chain|diesel-generator-sets|hydraulic-crane-equipment|marine-auxillary-engines|marine-gearbox|marine-propulsion-engines|marine-pump|marine-spare-parts)?\/?$/.test(url.pathname)
+    // Static assets are served by the asset binding first. For other public
+    // images, reuse the existing public production media route. No cookies,
+    // authorization headers, or private R2 keys are forwarded to production.
+    const publicImage = readMethod ? getPublicPreviewImageUrl(url.pathname) : undefined;
+    if (publicImage) {
+      return addSecurityHeaders(new Response(null, { status: 302, headers: { ...headers, Location: publicImage } }));
+    }
+    const publicPage = /^\/(?:about|services|brands|business-info|privacy|terms|products|parts|blog|contact|enquiry|anchor-and-chain|diesel-generator-sets|hydraulic-crane-equipment|marine-auxillary-engines|marine-gearbox|marine-propulsion-engines|marine-pump|marine-spare-parts)?\/?$/.test(url.pathname)
       || /^\/(?:products|parts|brands|blog|inventory|category)\/[a-z0-9-]+\/?$/.test(url.pathname)
       || /^\/category\/[a-z0-9-]+\/[a-z0-9-]+\/?$/.test(url.pathname);
     if (!readMethod || !publicPage) {

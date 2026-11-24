@@ -2,6 +2,16 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { resolveSupabaseConnection } from "../src/lib/server/supabase-connection.ts";
+import { getPublicPreviewImageUrl } from "../src/lib/canonical-url.ts";
+
+test("Preview restores public production images without redirecting private or unsafe paths", () => {
+  for (const path of ["/images/marine-engine.webp", "/images/diesel-generator.webp", "/images/shipments/shipment-01.webp", "/images/brands/yanmar-1.svg"]) {
+    assert.equal(getPublicPreviewImageUrl(path), `https://tahinspare.com${path}`);
+  }
+  for (const path of ["/api/admin/emails", "/images/../api/private.png", "/images/%2e%2e/private.png", "/images/a%2fb.png", "//other.example/image.webp", "/images/file.pdf", "/images/photo.webp?token=secret"]) {
+    assert.equal(getPublicPreviewImageUrl(path), undefined);
+  }
+});
 
 const source = async (file: string) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 const valid = "postgres://tahin_worker.xpfowzrwjbojbgtekoim:placeholder@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require";
