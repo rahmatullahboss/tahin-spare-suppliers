@@ -4,6 +4,7 @@ import { getCanonicalRedirectUrl, getPublicPreviewImageUrl } from './lib/canonic
 import { ensureSchema, getDb } from './lib/server/db';
 import { getRuntimeEnv } from './lib/server/env';
 import { SupabaseConfigurationError } from './lib/server/supabase-connection';
+import { runMigrationQa } from './lib/server/migration-qa';
 import { invalidateCatalogOnWrite, serveCatalogHtml } from './lib/server/cache-policy';
 
 const RASTER_CONTENT_TYPES = new Map([
@@ -41,6 +42,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (env.TAHIN_PREVIEW_READ_ONLY === 'true' || env.TAHIN_PREVIEW_LOCKED === 'true') {
     const headers = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' };
     const readMethod = context.request.method === 'GET' || context.request.method === 'HEAD';
+    if (url.pathname === '/migration-qa' && env.TAHIN_PREVIEW_READ_ONLY === 'true' && url.hostname === 'supabase-migration-tahin-spare-suppliers.rahmatullahzisan.workers.dev') {
+      if (context.request.method === 'GET') {
+        return addSecurityHeaders(new Response('<!doctype html><html lang="en"><meta charset="utf-8"><title>Migration QA</title><h1>Supabase migration QA</h1><p>Run synthetic database rollback and isolated image storage tests. No real mail is sent.</p><form method="post" action="/migration-qa"><button type="submit">Run migration QA</button></form></html>', { headers: { ...headers, 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': "default-src 'none'; form-action 'self'; frame-ancestors 'none'" } }));
+      }
+      if (context.request.method !== 'POST' || context.request.headers.get('Origin') !== url.origin) return addSecurityHeaders(new Response('Forbidden', { status: 403, headers }));
+      try {
+        const result = await runMigrationQa(getRuntimeEnv(context.locals));
+        return addSecurityHeaders(new Response(result.join('\n'), { headers: { ...headers, 'Content-Type': 'text/plain; charset=utf-8' } }));
+      } catch {
+        return addSecurityHeaders(new Response('Migration QA failed; production must remain unchanged.', { status: 503, headers }));
+      }
+    }
     if (readMethod && url.pathname === '/migration-health') {
       let stage = 'provider';
       try {
