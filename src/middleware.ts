@@ -1,9 +1,7 @@
 import { defineMiddleware } from 'astro:middleware';
 import { env } from 'cloudflare:workers';
 import { getCanonicalRedirectUrl, getPublicPreviewImageUrl } from './lib/canonical-url';
-import { ensureSchema, getDb } from './lib/server/db';
 import { getRuntimeEnv } from './lib/server/env';
-import { SupabaseConfigurationError } from './lib/server/supabase-connection';
 import { isCutoverReadAllowed } from './lib/cutover-fence';
 import { invalidateCatalogOnWrite, serveCatalogHtml } from './lib/server/cache-policy';
 
@@ -42,6 +40,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const headers = { 'Cache-Control': 'no-store', 'Retry-After': '60' };
     if (url.pathname === '/migration-health' && (context.request.method === 'GET' || context.request.method === 'HEAD')) {
       try {
+        const { ensureSchema, getDb } = await import('./lib/server/db');
         const runtime = getRuntimeEnv(context.locals);
         await ensureSchema(runtime);
         const sql = getDb(runtime);
@@ -76,7 +75,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
     if (readMethod && url.pathname === '/migration-health') {
       let stage = 'provider';
+      const { SupabaseConfigurationError } = await import('./lib/server/supabase-connection');
       try {
+        const { ensureSchema, getDb } = await import('./lib/server/db');
         const runtime = getRuntimeEnv(context.locals);
         if (runtime.DB_PROVIDER !== 'supabase') throw new Error('Wrong provider');
         stage = 'connection configuration';

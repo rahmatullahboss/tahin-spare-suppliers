@@ -48,6 +48,8 @@ test("Supabase release config preserves production resources and isolates previe
   assert.match(middleware, /env\.TAHIN_PREVIEW_READ_ONLY === 'true'/);
   assert.match(middleware, /if \(!readMethod \|\| !publicPage\)/);
   assert.match(middleware, /await ensureSchema\(runtime\)/);
+  assert.match(middleware, /await import\('\.\/lib\/server\/db'\)/);
+  assert.doesNotMatch(middleware, /^import .*from '\.\/lib\/server\/(?:db|supabase-connection)'/m);
   assert.ok(middleware.indexOf("if (env.TAHIN_PREVIEW_READ_ONLY") < middleware.indexOf("const canonicalRedirectUrl ="));
   assert.equal(preview?.route, undefined);
   assert.equal(preview?.routes, undefined);
