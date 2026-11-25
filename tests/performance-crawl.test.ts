@@ -29,9 +29,11 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   assert.match(subcategory, /getSubcategoryPageData\(env, Astro\.locals/);
   assert.match(categoryData, /readCategoryProductPage\(sql, \{ category: currentCategory\.canonicalValue, page \}\)/);
   assert.match(categoryData, /readCategoryProductPage\(sql, \{[\s\S]*category: parent\.canonicalValue,[\s\S]*subcategory: result\.subcategory\.value,[\s\S]*page,[\s\S]*\}\)/);
-  assert.match(repository, /WITH candidates AS MATERIALIZED/);
-  assert.match(repository, /LEFT JOIN products p ON p.id = n.id AND n.position > /);
-  assert.match(repository, /rows.filter\(row => row.is_card === true\).map\(mapProductSummary\)/);
+  const categoryProducts = await source("src/lib/server/category-product-page.ts");
+  assert.match(categoryProducts, /WITH candidates AS MATERIALIZED/);
+  assert.match(categoryProducts, /LEFT JOIN products p ON p.id = n.id AND n.position > /);
+  assert.match(categoryProducts, /json_agg\(json_build_array/);
+  assert.match(categoryProducts, /FILTER \(WHERE n.position > /);
   assert.match(brand, /listBrandProductSummaries\(env, brandSlug\)/);
   assert.match(repository, /SELECT p.id, p.brand FROM products p/);
   assert.match(repository, /toUrlSlug\(canonicalizeBrand\(row.brand\)\)/);

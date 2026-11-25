@@ -19,7 +19,7 @@ test("products support normalized many-to-many category assignments without dupl
 });
 
 test("category reads include primary and additional category assignments", async () => {
-  const repository = await source("src/lib/server/repository.ts");
+  const repository = await source("src/lib/server/category-product-page.ts");
 
   assert.match(repository, /EXISTS\s*\(\s*SELECT 1\s+FROM product_category_assignments/i);
   assert.match(repository, /subcategory\?: string/);

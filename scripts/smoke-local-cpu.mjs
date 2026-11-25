@@ -12,7 +12,8 @@ import { markInboundMessagesRead, readInboundCounts } from "../src/lib/server/in
 import { eligibleFollowupQuery, readFollowupPage } from "../src/lib/server/email-followup-query.ts";
 import { readRelatedProductSummaries } from "../src/lib/server/related-product-data.ts";
 import { selectRelatedProductRows } from "../src/lib/server/related-product-rows.ts";
-import { mapProductSummary } from "../src/lib/server/product-summary.ts";
+import { readCategoryProductPage, productSummaryFilter } from "../src/lib/server/category-product-page.ts";
+import { mapProductDirectoryEntry, mapProductSummary } from "../src/lib/server/product-summary.ts";
 import { withPostgresReader } from "../src/lib/server/pg-adapter.ts";
 
 // The hot entrypoint must not eagerly import the Astro application runtime.
@@ -121,6 +122,38 @@ try {
       assert.deepEqual(actual,selectRelatedProductRows(previous,identity).map(mapProductSummary));
       beforeBytes+=Buffer.byteLength(JSON.stringify(previous));
     }
+    const oldPage = async (options) => {
+      const {where,params}=productSummaryFilter(options);
+      const start="$"+(params.length+1), end="$"+(params.length+2), offset=(options.page-1)*12;
+      const rows = await replayReader.query(`
+        WITH candidates AS MATERIALIZED (
+          SELECT p.id,p.slug,p.name,p.image_url,p.brand,p.model_number,p.updated_at FROM products p ${where}
+          ORDER BY p.updated_at DESC,p.id ASC LIMIT 1000
+        ), numbered AS (
+          SELECT candidates.*,row_number() OVER(ORDER BY updated_at DESC,id ASC) AS position FROM candidates
+        )
+        SELECT n.*, (n.position > ${start}::integer AND n.position <= ${end}::integer) AS is_card,
+          p.short_description,p.category,p.subcategory,p.part_number,p.image_alt
+        FROM numbered n LEFT JOIN products p ON p.id=n.id AND n.position > ${start}::integer AND n.position <= ${end}::integer
+        ORDER BY n.position`,[...params,offset,offset+12]);
+      return {directoryProducts:rows.map(mapProductDirectoryEntry),visibleProducts:rows.filter(row=>row.is_card===true).map(row=>mapProductSummary({...row,updated_at:row.updated_at instanceof Date?row.updated_at.toISOString():row.updated_at}))};
+    };
+    for(const options of [{category:"QA benchmark",page:1},{category:"QA benchmark",page:75},{category:"QA benchmark",page:76},{category:"QA Custom Category",subcategory:"QA Child",page:2},{category:"nonexistent",page:1}]){
+      assert.deepEqual(await readCategoryProductPage(replayReader,options),await oldPage(options));
+    }
+    const categoryOptions={category:"QA benchmark",page:2};
+    const cpu={old:[],packed:[]}, wall={old:[],packed:[]};
+    for(let trial=0;trial<8;trial++){
+      for(const mode of trial%2===0?["old","packed"]:["packed","old"]){
+        const start=process.cpuUsage(),clock=performance.now();
+        const result=mode==="old"?await oldPage(categoryOptions):await readCategoryProductPage(replayReader,categoryOptions);
+        const usage=process.cpuUsage(start);
+        assert.equal(result.directoryProducts.length,900);
+        if(trial>0){cpu[mode].push((usage.user+usage.system)/1000);wall[mode].push(performance.now()-clock);}
+      }
+    }
+    const median=values=>[...values].sort((a,b)=>a-b)[Math.floor(values.length/2)];
+    console.log(JSON.stringify({packedCategoryParity:"PASS",localClientCpuMs:{old:median(cpu.old),packed:median(cpu.packed)},localWallMs:{old:median(wall.old),packed:median(wall.packed)}}));
     assert.ok(afterBytes<beforeBytes);
     console.log(JSON.stringify({relatedProductParity:"PASS",previousSerializedRowsBytes:beforeBytes,optimizedSerializedRowsBytes:afterBytes}));
   } finally { await db.query("ROLLBACK"); }
