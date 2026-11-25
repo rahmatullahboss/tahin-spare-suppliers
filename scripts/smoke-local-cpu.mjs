@@ -155,6 +155,13 @@ assert.notEqual(pids[0], pids[1]);
 assert.ok(pids.every(pid => pid !== firstPid));
 console.log("PASS PostgreSQL connection reuse, concurrent scope isolation and error cleanup");
 
+// Force the first app render to validate mismatched metadata against native PG.
+const schemaFixture = new pg.Client({connectionString:uri});
+await schemaFixture.connect();
+const originalSchemaVersion = (await schemaFixture.query("SELECT version FROM app_schema_meta WHERE key='main'")).rows[0].version;
+await schemaFixture.query("UPDATE app_schema_meta SET version='qa-intentionally-mismatched' WHERE key='main'");
+await schemaFixture.end();
+
 const socket = createServer();
 await new Promise((resolve, reject) => {socket.once("error", reject);socket.listen(0,"127.0.0.1",resolve)});
 const port = socket.address().port;
@@ -178,10 +185,24 @@ try {
   let ready=false;
   for(let i=0;i<40;i++){
     if(worker.exitCode!==null) break;
-    try { const response=await fetch(base+"/",{signal:AbortSignal.timeout(1500),redirect:"manual"}); if(response.ok){await response.text();ready=true;break} } catch {}
+    try { const response=await fetch(base+"/robots.txt",{signal:AbortSignal.timeout(1500),redirect:"manual"}); if(response.ok){await response.text();ready=true;break} } catch {}
     await new Promise(resolve=>setTimeout(resolve,500));
   }
   assert.ok(ready,"Worker did not become ready");
+  const mismatched=await fetch(base+"/",{headers:{"Cache-Control":"no-cache"},redirect:"manual"});
+  assert.equal(mismatched.status,500,"Cold schema mismatch must reject the app render");
+  await mismatched.text();
+  const restoreSchema=new pg.Client({connectionString:uri});
+  await restoreSchema.connect();
+  try{
+    assert.equal((await restoreSchema.query("SELECT version FROM app_schema_meta WHERE key='main'")).rows[0].version,"qa-intentionally-mismatched");
+    await restoreSchema.query("UPDATE app_schema_meta SET version=$1 WHERE key='main'",[originalSchemaVersion]);
+  }finally{await restoreSchema.end()}
+  const recovered=await fetch(base+"/",{headers:{"Cache-Control":"no-cache"}});
+  assert.equal(recovered.status,200);
+  assert.ok((await recovered.text()).includes("QA CMS Headline"));
+  console.log("PASS cold schema mismatch rejects without migration; restored metadata retries successfully");
+
   for(const path of ["/","/products","/category/spare-parts","/brands","/sitemap.xml","/api/products?page=1&limit=20","/products/qa-target"]){
     const response=await fetch(base+path,{signal:AbortSignal.timeout(10000),redirect:"manual"});
     assert.equal(response.status,200,path);

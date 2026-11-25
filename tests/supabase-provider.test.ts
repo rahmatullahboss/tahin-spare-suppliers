@@ -129,3 +129,12 @@ test("Supabase does not execute request-time DDL on missing or changed schema", 
   assert.match(db, /if \(env\.DB_PROVIDER === "supabase"\)\s*\{\s*throw new Error\("Supabase schema mismatch/);
   assert.match(db, /if \(deployedVersion === SCHEMA_VERSION\)/);
 });
+
+test("Scoped Supabase reads reuse their connection for the cold schema check without enabling migrations", async () => {
+  const db = await source("src/lib/server/db.ts");
+  assert.match(db, /withPostgresReader\(connection\.connectionString, \{ requireTls: connection\.requireTls \}, async reader => \{[\s\S]*?await ensureSchema\(env, reader\);[\s\S]*?return operation\(reader\)/);
+  assert.match(db, /const reader = env\.DB_PROVIDER === "supabase" && scopedReader \? scopedReader : sql/);
+  assert.match(db, /await reader\.query\("SELECT version FROM app_schema_meta/);
+  assert.match(db, /Supabase schema mismatch: apply reviewed migration before cutover/);
+  assert.match(db, /Supabase schema metadata missing: restore reviewed schema before cutover/);
+});

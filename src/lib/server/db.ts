@@ -34,11 +34,16 @@ export function getDb(env: RuntimeEnv): ReturnType<typeof neon> {
 
 /** Explicit read scope; existing writers and transactions keep their original adapter. */
 export async function withDatabaseReader<T>(env: RuntimeEnv, operation: (reader: DatabaseReader) => Promise<T>): Promise<T> {
-  await ensureSchema(env);
   if (env.DB_PROVIDER === "supabase") {
     const connection = resolveSupabaseConnection(env);
-    return withPostgresReader(connection.connectionString, { requireTls: connection.requireTls }, operation);
+    return withPostgresReader(connection.connectionString, { requireTls: connection.requireTls }, async reader => {
+      // The restricted Supabase role only validates metadata. Reuse this
+      // request's connection for the cold check; never run migrations here.
+      await ensureSchema(env, reader);
+      return operation(reader);
+    });
   }
+  await ensureSchema(env);
   if (env.DB_PROVIDER === "aiven") {
     if (!env.AIVEN_HYPERDRIVE?.connectionString) throw new Error("Aiven selected, but AIVEN_HYPERDRIVE binding is unavailable");
     return withPostgresReader(env.AIVEN_HYPERDRIVE.connectionString, {}, operation);
@@ -47,7 +52,7 @@ export async function withDatabaseReader<T>(env: RuntimeEnv, operation: (reader:
   return operation({ query: async (text, params) => await sql.query(text, params) });
 }
 
-export async function ensureSchema(env: RuntimeEnv) {
+export async function ensureSchema(env: RuntimeEnv, scopedReader?: DatabaseReader) {
   const databaseKey = env.DB_PROVIDER === "supabase"
     ? resolveSupabaseConnection(env).connectionString
     : env.DB_PROVIDER === "aiven" ? env.AIVEN_HYPERDRIVE?.connectionString : env.DATABASE_URL;
@@ -59,7 +64,8 @@ export async function ensureSchema(env: RuntimeEnv) {
       // Schema creation remains available for newly provisioned installations.
       let deployedVersion = "";
       try {
-        const rows = await sql.query("SELECT version FROM app_schema_meta WHERE key = 'main' LIMIT 1");
+        const reader = env.DB_PROVIDER === "supabase" && scopedReader ? scopedReader : sql;
+        const rows = await reader.query("SELECT version FROM app_schema_meta WHERE key = 'main' LIMIT 1");
         deployedVersion = String(rows?.[0]?.version ?? "");
       } catch (error) {
         const code = (error as { code?: string })?.code;

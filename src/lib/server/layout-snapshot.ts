@@ -1,6 +1,6 @@
 import { CATEGORY_DISPLAY_ROWS_SQL, hasCategoryMemo, rememberCategoryRows } from "./categories";
 import { getPageOverrides, normalizePageKey, parseOverrides, type PageOverrides } from "./page-overrides";
-import { ensureSchema, getDb } from "./db";
+import { withDatabaseReader } from "./db";
 import type { RuntimeEnv } from "./env";
 import type { DatabaseReader } from "./pg-adapter";
 
@@ -24,8 +24,7 @@ export async function readLayoutSnapshot(sql: DatabaseReader, scope: object, raw
 export async function getLayoutOverrides(env: RuntimeEnv, scope: object, rawPageKey: string): Promise<PageOverrides> {
   if (hasCategoryMemo(scope)) return getPageOverrides(env, rawPageKey);
   try {
-    await ensureSchema(env);
-    return await readLayoutSnapshot(getDb(env), scope, rawPageKey);
+    return await withDatabaseReader(env, sql => readLayoutSnapshot(sql, scope, rawPageKey));
   } catch {
     // Preserve original override failure semantics and let Footer load
     // categories independently if the combined read failed.
