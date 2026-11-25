@@ -2,13 +2,14 @@
 import MainLayout from "../../layouts/MainLayout.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { getRuntimeEnv } from "../../lib/server/env";
-import { listContent } from "../../lib/server/repository";
+import { getContentCardPageData } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
-const parts = await listContent(env, "parts", { limit: 1000 });
+const { cards: parts, pageOverrides } = await getContentCardPageData(env, "parts", Astro.locals, Astro.url.pathname);
 ---
 
 <MainLayout
+  preloadedPageOverrides={pageOverrides}
   title="Marine Spare Parts by Part Number | Tahin Spare Suppliers"
   description="Browse dedicated marine spare-part listings by exact item and part number. Request current specifications, availability, price and worldwide shipping from Bangladesh."
   activeNav="products"

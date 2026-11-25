@@ -124,6 +124,9 @@ try {
     assert.ok(afterBytes<beforeBytes);
     console.log(JSON.stringify({relatedProductParity:"PASS",previousSerializedRowsBytes:beforeBytes,optimizedSerializedRowsBytes:afterBytes}));
   } finally { await db.query("ROLLBACK"); }
+  await db.query("INSERT INTO blog_posts(id,slug,title,excerpt,content,deleted_at) VALUES ('qa-blog-live','qa-blog-live','QA article title','QA article excerpt',repeat('QA article body ',1000),NULL),('qa-blog-trash','qa-blog-trash','QA excluded article','QA excluded excerpt','fixture',NOW())");
+  await db.query("INSERT INTO parts(id,slug,name,short_description,content) VALUES('qa-part-live','qa-part-live','QA part title','QA part excerpt',repeat('QA part body ',1000))");
+  await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/blog',$1::jsonb),('/parts',$2::jsonb)",[JSON.stringify({"h1":{type:"text",text:"QA blog CMS"}}),JSON.stringify({"h1":{type:"text",text:"QA parts CMS"}})]);
   console.log("PASS real PostgreSQL fixture schema and catalogue");
 } finally { await db.end(); }
 
@@ -287,6 +290,19 @@ try {
   console.log("PASS subcategory server pagination, full brand links, canonical and isolated page cache");
   assert.equal((await fetch(base+"/category/qa-custom/nonexistent")).status,404);
   console.log("PASS custom parent/child, primary and additional category assignments, and missing subcategory");
+  for(const [route,title,excerpt,override,hiddenBody] of [
+    ["/blog","QA article title","QA article excerpt","QA blog CMS","QA article body "],
+    ["/parts","QA part title","QA part excerpt","QA parts CMS","QA part body "]
+  ]){
+    const response=await fetch(base+route);
+    assert.equal(response.status,200,route);
+    const body=await response.text();
+    for(const expected of [title,excerpt,override]) assert.ok(body.includes(expected),expected);
+    assert.ok(!body.includes(hiddenBody));
+    assert.ok(!body.includes("QA excluded article"));
+    assert.ok(body.includes("/category/qa-custom"));
+  }
+  console.log("PASS narrow blog and parts cards, deleted article exclusion and CMS/footer preservation");
   const admin=await fetch(base+"/admin",{redirect:"manual"});
   assert.ok([301,302,303,307,308].includes(admin.status),"unauthenticated admin must redirect");
   console.log("PASS local unauthenticated admin redirect");

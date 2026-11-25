@@ -3,11 +3,14 @@ import MainLayout from '../layouts/MainLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
+import { getLayoutOverrides } from '../lib/server/layout-snapshot';
 
 const env = getRuntimeEnv(Astro.locals);
+const pageOverrides = await getLayoutOverrides(env, Astro.locals, Astro.url.pathname).catch(() => ({}));
 const categories = await listAllCategories(env, Astro.locals);
 ---
 <MainLayout
+  preloadedPageOverrides={pageOverrides}
   title="Marine Engines, Generators & Spare Parts | Tahin Spare Suppliers"
   activeNav="products"
   description="Browse marine engines, generators, ship spare parts, gearboxes, deck-crane and hydraulic equipment by category, brand and model. Request current availability and worldwide shipping."

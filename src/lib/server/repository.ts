@@ -451,6 +451,28 @@ export async function listRelatedProductSummaries(env: RuntimeEnv, product: Cont
 }
 
 
+/** Public blog/part cards need no body, gallery or edit metadata. */
+export async function getContentCardPageData(env: RuntimeEnv, type: "blog" | "parts", scope: object, pagePath: string) {
+  return withDatabaseReader(env, async sql => {
+    const config = CONTENT_TABLES[type];
+    const cards: Array<Pick<ContentRecord, "slug" | "title" | "excerpt" | "imageUrl">> = [];
+    const batchSize = 1000;
+    let offset = 0;
+    do {
+      const rows = await sql.query(
+        `SELECT slug, ${config.titleColumn} AS title, ${config.excerptColumn} AS excerpt, image_url FROM ${config.table}
+         ${type === "blog" ? "WHERE deleted_at IS NULL" : ""}
+         ORDER BY updated_at DESC LIMIT $1 OFFSET $2`, [batchSize, offset]);
+      cards.push(...rows.map(row => ({slug: asString(row.slug), title: asString(row.title), excerpt: asString(row.excerpt), imageUrl: asString(row.image_url)})));
+      if (type === "parts" || rows.length < batchSize) break;
+      offset += batchSize;
+    } while (true);
+    let pageOverrides: PageOverrides | undefined;
+    try { pageOverrides = await readLayoutSnapshot(sql, scope, pagePath); } catch { /* layout fallback */ }
+    return { cards, pageOverrides };
+  });
+}
+
 export async function listAllContent(env: RuntimeEnv, type: ContentType): Promise<ContentRecord[]> {
   const batchSize = 1000;
   const records: ContentRecord[] = [];

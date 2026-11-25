@@ -2,10 +2,10 @@
 import MainLayout from "../../layouts/MainLayout.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { getRuntimeEnv } from "../../lib/server/env";
-import { listAllContent } from "../../lib/server/repository";
+import { getContentCardPageData } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
-const posts = await listAllContent(env, "blog");
+const { cards: posts, pageOverrides } = await getContentCardPageData(env, "blog", Astro.locals, Astro.url.pathname);
 const staticPosts = [
   {
     slug: "reconditioned-marine-engine-buying-checklist",
@@ -46,6 +46,7 @@ const PAGE_SIZE = 9;
 const totalPages = Math.max(1, Math.ceil(allPosts.length / PAGE_SIZE));
 ---
 <MainLayout
+  preloadedPageOverrides={pageOverrides}
   title="Marine Industry Blog & Resources | Tahin Spare Suppliers"
   description="Marine engine, ship spare-parts, procurement and export resources for ship owners, technical superintendents, fleet managers and marine engineers."
   activeNav="blog"
