@@ -7,7 +7,7 @@ const marker = randomUUID();
 const expectedVersion = process.env.TAHIN_EXPECTED_WORKER_VERSION;
 const versions = new Set();
 const uncached = process.argv.includes("--uncached");
-const allRoutes = uncached ? ["/", "/category/spare-parts", "/products"] : ["/", "/products", "/category/spare-parts", "/brands", "/blog", "/sitemap.xml", "/api/products?page=1&limit=20"];
+const allRoutes = uncached ? ["/", "/category/spare-parts", "/products", "/enquiry", "/products/twin-disc-mg521-marine-reverse-gearbox"] : ["/", "/products", "/category/spare-parts", "/brands", "/blog", "/sitemap.xml", "/api/products?page=1&limit=20"];
 const requestedRoute = process.argv.find(arg => arg.startsWith("--route="))?.slice(8);
 if (requestedRoute && !allRoutes.includes(requestedRoute)) throw new Error("Unsupported benchmark route");
 const routes = requestedRoute ? [requestedRoute] : allRoutes;
@@ -40,6 +40,7 @@ try {
 }
 console.log(JSON.stringify({requests: results}, null, 2));
 let count = 0;
+const cpuByRoute = new Map();
 for (const chunk of output.matchAll(/^\{[\s\S]*?^\}/gm)) {
   try {
     const entry = JSON.parse(chunk[0]);
@@ -50,9 +51,23 @@ for (const chunk of output.matchAll(/^\{[\s\S]*?^\}/gm)) {
     const version = entry.scriptVersion?.id ?? "unknown";
     versions.add(version);
     count++;
-    console.log(JSON.stringify({version, path: route.pathname + route.search, cpuMs: entry.cpuTime ?? entry.cpuTimeMs ?? entry.event?.cpuTime ?? null, wallMs: entry.wallTime ?? entry.wallTimeMs ?? null, outcome: entry.outcome, status: entry.event?.response?.status, fields: Object.keys(entry)}));
+    const cpuMs = entry.cpuTime ?? entry.cpuTimeMs ?? entry.event?.cpuTime ?? null;
+    if (typeof cpuMs === "number" && Number.isFinite(cpuMs)) {
+      const key = route.pathname + route.search;
+      const values = cpuByRoute.get(key) ?? [];
+      values.push(cpuMs);
+      cpuByRoute.set(key, values);
+    }
+    console.log(JSON.stringify({version, path: route.pathname + route.search, cpuMs, wallMs: entry.wallTime ?? entry.wallTimeMs ?? null, outcome: entry.outcome, status: entry.event?.response?.status, fields: Object.keys(entry)}));
   } catch {}
 }
+const summary = routes.map(path => {
+  const values = [...(cpuByRoute.get(path) ?? [])].sort((a,b)=>a-b);
+  const middle = Math.floor(values.length/2);
+  const median = values.length === 0 ? null : values.length % 2 ? values[middle] : (values[middle-1]+values[middle])/2;
+  return {path, count:values.length, medianCpuMs:median, maxCpuMs:values.at(-1) ?? null, allBelow10Ms:values.length === (uncached?4:2) && values.every(value=>value<10)};
+});
+console.log(JSON.stringify({mode:uncached?"cache-bypass":"ordinary", summary}));
 console.log(JSON.stringify({tailEvents: count, tailStderrPresent: Boolean(errors), tailOutputBytes: output.length}));
 console.log(JSON.stringify({versions: [...versions], expectedVersion: expectedVersion ?? null}));
-if (count !== results.length || results.some(r => r.status !== 200) || versions.size !== 1 || versions.has("unknown") || (expectedVersion && !versions.has(expectedVersion))) process.exitCode = 1;
+if (summary.reduce((sum,row)=>sum+row.count,0) !== results.length || count !== results.length || results.some(r => r.status !== 200) || versions.size !== 1 || versions.has("unknown") || (expectedVersion && !versions.has(expectedVersion))) process.exitCode = 1;
