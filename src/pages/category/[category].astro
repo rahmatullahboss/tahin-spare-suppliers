@@ -10,7 +10,12 @@ import { getCategoryPageData } from '../../lib/server/category-page-data';
 
 const { category } = Astro.params;
 const env = getRuntimeEnv(Astro.locals);
-const result = await getCategoryPageData(env, Astro.locals, category ?? '');
+const requestedPage = Astro.url.searchParams.get('page') ?? '1';
+if (!/^[1-9][0-9]{0,2}$/.test(requestedPage) || Number(requestedPage) > 84) {
+  return new Response('Page not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+}
+const currentPage = Number(requestedPage);
+const result = await getCategoryPageData(env, Astro.locals, category ?? '', currentPage);
 
 if (!result) {
   return new Response('Category not found', {
@@ -19,16 +24,13 @@ if (!result) {
   });
 }
 
-const { currentCategory, showBrandModelDirectory, subcategories, categoryProducts, managedBrands } = result;
+const { currentCategory, showBrandModelDirectory, subcategories, categoryProducts, visibleProducts, managedBrands } = result;
 const managedBrandBySlug = new Map(managedBrands.map((brand) => [brand.slug, brand] as const));
 const PRODUCT_PAGE_SIZE = 12;
 const totalProductPages = Math.max(1, Math.ceil(categoryProducts.length / PRODUCT_PAGE_SIZE));
-const requestedPage = Astro.url.searchParams.get('page') ?? '1';
-if (!/^[1-9][0-9]{0,2}$/.test(requestedPage) || Number(requestedPage) > totalProductPages) {
+if (currentPage > totalProductPages) {
   return new Response('Page not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 }
-const currentPage = Number(requestedPage);
-const visibleProducts = categoryProducts.slice((currentPage - 1) * PRODUCT_PAGE_SIZE, currentPage * PRODUCT_PAGE_SIZE);
 const pagePath = `/category/${currentCategory.slug}`;
 const pageHref = (page: number) => page === 1 ? pagePath : `${pagePath}?page=${page}`;
 const pageNumbers: (number | string)[] = totalProductPages <= 7

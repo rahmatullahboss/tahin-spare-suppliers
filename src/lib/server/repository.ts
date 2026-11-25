@@ -7,7 +7,7 @@ import { parseRelatedProductSlugs, resolveProductSeo, stringifyRelatedProductSlu
 import { canonicalizeBrand, cleanProductTitle, normalizeVerificationDate } from "../inventory-quality";
 import { ensureBrandExists } from "./brands";
 import { selectRelatedProductRows } from "./related-product-rows";
-import { mapProductSummary, type ProductSummary } from "./product-summary";
+import { mapProductSummary, mapProductDirectoryEntry, type ProductSummary } from "./product-summary";
 
 const CONTENT_TABLES = {
   products: {
@@ -359,9 +359,16 @@ export async function readProductSummaries(
   const page = Math.max(1, options?.page ?? 1);
   const limit = normalizeContentLimit(options?.limit);
   const offset = (page - 1) * limit;
-  const params: string[] = [];
-  let query = "SELECT p.id, p.slug, p.name, p.short_description, p.image_url, p.updated_at, p.category, p.subcategory, p.brand, p.model_number, p.part_number, p.image_alt FROM products p";
+  const { where, params } = productSummaryFilter(options);
+  const query = "SELECT p.id, p.slug, p.name, p.short_description, p.image_url, p.updated_at, p.category, p.subcategory, p.brand, p.model_number, p.part_number, p.image_alt FROM products p" + where +
+    ` ORDER BY p.updated_at DESC, p.id ASC LIMIT ${limit} OFFSET ${offset}`;
+  const rows = await sql.query(query, params.length ? params : undefined);
+  return rows.map(mapProductSummary);
+}
 
+function productSummaryFilter(options?: { category?: string; subcategory?: string }) {
+  const params: string[] = [];
+  let where = "";
   if (options?.category) {
     params.push(options.category);
     const categoryParam = `$${params.length}`;
@@ -375,16 +382,43 @@ export async function readProductSummaries(
       additionalMatch += ` AND pca.subcategory_name = ${subcategoryParam}`;
     }
 
-    query += ` WHERE ((${primaryMatch}) OR EXISTS (
+    where = ` WHERE ((${primaryMatch}) OR EXISTS (
       SELECT 1
       FROM product_category_assignments pca
       WHERE pca.product_id = p.id AND ${additionalMatch}
     ))`;
   }
+  return { where, params };
+}
 
-  query += ` ORDER BY p.updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
-  const rows = await sql.query(query, params.length ? params : undefined);
-  return rows.map(mapProductSummary);
+/** Preserve the newest 1,000 catalogue entries, with full card fields only for
+ * the requested page. Both directory metadata and cards share one SQL snapshot.
+ */
+export async function readCategoryProductPage(sql: DatabaseReader, options: { category: string; subcategory?: string; page: number }) {
+  const { where, params } = productSummaryFilter(options);
+  const page = Math.max(1, Math.min(84, Math.floor(options.page) || 1));
+  const offset = (page - 1) * 12;
+  const start = "$" + (params.length + 1);
+  const end = "$" + (params.length + 2);
+  const rows = await sql.query(`
+    WITH candidates AS MATERIALIZED (
+      SELECT p.id, p.slug, p.name, p.image_url, p.brand, p.model_number, p.updated_at
+      FROM products p ${where}
+      ORDER BY p.updated_at DESC, p.id ASC LIMIT 1000
+    ), numbered AS (
+      SELECT candidates.*, row_number() OVER (ORDER BY updated_at DESC, id ASC) AS position
+      FROM candidates
+    )
+    SELECT n.*, (n.position > ${start}::integer AND n.position <= ${end}::integer) AS is_card,
+           p.short_description, p.category, p.subcategory, p.part_number, p.image_alt
+    FROM numbered n
+    LEFT JOIN products p ON p.id = n.id AND n.position > ${start}::integer AND n.position <= ${end}::integer
+    ORDER BY n.position
+  `, [...params, offset, offset + 12]);
+  return {
+    directoryProducts: rows.map(mapProductDirectoryEntry),
+    visibleProducts: rows.filter(row => row.is_card === true).map(mapProductSummary),
+  };
 }
 
 /** Related cards need at most three fully mapped summaries, not the entire catalogue. */

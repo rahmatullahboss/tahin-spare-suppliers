@@ -112,8 +112,8 @@ export function revisionedKey(request: Request, revision: string): Request {
   const url = publicCacheUrl(request) ?? new URL(request.url);
   url.searchParams.set("__tahin_catalogue_revision", revision);
   // Do not reuse pre-pagination category HTML from an older deployment.
-  if (/^\/category\/[a-z0-9-]+\/?$/i.test(url.pathname)) url.searchParams.set("__tahin_category_format", "2");
-  if (/^\/category\/[a-z0-9-]+\/[a-z0-9-]+\/?$/i.test(url.pathname)) url.searchParams.set("__tahin_subcategory_format", "2");
+  if (/^\/category\/[a-z0-9-]+\/?$/i.test(url.pathname)) url.searchParams.set("__tahin_category_format", "3");
+  if (/^\/category\/[a-z0-9-]+\/[a-z0-9-]+\/?$/i.test(url.pathname)) url.searchParams.set("__tahin_subcategory_format", "3");
   return new Request(url.toString(), { method: "GET" });
 }
 

@@ -18,6 +18,16 @@ export type ProductSummary = {
 
 const asString = (value: unknown): string => value == null ? "" : String(value);
 
+export function mapProductDirectoryEntry(row: Record<string, unknown>) {
+  return {
+    slug: asString(row.slug),
+    title: cleanProductTitle(asString(row.name)),
+    imageUrl: asString(row.image_url),
+    brand: canonicalizeBrand(row.brand),
+    model_number: asString(row.model_number),
+  };
+}
+
 // Map only the actual summary projection. Full detail SEO, gallery, category
 // assignment and verification date processing belong to the full record reader.
 export function mapProductSummary(row: Record<string, unknown>): ProductSummary {

@@ -9,7 +9,12 @@ import { getSubcategoryPageData } from '../../../lib/server/category-page-data';
 
 const { category, subcategory } = Astro.params;
 const env = getRuntimeEnv(Astro.locals);
-const result = await getSubcategoryPageData(env, Astro.locals, category ?? '', subcategory ?? '');
+const requestedPage = Astro.url.searchParams.get('page') ?? '1';
+if (!/^[1-9][0-9]{0,2}$/.test(requestedPage) || Number(requestedPage) > 84) {
+  return new Response('Page not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+}
+const currentPage = Number(requestedPage);
+const result = await getSubcategoryPageData(env, Astro.locals, category ?? '', subcategory ?? '', currentPage);
 
 if (!result) {
   return new Response('Subcategory not found', {
@@ -18,15 +23,12 @@ if (!result) {
   });
 }
 
-const { parent, subcategory: currentSubcategory, filteredProducts } = result;
+const { parent, subcategory: currentSubcategory, filteredProducts, visibleProducts } = result;
 const PRODUCT_PAGE_SIZE = 12;
 const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCT_PAGE_SIZE));
-const requestedPage = Astro.url.searchParams.get('page') ?? '1';
-if (!/^[1-9][0-9]{0,2}$/.test(requestedPage) || Number(requestedPage) > totalProductPages) {
+if (currentPage > totalProductPages) {
   return new Response('Page not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 }
-const currentPage = Number(requestedPage);
-const visibleProducts = filteredProducts.slice((currentPage - 1) * PRODUCT_PAGE_SIZE, currentPage * PRODUCT_PAGE_SIZE);
 const pagePath = `/category/${parent.slug}/${currentSubcategory.slug}`;
 const pageHref = (page: number) => page === 1 ? pagePath : `${pagePath}?page=${page}`;
 const pageNumbers: (number | string)[] = totalProductPages <= 7

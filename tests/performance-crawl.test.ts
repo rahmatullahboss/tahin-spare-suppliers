@@ -27,8 +27,11 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   const categoryData = await source("src/lib/server/category-page-data.ts");
   assert.match(category, /getCategoryPageData\(env, Astro\.locals/);
   assert.match(subcategory, /getSubcategoryPageData\(env, Astro\.locals/);
-  assert.match(categoryData, /readProductSummaries\(sql, \{ category: currentCategory\.canonicalValue, limit: 1000 \}\)/);
-  assert.match(categoryData, /readProductSummaries\(sql, \{[\s\S]*category: parent\.canonicalValue,[\s\S]*subcategory: result\.subcategory\.value,[\s\S]*limit: 1000[\s\S]*\}\)/);
+  assert.match(categoryData, /readCategoryProductPage\(sql, \{ category: currentCategory\.canonicalValue, page \}\)/);
+  assert.match(categoryData, /readCategoryProductPage\(sql, \{[\s\S]*category: parent\.canonicalValue,[\s\S]*subcategory: result\.subcategory\.value,[\s\S]*page,[\s\S]*\}\)/);
+  assert.match(repository, /WITH candidates AS MATERIALIZED/);
+  assert.match(repository, /LEFT JOIN products p ON p.id = n.id AND n.position > /);
+  assert.match(repository, /rows.filter\(row => row.is_card === true\).map\(mapProductSummary\)/);
   assert.match(brand, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
   assert.match(product, /getProductPageData\(env, slug\)/);
   assert.match(repository, /withDatabaseReader\(env, async \(sql\) => \{[\s\S]*readContentBySlug\(sql, "products", slug\)[\s\S]*readRelatedProductSummaries\(sql, product\)/);
