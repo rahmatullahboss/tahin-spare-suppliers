@@ -2,6 +2,7 @@
 import AdminLayout from "../../../../../layouts/AdminLayout.astro";
 import { getRuntimeEnv } from "../../../../../lib/server/env";
 import { getDb } from "../../../../../lib/server/db";
+import { markInboundMessagesRead } from "../../../../../lib/server/inbound-read-state";
 import { isAuthenticated } from "../../../../../lib/server/session";
 import {
   extractEmailAddress,
@@ -155,13 +156,7 @@ const latestInbound = [...inboundMessages].sort((a, b) => {
   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 })[0];
 
-if (inboundIds.size > 0) {
-  await Promise.all(
-    [...inboundIds].map((inboundId) => {
-      return sql.query(`UPDATE inbound_emails SET is_read = true WHERE id = $1`, [inboundId]);
-    })
-  );
-}
+await markInboundMessagesRead(sql, inboundIds);
 
 const displaySubject = anchor.subject || "(No subject)";
 const replySubject = makeReplySubject(anchor.subject);

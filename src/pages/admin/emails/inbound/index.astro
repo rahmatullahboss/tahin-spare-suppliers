@@ -2,6 +2,7 @@
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
 import { getRuntimeEnv } from "../../../../lib/server/env";
 import { getDb } from "../../../../lib/server/db";
+import { readInboundCounts } from "../../../../lib/server/inbound-read-state";
 import { isAuthenticated } from "../../../../lib/server/session";
 
 const env = getRuntimeEnv(Astro.locals);
@@ -12,10 +13,7 @@ if (!authenticated) {
 }
 
 const sql = getDb(env);
-const result = await sql.query(`SELECT COUNT(*) as total FROM inbound_emails`);
-const total = result[0]?.total ?? 0;
-const unreadResult = await sql.query(`SELECT COUNT(*) as total FROM inbound_emails WHERE is_read = false`);
-const unreadCount = unreadResult[0]?.total ?? 0;
+const { total, unreadCount } = await readInboundCounts(sql);
 ---
 
 <AdminLayout title="Inbound Emails" active="emails">

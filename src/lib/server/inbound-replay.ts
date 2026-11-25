@@ -5,7 +5,7 @@ type ReplayReader = { query(text: string, params: string[]): Promise<Record<stri
 export async function isCompletedInboundReplay(sql: ReplayReader, emailId: string): Promise<boolean> {
   if (!emailId) return false;
   const rows = await sql.query(
-    "SELECT 1 AS completed FROM inbound_emails WHERE resend_email_id = $1 AND forward_status = 'forwarded' LIMIT 1",
+    "SELECT 1 AS completed FROM inbound_emails WHERE resend_email_id = $1 AND forward_status = 'forwarded' AND forwarded_at IS NOT NULL LIMIT 1",
     [emailId]
   );
   return rows.length > 0;

@@ -4,9 +4,9 @@ import { readFile } from "node:fs/promises";
 import { isCompletedInboundReplay } from "../src/lib/server/inbound-replay.ts";
 
 test("only completed forwarding permits a replay fast path", async () => {
-  for (const state of ["pending", "processing", "failed", "forwarded", "missing"]) {
+  for (const state of ["pending", "processing", "failed", "forwarded", "legacy-forwarded", "missing"]) {
     const sql = { async query(text: string, params: string[]) {
-      assert.match(text, /resend_email_id = \$1 AND forward_status = 'forwarded'/);
+      assert.match(text, /resend_email_id = \$1 AND forward_status = 'forwarded' AND forwarded_at IS NOT NULL/);
       assert.deepEqual(params, ["synthetic-email"]);
       return state === "forwarded" ? [{completed: 1}] : [];
     }};

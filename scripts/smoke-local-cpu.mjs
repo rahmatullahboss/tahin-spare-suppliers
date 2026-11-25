@@ -8,6 +8,7 @@ import { createServer } from "node:net";
 import pg from "pg";
 import { profileLocalWorker } from "./profile-local-worker.mjs";
 import { isCompletedInboundReplay } from "../src/lib/server/inbound-replay.ts";
+import { markInboundMessagesRead, readInboundCounts } from "../src/lib/server/inbound-read-state.ts";
 import { withPostgresReader } from "../src/lib/server/pg-adapter.ts";
 
 const uri = process.env.PG_ADAPTER_TEST_URL;
@@ -56,11 +57,23 @@ try {
   for (const state of ["pending", "processing", "failed", "forwarded"]) {
     await db.query("INSERT INTO inbound_emails(id,from_address,to_address,subject,resend_email_id,forward_status) VALUES($1,'fixture@example.invalid','fixture@example.invalid','QA',$1,$2)", [`qa-replay-${state}`, state]);
   }
+  await db.query("UPDATE inbound_emails SET forwarded_at=NOW() WHERE id='qa-replay-forwarded'");
+  await db.query("INSERT INTO inbound_emails(id,from_address,to_address,subject,resend_email_id) VALUES('qa-replay-legacy-forwarded','fixture@example.invalid','fixture@example.invalid','QA','qa-replay-legacy-forwarded')");
   const replayReader = { query: async (sql, params) => (await db.query(sql, params)).rows };
-  for (const state of ["pending", "processing", "failed", "forwarded", "missing"]) {
+  for (const state of ["pending", "processing", "failed", "forwarded", "legacy-forwarded", "missing"]) {
     assert.equal(await isCompletedInboundReplay(replayReader, `qa-replay-${state}`), state === "forwarded");
   }
-  console.log("PASS real PostgreSQL completed-inbound replay state isolation");
+  console.log("PASS real PostgreSQL completed-inbound replay state isolation including legacy rows");
+  assert.equal(Number((await readInboundCounts(replayReader)).unreadCount),5);
+  assert.equal(await markInboundMessagesRead(replayReader, ["qa-replay-pending","qa-replay-processing","qa-replay-pending"]),2);
+  assert.equal(await markInboundMessagesRead(replayReader, ["qa-replay-pending","qa-replay-processing"]),0);
+  assert.equal(await markInboundMessagesRead(replayReader, []),0);
+  const counts = await readInboundCounts(replayReader);
+  assert.equal(Number(counts.total),5);
+  assert.equal(Number(counts.unreadCount),3);
+  const unaffected = await db.query("SELECT is_read FROM inbound_emails WHERE id='qa-replay-failed'");
+  assert.equal(unaffected.rows[0].is_read,false);
+  console.log("PASS real PostgreSQL batched email read marking, replay and unaffected messages");
   console.log("PASS real PostgreSQL fixture schema and catalogue");
 } finally { await db.end(); }
 
