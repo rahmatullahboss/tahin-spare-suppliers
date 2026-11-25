@@ -27,8 +27,14 @@ export function sentAttachmentStoragePrefix(emailId: string): string {
   return `email/sent/${safeSegment(emailId, "email")}/`;
 }
 
-function decodeBase64(contentBase64: string): Uint8Array {
+export function decodeBase64(contentBase64: string): Uint8Array {
   const normalized = contentBase64.replace(/\s/g, "");
+  // Native decoding avoids the intermediate binary string and per-byte JS loop.
+  // Keep the original atob validation and fallback for older runtimes.
+  const native = (Uint8Array as typeof Uint8Array & {
+    fromBase64?: (value: string) => Uint8Array;
+  }).fromBase64;
+  if (typeof native === "function") return native.call(Uint8Array, normalized);
   const binary = atob(normalized);
   const bytes = new Uint8Array(binary.length);
   for (let index = 0; index < binary.length; index += 1) {

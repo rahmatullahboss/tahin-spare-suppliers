@@ -7,6 +7,7 @@ import type {
 } from "../src/lib/server/email-service.ts";
 import {
   buildStoredSentAttachmentManifest,
+  decodeBase64,
   findStoredSentAttachment,
   isStoredSentAttachmentOwnedByEmail,
   parseStoredSentAttachments,
@@ -134,4 +135,15 @@ test("row-scoped lookup supports shared bulk attachment storage", () => {
     findStoredSentAttachment(rowAttachmentsJson, attachment.id),
     attachment
   );
+});
+
+test("attachment decoding retains byte parity, whitespace and invalid-input rejection", () => {
+  const bytes = Uint8Array.from({length: 65536}, (_, i) => i % 256);
+  const encoded = Buffer.from(bytes).toString("base64");
+  assert.deepEqual(decodeBase64(encoded), bytes);
+  assert.deepEqual(decodeBase64("Y W J j\n"), new Uint8Array([97,98,99]));
+  assert.deepEqual(decodeBase64("/w=="), new Uint8Array([255]));
+  for (const invalid of ["?", "a", "a===", "aa=a", "aa==a"]) {
+    assert.throws(() => decodeBase64(invalid));
+  }
 });
