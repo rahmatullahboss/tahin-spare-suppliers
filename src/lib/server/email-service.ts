@@ -146,18 +146,24 @@ function normalizeBase64(contentBase64: string): string {
   return contentBase64.replace(/\s/g, "");
 }
 
-function getBase64Bytes(contentBase64: string): number {
-  const normalized = normalizeBase64(contentBase64);
-  if (
-    normalized.length === 0
-    || normalized.length % 4 !== 0
-    || !/^[A-Za-z0-9+/]*={0,2}$/.test(normalized)
-  ) {
-    throw new Error("Invalid attachment content.");
+function isCanonicalBase64(value: string): boolean {
+  return value.length > 0 && value.length % 4 === 0 &&
+    /^[A-Za-z0-9+/]*={0,2}(?![\s\S])/.test(value);
+}
+
+function validateBase64(contentBase64: string): { content: string; bytes: number } {
+  // Browser-generated Base64 is normally canonical. Validate it directly;
+  // only scan for whitespace if the canonical check fails.
+  let normalized = contentBase64;
+  if (!isCanonicalBase64(normalized)) {
+    normalized = normalizeBase64(contentBase64);
+    if (normalized === contentBase64 || !isCanonicalBase64(normalized)) {
+      throw new Error("Invalid attachment content.");
+    }
   }
 
   const padding = normalized.endsWith("==") ? 2 : normalized.endsWith("=") ? 1 : 0;
-  return Math.floor((normalized.length * 3) / 4) - padding;
+  return { content: normalized, bytes: Math.floor((normalized.length * 3) / 4) - padding };
 }
 
 function sanitizeAttachmentFilename(filename: string, fallback: string): string {
@@ -216,14 +222,14 @@ export function prepareInlineImageAttachments(
       throw new Error("Inline image content is missing.");
     }
 
-    const estimatedSize = getBase64Bytes(image.contentBase64);
-    if (estimatedSize > MAX_INLINE_IMAGE_SIZE) {
+    const validated = validateBase64(image.contentBase64);
+    if (validated.bytes > MAX_INLINE_IMAGE_SIZE) {
       throw new Error("Inline image is too large. Maximum size is 8MB.");
     }
 
     attachments.push({
       filename: sanitizeAttachmentFilename(image.filename, `${image.id}.jpg`),
-      content: image.contentBase64,
+      content: validated.content,
       contentType: image.contentType,
       contentId: image.id
     });
@@ -246,14 +252,14 @@ export function prepareFileAttachments(
       throw new Error("Attachment content is missing.");
     }
 
-    const estimatedSize = getBase64Bytes(file.contentBase64);
-    if (estimatedSize > MAX_FILE_ATTACHMENT_SIZE) {
+    const validated = validateBase64(file.contentBase64);
+    if (validated.bytes > MAX_FILE_ATTACHMENT_SIZE) {
       throw new Error("Attachment is too large. Maximum size is 20MB per file.");
     }
 
     attachments.push({
       filename: sanitizeAttachmentFilename(file.filename, "attachment"),
-      content: file.contentBase64,
+      content: validated.content,
       contentType: file.contentType || "application/octet-stream",
     });
   }
@@ -275,7 +281,8 @@ export function prepareEmailAttachments(
       throw new Error("Invalid attachment content.");
     }
 
-    return total + normalizeBase64(attachment.content).length;
+    // All attachments have already been validated and normalized.
+    return total + attachment.content.length;
   }, 0);
 
   if (totalEncodedSize > MAX_TOTAL_ATTACHMENT_ENCODED_SIZE) {

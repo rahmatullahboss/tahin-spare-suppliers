@@ -275,3 +275,12 @@ test("buildInboundForwardRequest forwards the original received email", () => {
     }
   );
 });
+
+test("attachment payload normalization preserves bytes and counts canonical encoded length", () => {
+  const attachments = prepareEmailAttachments('<img src="cid:qa-image">',[
+    {id:"qa-image",filename:"image.png",contentType:"image/png",contentBase64:" Y W J j\n"}
+  ],[{filename:"fixture.bin",contentType:"application/octet-stream",contentBase64:" / w = =\t"}]);
+  assert.equal(attachments[0].content,"YWJj");
+  assert.equal(attachments[1].content,"/w==");
+  assert.deepEqual(Buffer.from(String(attachments[1].content),"base64"),Buffer.from([255]));
+});
