@@ -55,6 +55,7 @@ try {
   await db.query("INSERT INTO page_sections(page_key,section_key,content_json) VALUES('home','hero',$1::jsonb)", [JSON.stringify({headlineAccent:"QA CMS Headline"})]);
   await db.query("INSERT INTO category_presentations(category_slug,label) VALUES('spare-parts','QA Spare Parts')");
   await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/products',$1::jsonb),('/products/qa-target',$2::jsonb)",[JSON.stringify({"#main-content>section:nth-of-type(1)>div:nth-of-type(1)>h1:nth-of-type(1)":{type:"text",text:"QA existing override"}}),JSON.stringify({"#main-content>section:nth-of-type(1)>h1:nth-of-type(1)":{type:"text",text:"QA detail override"}})]);
+  await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/category/spare-parts',$1::jsonb),('/category/qa-custom/qa-child',$2::jsonb)",[JSON.stringify({"h1":{type:"text",text:"QA category CMS override"}}),JSON.stringify({"h1":{type:"text",text:"QA subcategory CMS override"}})]);
   await db.query("INSERT INTO categories(id,name,slug) VALUES('qa-custom','QA Custom Category','qa-custom')");
   await db.query("INSERT INTO category_presentations(category_slug,label,sort_order) VALUES('qa-custom','QA Custom Display',0)");
   await db.query("INSERT INTO categories(id,name,slug,parent_id) VALUES('qa-child','QA Child','qa-child','qa-custom')");
@@ -227,6 +228,7 @@ try {
   assert.deepEqual(cards.map(items => items.length), [12,12,11]);
   assert.equal(new Set(cards.flat()).size, 35, "all 35 products remain reachable exactly once as cards");
   assert.ok(pages[0].includes('?page=2#category-products'));
+  assert.ok(pages.every(body=>body.includes("QA category CMS override")));
   assert.ok(pages[1].includes('rel="canonical" href="https://tahinspare.com/category/spare-parts?page=2"'));
   assert.ok(pages[0].includes('/products/qa-page-30'), "full maker/model directory is retained");
   console.log("PASS crawlable category pagination, 35 products across 3 distinct pages");
@@ -250,6 +252,7 @@ try {
   assert.ok(childPages.flat().includes("qa-child-item"));
   assert.ok(childPages.flat().includes("qa-manual"));
   assert.ok(childBody.includes("QA Last Brand"));
+  assert.ok(childBody2.includes("QA subcategory CMS override"));
   assert.ok(childBody2.includes('rel="canonical" href="https://tahinspare.com/category/qa-custom/qa-child?page=2"'));
   assert.equal((await fetch(base+"/category/qa-custom/qa-child?page=4")).status,404);
   const repeatedChildPage2 = await fetch(base+"/category/qa-custom/qa-child?page=2");

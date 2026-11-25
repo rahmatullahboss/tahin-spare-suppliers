@@ -15,7 +15,7 @@ if (!/^[1-9][0-9]{0,2}$/.test(requestedPage) || Number(requestedPage) > 84) {
   return new Response('Page not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 }
 const currentPage = Number(requestedPage);
-const result = await getCategoryPageData(env, Astro.locals, category ?? '', currentPage);
+const result = await getCategoryPageData(env, Astro.locals, category ?? '', currentPage, Astro.url.pathname);
 
 if (!result) {
   return new Response('Category not found', {
@@ -92,6 +92,7 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
   title={categorySeo.title}
   description={categorySeo.description}
   activeNav="products"
+  preloadedPageOverrides={result.pageOverrides}
   noindex={categoryProducts.length === 0}
   canonicalUrl={new URL(pageHref(currentPage), "https://tahinspare.com").href}
 >

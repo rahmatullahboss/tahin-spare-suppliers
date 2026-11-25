@@ -1,5 +1,6 @@
 import { ensureSchema, getDb } from "./db";
 import type { RuntimeEnv } from "./env";
+import type { DatabaseReader } from "./pg-adapter";
 
 export type PageOverride = {
   type: "text" | "image";
@@ -84,9 +85,12 @@ export function parseOverrides(value: unknown): PageOverrides {
 }
 
 export async function getPageOverrides(env: RuntimeEnv, rawPageKey: string): Promise<PageOverrides> {
-  const pageKey = normalizePageKey(rawPageKey);
   await ensureSchema(env);
-  const sql = getDb(env);
+  return readPageOverrides(getDb(env), rawPageKey);
+}
+
+export async function readPageOverrides(sql: DatabaseReader, rawPageKey: string): Promise<PageOverrides> {
+  const pageKey = normalizePageKey(rawPageKey);
   const rows = await sql.query(
     `SELECT overrides_json FROM page_overrides WHERE page_key = $1 LIMIT 1`,
     [pageKey]
