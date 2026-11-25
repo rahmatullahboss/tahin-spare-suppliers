@@ -10,7 +10,7 @@ import { getProductPageData } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
 const slug = Astro.params.slug;
-const { product, relatedProducts } = slug ? await getProductPageData(env, slug) : { product: null, relatedProducts: [] };
+const { product, relatedProducts, pageOverrides } = slug ? await getProductPageData(env, slug, { scope: Astro.locals, pagePath: Astro.url.pathname }) : { product: null, relatedProducts: [], pageOverrides: undefined };
 
 if (!product) {
   const legacyRedirect = resolveLegacyProductRedirect(slug);
@@ -83,6 +83,7 @@ const breadcrumbs = [
   title={product.seoTitle || `${product.title} | Tahin Spare Suppliers`}
   description={product.metaDescription || product.excerpt}
   activeNav="products"
+  preloadedPageOverrides={pageOverrides}
   canonicalUrl={absoluteUrl(canonicalPath)}
   ogImage={primaryProductImage?.url || undefined}
 >

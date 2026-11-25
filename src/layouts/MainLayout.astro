@@ -8,6 +8,7 @@ import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getRuntimeEnv } from '../lib/server/env';
 import { isAuthenticated } from '../lib/server/session';
 import { getLayoutOverrides } from '../lib/server/layout-snapshot';
+import type { PageOverrides } from '../lib/server/page-overrides';
 import '../styles/global.css';
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
   ogImage?: string;
   canonicalUrl?: string;
   noindex?: boolean;
+  preloadedPageOverrides?: PageOverrides;
 }
 
 const defaultTitle = 'Tahin Spare Suppliers - Marine Engine & Spare Parts Exporter';
@@ -34,6 +36,7 @@ const {
   ogImage = '/images/tahin-spare-social.png',
   canonicalUrl,
   noindex = false,
+  preloadedPageOverrides,
 } = Astro.props;
 
 const canonical = canonicalUrl ?? `${siteUrl}${Astro.url.pathname}`;
@@ -44,7 +47,7 @@ const pagePath = Astro.url.pathname;
 const [pageOverrides, pageEditingAuthenticated] = isHomepage
   ? [{}, false] as const
   : await Promise.all([
-      getLayoutOverrides(runtimeEnv, Astro.locals, pagePath).catch(() => ({})),
+      preloadedPageOverrides ?? getLayoutOverrides(runtimeEnv, Astro.locals, pagePath).catch(() => ({})),
       isAuthenticated(Astro.cookies, runtimeEnv.SESSION_SECRET)
     ]);
 const needsPageEditor = pageEditingAuthenticated || Object.keys(pageOverrides).length > 0;

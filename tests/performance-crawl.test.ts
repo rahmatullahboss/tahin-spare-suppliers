@@ -35,7 +35,7 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   assert.match(brand, /listBrandProductSummaries\(env, brandSlug\)/);
   assert.match(repository, /SELECT p.id, p.brand FROM products p/);
   assert.match(repository, /toUrlSlug\(canonicalizeBrand\(row.brand\)\)/);
-  assert.match(product, /getProductPageData\(env, slug\)/);
+  assert.match(product, /getProductPageData\(env, slug,/);
   assert.match(repository, /withDatabaseReader\(env, async \(sql\) => \{[\s\S]*readContentBySlug\(sql, "products", slug\)[\s\S]*readRelatedProductSummaries\(sql, product\)/);
   assert.doesNotMatch(product, /listProductSummaries/);
   assert.match(repository, /selectRelatedProductRows\(rows, product\)\.map/);

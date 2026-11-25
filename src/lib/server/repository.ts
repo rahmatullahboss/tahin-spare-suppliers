@@ -1,5 +1,7 @@
 import { ensureSchema, getDb, withDatabaseReader } from "./db";
 import type { DatabaseReader } from "./pg-adapter";
+import { readLayoutSnapshot } from "./layout-snapshot";
+import type { PageOverrides } from "./page-overrides";
 import { slugify } from "./slug";
 import type { RuntimeEnv } from "./env";
 import { normalizeContentLimit } from "./content-limit";
@@ -519,11 +521,19 @@ async function readContentBySlug(sql: DatabaseReader, type: ContentType, slug: s
 }
 
 /** Sequential detail and related-item reads share one bounded connection. */
-export async function getProductPageData(env: RuntimeEnv, slug: string) {
+export async function getProductPageData(env: RuntimeEnv, slug: string, layout?: { scope: object; pagePath: string }) {
   return withDatabaseReader(env, async (sql) => {
     const product = await readContentBySlug(sql, "products", slug);
     const relatedProducts = product ? await readRelatedProductSummaries(sql, product) : [];
-    return { product, relatedProducts };
+    let pageOverrides: PageOverrides | undefined;
+    if (product && layout) {
+      try {
+        pageOverrides = await readLayoutSnapshot(sql, layout.scope, layout.pagePath);
+      } catch {
+        // MainLayout retains its independent fallback when preloading fails.
+      }
+    }
+    return { product, relatedProducts, pageOverrides };
   });
 }
 
