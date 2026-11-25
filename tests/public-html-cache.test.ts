@@ -14,9 +14,14 @@ test("only anonymous, canonical public HTML is cache eligible", () => {
   for (const path of ["/", "/products", "/products/engine", "/category/spare-parts", "/brands/yamaha", "/blog/tips", "/inventory/marine-spare-parts"]) {
     assert.equal(isAnonymousCatalogRequest(req(path)), true, path);
   }
-  for (const path of ["/admin", "/admin/emails", "/api/admin/enquiries", "/contact", "/enquiry", "/products/engine?preview=1", "/not-found"]) {
+  for (const path of ["/admin", "/admin/emails", "/api/admin/enquiries", "/contact", "/enquiry?product=engine", "/enquiry?brand=CAT", "/api/enquiry", "/products/engine?preview=1", "/not-found"]) {
     assert.equal(isAnonymousCatalogRequest(req(path)), false, path);
   }
+  assert.equal(isAnonymousCatalogRequest(req("/enquiry")), true);
+  assert.equal(isAnonymousCatalogRequest(req("/enquiry?utm_source=google")), true);
+  assert.equal(isAnonymousCatalogRequest(req("/enquiry", { headers: { Cookie: "tahin_admin_session=abc" } })), false);
+  assert.equal(isAnonymousCatalogRequest(req("/enquiry", { method: "POST" })), false);
+  assert.equal(isAnonymousCatalogRequest(req("/api/enquiry", { method: "POST" })), false);
   assert.equal(isAnonymousCatalogRequest(req("/api/products")), true);
   assert.equal(isAnonymousCatalogRequest(req("/api/products?page=2&limit=20")), true);
   assert.equal(isAnonymousCatalogRequest(req("/api/page-content/home/hero")), true);

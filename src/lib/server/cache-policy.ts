@@ -5,7 +5,7 @@ export const REVISION_MEMO_TTL_MS = 30_000;
 
 const PUBLIC_PATHS = new Set([
   "/", "/products", "/parts", "/brands", "/blog", "/about", "/services",
-  "/business-info", "/privacy", "/terms", "/anchor-and-chain",
+  "/business-info", "/privacy", "/terms", "/enquiry", "/anchor-and-chain",
   "/diesel-generator-sets", "/hydraulic-crane-equipment", "/sitemap.xml",
   "/marine-auxillary-engines", "/marine-gearbox", "/marine-pump",
   "/marine-propulsion-engines", "/marine-spare-parts",
