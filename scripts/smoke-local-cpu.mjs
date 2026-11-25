@@ -12,6 +12,8 @@ import { markInboundMessagesRead, readInboundCounts } from "../src/lib/server/in
 import { eligibleFollowupQuery, readFollowupPage } from "../src/lib/server/email-followup-query.ts";
 import { readRelatedProductSummaries } from "../src/lib/server/related-product-data.ts";
 import { selectRelatedProductRows } from "../src/lib/server/related-product-rows.ts";
+import { readHomepageSnapshotRows } from "../src/lib/server/homepage-snapshot-rows.ts";
+import { CATEGORY_DISPLAY_ROWS_SQL } from "../src/lib/server/category-display-sql.ts";
 import { readCategoryProductPage, productSummaryFilter } from "../src/lib/server/category-product-page.ts";
 import { mapProductDirectoryEntry, mapProductSummary } from "../src/lib/server/product-summary.ts";
 import { withPostgresReader } from "../src/lib/server/pg-adapter.ts";
@@ -161,6 +163,37 @@ try {
   await db.query("INSERT INTO parts(id,slug,name,short_description,content) VALUES('qa-part-live','qa-part-live','QA part title','QA part excerpt',repeat('QA part body ',1000))");
   await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/blog',$1::jsonb),('/parts',$2::jsonb)",[JSON.stringify({"h1":{type:"text",text:"QA blog CMS"}}),JSON.stringify({"h1":{type:"text",text:"QA parts CMS"}})]);
   await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/enquiry',$1::jsonb),('/about',$2::jsonb)",[JSON.stringify({"h1":{type:"text",text:"QA enquiry CMS"}}),JSON.stringify({"h1":{type:"text",text:"QA about CMS"}})]);
+  await db.query("BEGIN");
+  try{
+    await db.query("INSERT INTO brands(id,name,slug) SELECT 'qa-home-brand-'||i,'QA home brand '||i,'qa-home-brand-'||i FROM generate_series(1,200) i");
+    const previous = async () => {
+      const rows = await replayReader.query(`
+        SELECT c.*, NULL::text AS section_key, NULL::jsonb AS content_json, NULL::text AS logo_url
+        FROM (${CATEGORY_DISPLAY_ROWS_SQL}) c
+        UNION ALL SELECT 'brand', NULL, name, slug, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, logo_url FROM brands
+        UNION ALL SELECT 'section', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, section_key, content_json::jsonb, NULL FROM page_sections WHERE page_key=$1
+        ORDER BY row_kind,name`,["home"]);
+      return {
+        categories:rows.filter(r=>r.row_kind==="category"||r.row_kind==="presentation").map(({section_key,content_json,logo_url,...r})=>({...r,created_at:r.created_at instanceof Date?r.created_at.toISOString():r.created_at})),
+        brands:rows.filter(r=>r.row_kind==="brand").map(({name,slug,logo_url})=>({name,slug,logo_url})),
+        sections:rows.filter(r=>r.row_kind==="section").map(({section_key,content_json})=>({section_key,content_json}))
+      };
+    };
+    const sortedSections = value => ({...value,sections:[...value.sections].sort((a,b)=>a.section_key.localeCompare(b.section_key))});
+    assert.deepEqual(sortedSections(await readHomepageSnapshotRows(replayReader)),sortedSections(await previous()));
+    const cpu={old:[],packed:[]}, wall={old:[],packed:[]};
+    for(let trial=0;trial<10;trial++){
+      for(const mode of trial%2===0?["old","packed"]:["packed","old"]){
+        const start=process.cpuUsage(),clock=performance.now();
+        const data=mode==="old"?await previous():await readHomepageSnapshotRows(replayReader);
+        const usage=process.cpuUsage(start);
+        assert.equal(data.brands.length,202);
+        if(trial>0){cpu[mode].push((usage.user+usage.system)/1000);wall[mode].push(performance.now()-clock);}
+      }
+    }
+    const median=values=>[...values].sort((a,b)=>a-b)[Math.floor(values.length/2)];
+    console.log(JSON.stringify({homepagePackedParity:"PASS",clientCpuMs:{old:median(cpu.old),packed:median(cpu.packed)},wallMs:{old:median(wall.old),packed:median(wall.packed)}}));
+  }finally{await db.query("ROLLBACK")}
   console.log("PASS real PostgreSQL fixture schema and catalogue");
 } finally { await db.end(); }
 

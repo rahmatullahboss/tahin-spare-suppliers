@@ -4,6 +4,7 @@ import type { DatabaseReader } from "./pg-adapter";
 import type { RuntimeEnv } from "./env";
 import { slugify } from "./slug";
 import { createRequestMemo } from "./request-memo";
+import { CATEGORY_DISPLAY_ROWS_SQL } from "./category-display-sql";
 
 type CategoryInput = {
   name: string;
@@ -76,16 +77,8 @@ export function listAllCategories(env: RuntimeEnv, requestScope?: object): Promi
 }
 
 // Shared projection for category reads and the homepage snapshot.
-export const CATEGORY_DISPLAY_ROWS_SQL = `
-    SELECT 'category' AS row_kind, id, name, slug, image_url, image_key, parent_id, created_at,
-           NULL::text AS category_slug, NULL::text AS label, NULL::integer AS sort_order
-    FROM categories WHERE parent_id IS NULL
-    UNION ALL
-    SELECT 'presentation', NULL, NULL, NULL, image_url, image_key, NULL, NULL,
-           category_slug, label, sort_order
-    FROM category_presentations
-    ORDER BY row_kind, name
-  `;
+export { CATEGORY_DISPLAY_ROWS_SQL } from "./category-display-sql";
+
 
 async function loadAllCategories(env: RuntimeEnv): Promise<DisplayCategory[]> {
   await ensureSchema(env);
