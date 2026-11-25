@@ -5,10 +5,13 @@ import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getCategoryBuyingGuidance } from '../lib/category-buying-guidance';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
+import { getLayoutOverrides } from '../lib/server/layout-snapshot';
 
-const offerCategories = await listAllCategories(getRuntimeEnv(Astro.locals), Astro.locals);
+const env = getRuntimeEnv(Astro.locals);
+const pageOverrides = await getLayoutOverrides(env, Astro.locals, Astro.url.pathname).catch(() => ({}));
+const offerCategories = await listAllCategories(env, Astro.locals);
 ---
-<MainLayout title="About Tahin Spare Suppliers | Marine Equipment Supplier" activeNav="about" description="Learn about Tahin Spare Suppliers, a Bangladesh-based marine engine, generator, hydraulic equipment and spare-parts supplier serving international buyers since 1990.">
+<MainLayout preloadedPageOverrides={pageOverrides} title="About Tahin Spare Suppliers | Marine Equipment Supplier" activeNav="about" description="Learn about Tahin Spare Suppliers, a Bangladesh-based marine engine, generator, hydraulic equipment and spare-parts supplier serving international buyers since 1990.">
   <section class="page-hero">
     <div class="page-hero-accent"></div>
     <div class="page-hero-content">

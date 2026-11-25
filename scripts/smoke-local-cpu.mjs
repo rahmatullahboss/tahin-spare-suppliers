@@ -127,6 +127,7 @@ try {
   await db.query("INSERT INTO blog_posts(id,slug,title,excerpt,content,deleted_at) VALUES ('qa-blog-live','qa-blog-live','QA article title','QA article excerpt',repeat('QA article body ',1000),NULL),('qa-blog-trash','qa-blog-trash','QA excluded article','QA excluded excerpt','fixture',NOW())");
   await db.query("INSERT INTO parts(id,slug,name,short_description,content) VALUES('qa-part-live','qa-part-live','QA part title','QA part excerpt',repeat('QA part body ',1000))");
   await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/blog',$1::jsonb),('/parts',$2::jsonb)",[JSON.stringify({"h1":{type:"text",text:"QA blog CMS"}}),JSON.stringify({"h1":{type:"text",text:"QA parts CMS"}})]);
+  await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/enquiry',$1::jsonb),('/about',$2::jsonb)",[JSON.stringify({"h1":{type:"text",text:"QA enquiry CMS"}}),JSON.stringify({"h1":{type:"text",text:"QA about CMS"}})]);
   console.log("PASS real PostgreSQL fixture schema and catalogue");
 } finally { await db.end(); }
 
@@ -303,6 +304,26 @@ try {
     assert.ok(body.includes("/category/qa-custom"));
   }
   console.log("PASS narrow blog and parts cards, deleted article exclusion and CMS/footer preservation");
+  for(const [route,override,prefill] of [
+    ["/enquiry","QA enquiry CMS",""],
+    ["/enquiry?product=QA%20Engine","QA enquiry CMS","I am interested in QA Engine."],
+    ["/enquiry?brand=QA%20Maker","QA enquiry CMS","I am looking for QA Maker"],
+    ["/about","QA about CMS",""]
+  ]){
+    const response=await fetch(base+route);
+    assert.equal(response.status,200,route);
+    const body=await response.text();
+    assert.ok(body.includes(override),route);
+    assert.ok(body.includes("QA Custom Display"),route);
+    if(prefill){
+      assert.ok(body.includes(prefill),route);
+      assert.equal(response.headers.get("x-tahin-catalogue-cache"),null);
+    }else if(route==="/enquiry"){
+      assert.ok(!body.includes("I am interested in QA Engine."));
+      assert.ok(!body.includes("I am looking for QA Maker"));
+    }
+  }
+  console.log("PASS enquiry and about CMS/category preservation and uncached distinct prefills");
   const admin=await fetch(base+"/admin",{redirect:"manual"});
   assert.ok([301,302,303,307,308].includes(admin.status),"unauthenticated admin must redirect");
   console.log("PASS local unauthenticated admin redirect");

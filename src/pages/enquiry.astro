@@ -4,8 +4,11 @@ import Icon from '../components/Icon.astro';
 import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
+import { getLayoutOverrides } from '../lib/server/layout-snapshot';
 
-const categories = await listAllCategories(getRuntimeEnv(Astro.locals), Astro.locals);
+const env = getRuntimeEnv(Astro.locals);
+const pageOverrides = await getLayoutOverrides(env, Astro.locals, Astro.url.pathname).catch(() => ({}));
+const categories = await listAllCategories(env, Astro.locals);
 const requestedProduct = Astro.url.searchParams.get('product')?.trim() ?? '';
 const requestedBrand = Astro.url.searchParams.get('brand')?.trim() ?? '';
 const enquiryContext = requestedProduct
@@ -14,7 +17,7 @@ const enquiryContext = requestedProduct
     ? `I am looking for ${requestedBrand} marine equipment or spare parts. Please share current inventory, specifications and price.`
     : '';
 ---
-<MainLayout title="Request a Marine Equipment Quote | Tahin Spare Suppliers" activeNav="enquiry" description="Request current specifications, availability, price and worldwide shipping for marine engines, generators, ship spare parts and hydraulic equipment from Tahin Spare Suppliers.">
+<MainLayout preloadedPageOverrides={pageOverrides} title="Request a Marine Equipment Quote | Tahin Spare Suppliers" activeNav="enquiry" description="Request current specifications, availability, price and worldwide shipping for marine engines, generators, ship spare parts and hydraulic equipment from Tahin Spare Suppliers.">
   <section class="page-hero">
     <div class="page-hero-accent"></div>
     <div class="page-hero-content">
