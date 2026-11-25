@@ -56,13 +56,20 @@ function publicCacheUrl(request: Request): URL | null {
     return url;
   }
 
-  // Tracking parameters do not affect catalogue HTML; normalize them to one key.
-  for (const key of url.searchParams.keys()) {
+  // Only top-level category pagination has a bounded, public page query.
+  const categoryPage = /^\/category\/[a-z0-9-]+\/?$/.test(path);
+  let page: string | undefined;
+  for (const [key, value] of url.searchParams) {
+    if (categoryPage && key === "page" && page === undefined && /^[1-9][0-9]{0,2}$/.test(value) && Number(value) <= 84) {
+      page = value;
+      continue;
+    }
     if (!key.toLowerCase().startsWith("utm_") && !TRACKING_KEYS.has(key.toLowerCase())) {
-      return null; // Genuine filters, previews and unknown parameters bypass cache.
+      return null;
     }
   }
   url.search = "";
+  if (page && page !== "1") url.searchParams.set("page", page);
   return url;
 }
 
@@ -104,6 +111,8 @@ export function isCacheablePublicResponse(request: Request, response: Response):
 export function revisionedKey(request: Request, revision: string): Request {
   const url = publicCacheUrl(request) ?? new URL(request.url);
   url.searchParams.set("__tahin_catalogue_revision", revision);
+  // Do not reuse pre-pagination category HTML from an older deployment.
+  if (/^\/category\/[a-z0-9-]+\/?$/i.test(url.pathname)) url.searchParams.set("__tahin_category_format", "2");
   return new Request(url.toString(), { method: "GET" });
 }
 

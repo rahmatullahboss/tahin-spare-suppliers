@@ -26,6 +26,10 @@ test("only anonymous, canonical public HTML is cache eligible", () => {
   assert.equal(isAnonymousCatalogRequest(req("/api/products?limit=1000")), false);
   assert.equal(isAnonymousCatalogRequest(req("/api/page-overrides?page=%2Fadmin")), false);
   assert.equal(isAnonymousCatalogRequest(req("/products?sort=price")), false);
+  assert.equal(isAnonymousCatalogRequest(req("/category/spare-parts?page=2&utm_source=test")), true);
+  for (const path of ["/category/spare-parts?page=0", "/category/spare-parts?page=85", "/category/spare-parts?page=2&page=3", "/category/spare-parts?page=2&preview=1", "/category/spare-parts/pumps?page=2"]) {
+    assert.equal(isAnonymousCatalogRequest(req(path)), false, path);
+  }
   assert.equal(isAnonymousCatalogRequest(req("/", { method: "POST" })), false);
   assert.equal(isAnonymousCatalogRequest(req("/", { headers: { Authorization: "Bearer secret" } })), false);
   assert.equal(isAnonymousCatalogRequest(req("/", { headers: { Cookie: "theme=dark; tahin_admin_session=abc" } })), false);

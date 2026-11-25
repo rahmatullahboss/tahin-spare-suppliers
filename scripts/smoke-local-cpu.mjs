@@ -39,6 +39,7 @@ try {
   for (const [id,brand,category,updated,related] of fixtures) {
     await db.query("INSERT INTO products(id,slug,name,brand,category,updated_at,related_products) VALUES($1,$1,$1,$2,$3,$4,$5)",[id,brand,category,updated,related]);
   }
+  await db.query("INSERT INTO products(id,slug,name,brand,category,updated_at) SELECT 'qa-page-' || i, 'qa-page-' || i, 'QA page ' || i, 'QA Other', 'Spare Parts', TIMESTAMPTZ '2026-01-01' - i * INTERVAL '1 day' FROM generate_series(1,30) AS i");
   await db.query("INSERT INTO brands(id,name,slug) VALUES('qa-brand','Caterpillar','caterpillar')");
   await db.query("INSERT INTO category_presentations(category_slug,label) VALUES('spare-parts','QA Spare Parts')");
   await db.query("INSERT INTO categories(id,name,slug) VALUES('qa-custom','QA Custom Category','qa-custom')");
@@ -88,6 +89,22 @@ try {
     }
     console.log("PASS local Worker",path,response.headers.get("x-tahin-catalogue-cache")??"cache unreported");
   }
+  const page1 = await fetch(base+"/category/spare-parts");
+  const page2 = await fetch(base+"/category/spare-parts?page=2");
+  const page3 = await fetch(base+"/category/spare-parts?page=3");
+  const invalidPage = await fetch(base+"/category/spare-parts?page=99");
+  assert.equal(page1.status, 200);
+  assert.equal(page2.status, 200);
+  assert.equal(page3.status, 200);
+  assert.equal(invalidPage.status, 404);
+  const pages = await Promise.all([page1.text(), page2.text(), page3.text()]);
+  const cards = pages.map(body => [...body.matchAll(/href="\/products\/([^"]+)" class="product-card"/g)].map(match => match[1]));
+  assert.deepEqual(cards.map(items => items.length), [12,12,11]);
+  assert.equal(new Set(cards.flat()).size, 35, "all 35 products remain reachable exactly once as cards");
+  assert.ok(pages[0].includes('?page=2#category-products'));
+  assert.ok(pages[1].includes('rel="canonical" href="https://tahinspare.com/category/spare-parts?page=2"'));
+  assert.ok(pages[0].includes('/products/qa-page-30'), "full maker/model directory is retained");
+  console.log("PASS crawlable category pagination, 35 products across 3 distinct pages");
   const admin=await fetch(base+"/admin",{redirect:"manual"});
   assert.ok([301,302,303,307,308].includes(admin.status),"unauthenticated admin must redirect");
   console.log("PASS local unauthenticated admin redirect");

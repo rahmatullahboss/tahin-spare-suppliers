@@ -31,6 +31,19 @@ const [subcategories, categoryProducts, managedBrands] = await Promise.all([
 const managedBrandBySlug = new Map(managedBrands.map((brand) => [brand.slug, brand] as const));
 const PRODUCT_PAGE_SIZE = 12;
 const totalProductPages = Math.max(1, Math.ceil(categoryProducts.length / PRODUCT_PAGE_SIZE));
+const requestedPage = Astro.url.searchParams.get('page') ?? '1';
+if (!/^[1-9][0-9]{0,2}$/.test(requestedPage) || Number(requestedPage) > totalProductPages) {
+  return new Response('Page not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+}
+const currentPage = Number(requestedPage);
+const visibleProducts = categoryProducts.slice((currentPage - 1) * PRODUCT_PAGE_SIZE, currentPage * PRODUCT_PAGE_SIZE);
+const pagePath = `/category/${currentCategory.slug}`;
+const pageHref = (page: number) => page === 1 ? pagePath : `${pagePath}?page=${page}`;
+const pageNumbers: (number | string)[] = totalProductPages <= 7
+  ? Array.from({ length: totalProductPages }, (_, i) => i + 1)
+  : [1, ...(currentPage > 3 ? ['…'] : []),
+      ...Array.from({ length: Math.min(totalProductPages - 1, currentPage + 1) - Math.max(2, currentPage - 1) + 1 }, (_, i) => Math.max(2, currentPage - 1) + i),
+      ...(currentPage < totalProductPages - 2 ? ['…'] : []), totalProductPages];
 
 // Build brand links only from real listed inventory.
 const displayBrands = [...new Set(
@@ -86,6 +99,7 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
   description={categorySeo.description}
   activeNav="products"
   noindex={categoryProducts.length === 0}
+  canonicalUrl={new URL(pageHref(currentPage), "https://tahinspare.com").href}
 >
   <section class="page-hero">
     <div class="page-hero-accent"></div>
@@ -183,8 +197,8 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
         </div>
       ) : (
         <>
-          <div class="products-grid reveal-stagger" data-paginated data-page-size={PRODUCT_PAGE_SIZE} data-current-page="1">
-            {categoryProducts.map((product) => (
+          <div id="category-products" class="products-grid reveal-stagger" data-current-page={currentPage}>
+            {visibleProducts.map((product) => (
               <a href={`/products/${product.slug}`} class="product-card" style="text-decoration: none;">
                 <div class="product-img">
                   <img src={product.imageUrl || currentCategory.imageUrl} alt={product.imageAlt || product.title} width="800" height="600" loading="lazy" decoding="async" />
@@ -201,7 +215,15 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
               </a>
             ))}
           </div>
-          <div class="pagination" data-pagination hidden></div>
+          {totalProductPages > 1 && (
+            <nav class="pagination" aria-label="Product pages">
+              {currentPage > 1 ? <a href={pageHref(currentPage - 1) + '#category-products'}>← Prev</a> : <span class="disabled">← Prev</span>}
+              {pageNumbers.map((page) => typeof page === 'string'
+                ? <span class="page-info">…</span>
+                : <a href={pageHref(page) + '#category-products'} aria-current={page === currentPage ? 'page' : undefined}>{page}</a>)}
+              {currentPage < totalProductPages ? <a href={pageHref(currentPage + 1) + '#category-products'}>Next →</a> : <span class="disabled">Next →</span>}
+            </nav>
+          )}
         </>
       )}
 
@@ -232,85 +254,7 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
   </section>
 </MainLayout>
 
-<script>
-  const grid = document.querySelector('[data-paginated]');
-  const paginationEl = document.querySelector('[data-pagination]');
-  if (grid && paginationEl) {
-    const items = Array.from(grid.children) as HTMLElement[];
-    const pageSize = parseInt(grid.dataset.pageSize || '12', 10);
-    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
-    let currentPage = 1;
 
-    if (totalPages <= 1) {
-      paginationEl.hidden = true;
-    } else {
-      paginationEl.hidden = false;
-      const getPageNumbers = () => {
-        const pages: (number | string)[] = [1];
-        if (totalPages <= 7) {
-          for (let i = 2; i <= totalPages; i++) pages.push(i);
-        } else {
-          const start = Math.max(2, currentPage - 1);
-          const end = Math.min(totalPages - 1, currentPage + 1);
-          if (start > 2) pages.push('…');
-          for (let i = start; i <= end; i++) pages.push(i);
-          if (end < totalPages - 1) pages.push('…');
-          pages.push(totalPages);
-        }
-        return pages;
-      };
-
-      const renderPagination = () => {
-        paginationEl.innerHTML = '';
-        const prev = document.createElement('button');
-        prev.type = 'button';
-        prev.textContent = '← Prev';
-        prev.disabled = currentPage === 1;
-        prev.addEventListener('click', () => goTo(currentPage - 1));
-        paginationEl.appendChild(prev);
-
-        getPageNumbers().forEach((p) => {
-          if (typeof p === 'string') {
-            const info = document.createElement('span');
-            info.className = 'page-info';
-            info.textContent = '…';
-            paginationEl.appendChild(info);
-          } else {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.textContent = String(p);
-            if (p === currentPage) btn.dataset.active = 'true';
-            btn.addEventListener('click', () => goTo(p));
-            paginationEl.appendChild(btn);
-          }
-        });
-
-        const next = document.createElement('button');
-        next.type = 'button';
-        next.textContent = 'Next →';
-        next.disabled = currentPage === totalPages;
-        next.addEventListener('click', () => goTo(currentPage + 1));
-        paginationEl.appendChild(next);
-      };
-
-      const goTo = (page: number, shouldScroll = true) => {
-        if (page < 1 || page > totalPages) return;
-        currentPage = page;
-        grid.dataset.currentPage = String(currentPage);
-        items.forEach((item, i) => {
-          const pageNum = Math.floor(i / pageSize) + 1;
-          item.style.display = pageNum === currentPage ? '' : 'none';
-        });
-        renderPagination();
-        if (shouldScroll) {
-          grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      };
-
-      goTo(1, false);
-    }
-  }
-</script>
 
 <style>
   .category-guide-link { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem; margin: 2rem 0; padding: 1rem 1.25rem; background: #f8fafc; border-left: 3px solid #b11623; border-radius: 5px; }
@@ -627,7 +571,7 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
     margin: 40px 0 20px;
     flex-wrap: wrap;
   }
-  .pagination button {
+  .pagination a, .pagination .disabled {
     padding: 0.5rem 0.9rem;
     border: 1px solid #e2e8f0;
     background: #fff;
@@ -637,10 +581,11 @@ const brandModelDirectory = showBrandModelDirectory ? [...categoryProducts.reduc
     font-weight: 500;
     color: #334155;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
+    text-decoration: none;
   }
-  .pagination button:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
-  .pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
-  .pagination button[data-active] { background: #b11623; color: #fff; border-color: #b11623; }
+  .pagination a:hover { background: #f1f5f9; border-color: #cbd5e1; }
+  .pagination .disabled { opacity: 0.35; cursor: not-allowed; }
+  .pagination a[aria-current="page"] { background: #b11623; color: #fff; border-color: #b11623; }
   .pagination .page-info { padding: 0.5rem 0.4rem; color: #94a3b8; font-size: 0.9rem; }
 
   @media (max-width: 768px) {
