@@ -51,6 +51,7 @@ try {
   await db.query("INSERT INTO categories(id,name,slug,parent_id) VALUES('qa-child','QA Child','qa-child','qa-custom')");
   await db.query("INSERT INTO products(id,slug,name,brand,category,subcategory) VALUES('qa-child-item','qa-child-item','QA Child Item','Caterpillar','QA Custom Category','QA Child')");
   await db.query("INSERT INTO product_category_assignments(product_id,category_name,subcategory_name) VALUES('qa-manual','QA Custom Category','QA Child')");
+  await db.query("INSERT INTO products(id,slug,name,brand,category,subcategory,updated_at) SELECT 'qa-child-page-' || i, 'qa-child-page-' || i, 'QA Child ' || i, CASE WHEN i=25 THEN 'QA Last Brand' ELSE 'Yanmar' END, 'QA Custom Category', 'QA Child', TIMESTAMPTZ '2026-01-01' - i * INTERVAL '1 day' FROM generate_series(1,25) AS i");
   for (const state of ["pending", "processing", "failed", "forwarded"]) {
     await db.query("INSERT INTO inbound_emails(id,from_address,to_address,subject,resend_email_id,forward_status) VALUES($1,'fixture@example.invalid','fixture@example.invalid','QA',$1,$2)", [`qa-replay-${state}`, state]);
   }
@@ -155,7 +156,24 @@ try {
   assert.equal(childResponse.status,200);
   const childBody = await childResponse.text();
   const childCards = [...childBody.matchAll(/href="\/products\/([^"]+)" class="product-card"/g)].map(match => match[1]);
-  assert.deepEqual(childCards.sort(),["qa-child-item","qa-manual"]);
+  const childPage2 = await fetch(base+"/category/qa-custom/qa-child?page=2");
+  const childPage3 = await fetch(base+"/category/qa-custom/qa-child?page=3");
+  assert.equal(childPage2.status,200);
+  assert.equal(childPage3.status,200);
+  const childBody2 = await childPage2.text();
+  const childBody3 = await childPage3.text();
+  const childPages = [childCards, ...[childBody2,childBody3].map(body => [...body.matchAll(/href="\/products\/([^"]+)" class="product-card"/g)].map(match=>match[1]))];
+  assert.deepEqual(childPages.map(cards=>cards.length),[12,12,3]);
+  assert.equal(new Set(childPages.flat()).size,27);
+  assert.ok(childPages.flat().includes("qa-child-item"));
+  assert.ok(childPages.flat().includes("qa-manual"));
+  assert.ok(childBody.includes("QA Last Brand"));
+  assert.ok(childBody2.includes('rel="canonical" href="https://tahinspare.com/category/qa-custom/qa-child?page=2"'));
+  assert.equal((await fetch(base+"/category/qa-custom/qa-child?page=4")).status,404);
+  const repeatedChildPage2 = await fetch(base+"/category/qa-custom/qa-child?page=2");
+  assert.equal(repeatedChildPage2.headers.get("x-tahin-catalogue-cache"),"HIT");
+  assert.equal(await repeatedChildPage2.text(),childBody2);
+  console.log("PASS subcategory server pagination, full brand links, canonical and isolated page cache");
   assert.equal((await fetch(base+"/category/qa-custom/nonexistent")).status,404);
   console.log("PASS custom parent/child, primary and additional category assignments, and missing subcategory");
   const admin=await fetch(base+"/admin",{redirect:"manual"});

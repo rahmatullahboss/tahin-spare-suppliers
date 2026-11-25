@@ -44,9 +44,9 @@ test("category pages do not auto-scroll to the product grid on initial load", as
   assert.doesNotMatch(category, /scrollIntoView|goTo\(1/);
   assert.match(category, /id="category-products"/);
   assert.match(category, /pageHref\(page\) \+ '#category-products'/);
-  assert.match(subcategory, /const goTo = \(page: number, shouldScroll = true\)/);
-  assert.match(subcategory, /if \(shouldScroll\) \{\s*grid\.scrollIntoView/);
-  assert.match(subcategory, /goTo\(1, false\)/);
+  assert.doesNotMatch(subcategory, /scrollIntoView|goTo\(1/);
+  assert.match(subcategory, /id="category-products"/);
+  assert.match(subcategory, /pageHref\(page\) \+ '#category-products'/);
 });
 
 
