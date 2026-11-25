@@ -23,12 +23,25 @@ class FakeDb {
   eligible = true;
   sources: Row[] = [{ ...source }];
   ineligibleIds = new Set<string>();
+  eligibilityReads = 0;
 
   async query(sql: string, values: unknown[] = []): Promise<Row[]> {
     if (/UPDATE email_followup_drafts[\s\S]*INTERVAL '15 minutes'/.test(sql)) return [];
+    if (sql.includes("WITH eligible AS MATERIALIZED")) {
+      this.eligibilityReads++;
+      const eligible = this.eligible ? this.sources.filter(s => !this.ineligibleIds.has(String(s.id))) : [];
+      const offset = Number(values[0] ?? 0);
+      const page = eligible.slice(offset, offset + 100);
+      return page.length ? page.map(s => ({...s, candidate_total:eligible.length})) : [{id:null,candidate_total:eligible.length}];
+    }
     if (sql.includes("COUNT(*) AS total")) return [{ total: this.eligible ? this.sources.length : 0 }];
     if (sql.includes("FROM sent_emails s") && sql.includes("s.delivery_status")) {
+      this.eligibilityReads++;
       if (!this.eligible) return [];
+      if (sql.includes("s.id = ANY($1::text[])")) {
+        const ids = new Set(values[0] as string[]);
+        return this.sources.filter(s => ids.has(String(s.id)) && !this.ineligibleIds.has(String(s.id))).map(s => ({...s}));
+      }
       const id = sql.includes("s.id = $1") ? String(values[0]) : "";
       return this.sources.filter((s) => (!id || s.id === id) && !this.ineligibleIds.has(String(s.id))).map((s) => ({ ...s }));
     }
@@ -149,6 +162,7 @@ test("functional follow-up: create, edit, approve, unchanged save, explicit send
   const env = setup();
   const due = await json(await route.GET(context("GET")));
   assert.equal(due.candidateCount, 1);
+  assert.equal(env.db.eligibilityReads, 1);
   const created = await json(await route.POST(context("POST",{action:"create",ids:["source-001"]})));
   assert.equal((created.results as Row[])[0].ok, true);
   const draftId=String([...env.db.drafts.keys()][0]);
@@ -238,6 +252,7 @@ test("functional follow-up: fifteen different clients send once each; sixteen re
   const sourceIds = env.db.sources.map((item) => String(item.id));
   const created = await json(await route.POST(context("POST",{ action:"create",ids:sourceIds })));
   assert.equal((created.results as Row[]).filter((item) => item.ok).length,16);
+  assert.equal(env.db.eligibilityReads,4);
   const drafts = [...env.db.drafts.entries()];
   assert.equal(drafts.length,16);
   for (const [id] of drafts) {

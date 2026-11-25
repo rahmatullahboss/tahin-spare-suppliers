@@ -7,7 +7,7 @@ import { normalizeEmailSubject } from "../../../../lib/server/email-thread";
 import { appendEmailSignature, getEmailSignatureSettings, renderEmailSignatureHtml } from "../../../../lib/server/email-signature";
 import {
   defaultFollowupBody, defaultFollowupSubject, getEligibleFollowupCandidate,
-  listFollowupCandidates, countFollowupCandidates, FOLLOWUP_PAGE_SIZE,
+  listFollowupPage, listSelectedFollowupCandidates, FOLLOWUP_PAGE_SIZE,
   resolveSourceMessageId, safeMessageId
 } from "../../../../lib/server/email-followups";
 
@@ -60,9 +60,8 @@ export const GET: APIRoute = async (context) => {
     const requestedPage = Number(context.url.searchParams.get('page') ?? '1');
     const page = Number.isSafeInteger(requestedPage) && requestedPage >= 1
       ? Math.min(requestedPage, 10000) : 1;
-    const [candidates, candidateCount, drafts] = await Promise.all([
-      listFollowupCandidates(sql, page),
-      countFollowupCandidates(sql),
+    const [{ candidates, candidateCount }, drafts] = await Promise.all([
+      listFollowupPage(sql, page),
       sql.query(`SELECT f.id, f.source_sent_id, f.recipient, f.subject, f.body, f.status,
                         f.send_error, f.created_at, f.updated_at, f.approved_at, f.sent_at,
                         s.subject AS original_subject, s.created_at AS original_sent_at
@@ -169,9 +168,16 @@ export const POST: APIRoute = async (context) => {
       // without flooding Resend or Neon, while retaining per-client results.
       for (let start = 0; start < ids.length; start += 4) {
         const group = ids.slice(start, start + 4);
+        let selected: Map<string, Awaited<ReturnType<typeof getEligibleFollowupCandidate>>> | undefined;
+        try {
+          const candidates = await listSelectedFollowupCandidates(sql, group);
+          selected = new Map(candidates.map(candidate => [candidate.id, candidate]));
+        } catch {
+          // Preserve per-item results if the shared read fails.
+        }
         const groupResults = await Promise.all(group.map(async (id) => {
           try {
-            const source = await getEligibleFollowupCandidate(sql, id);
+            const source = selected ? selected.get(id) : await getEligibleFollowupCandidate(sql, id);
             if (!source) throw new Error("Client already replied, or email is not due.");
             await resolveSourceMessageId(env, source);
             const draftId = crypto.randomUUID();

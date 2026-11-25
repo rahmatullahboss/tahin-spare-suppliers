@@ -17,7 +17,7 @@ test("follow-up backend requires explicit authenticated send of approved drafts"
 });
 
 test("follow-ups use real wire Message-ID and respect inbound responses", async () => {
-  const helper = await read("src/lib/server/email-followups.ts");
+  const helper = await read("src/lib/server/email-followups.ts") + await read("src/lib/server/email-followup-query.ts");
   const webhook = await read("src/pages/api/webhooks/resend/inbound.ts");
   const route = await read("src/pages/api/admin/emails/followups.ts");
   assert.match(helper, /INTERVAL '7 days'/);
@@ -51,13 +51,14 @@ test("email schemas have persistent draft and threaded reply metadata", async ()
 });
 
 test("unanswered follow-up queue paginates the full eligible set and preserves batch selections", async () => {
-  const helper = await read("src/lib/server/email-followups.ts");
+  const helper = await read("src/lib/server/email-followups.ts") + await read("src/lib/server/email-followup-query.ts");
   const api = await read("src/pages/api/admin/emails/followups.ts");
   const page = await read("src/pages/admin/emails/followups.astro");
   assert.match(helper, /COUNT\(\*\) AS total/);
   assert.match(helper, /OFFSET \$1/);
   assert.match(helper, /FOLLOWUP_PAGE_SIZE = 100/);
-  assert.match(api, /countFollowupCandidates\(sql\)/);
+  assert.match(api, /listFollowupPage\(sql, page\)/);
+  assert.match(helper, /WITH eligible AS MATERIALIZED/);
   assert.match(api, /totalPages:/);
   assert.match(page, /id="candidate-next"/);
   assert.match(page, /id="candidate-prev"/);

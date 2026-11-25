@@ -9,6 +9,7 @@ import pg from "pg";
 import { profileLocalWorker } from "./profile-local-worker.mjs";
 import { isCompletedInboundReplay } from "../src/lib/server/inbound-replay.ts";
 import { markInboundMessagesRead, readInboundCounts } from "../src/lib/server/inbound-read-state.ts";
+import { eligibleFollowupQuery, readFollowupPage } from "../src/lib/server/email-followup-query.ts";
 import { withPostgresReader } from "../src/lib/server/pg-adapter.ts";
 
 // The hot entrypoint must not eagerly import the Astro application runtime.
@@ -80,6 +81,22 @@ try {
   const unaffected = await db.query("SELECT is_read FROM inbound_emails WHERE id='qa-replay-failed'");
   assert.equal(unaffected.rows[0].is_read,false);
   console.log("PASS real PostgreSQL batched email read marking, replay and unaffected messages");
+  await db.query("INSERT INTO sent_emails(id,to_address,subject,body,resend_id,created_at,message_id) SELECT 'qa-followup-' || i, 'qa-' || i || '@example.invalid','QA quotation','fixture','qa-resend-' || i,NOW()-INTERVAL '10 days','<qa-' || i || '@example.invalid>' FROM generate_series(1,109) AS i");
+  await db.query("UPDATE sent_emails SET delivery_status='failed' WHERE id='qa-followup-106'");
+  await db.query("UPDATE sent_emails SET created_at=NOW() WHERE id='qa-followup-107'");
+  await db.query("INSERT INTO inbound_emails(id,from_address,to_address,subject,created_at,in_reply_to_message_id) VALUES('qa-followup-reply','qa-108@example.invalid','fixture@example.invalid','Different subject',NOW(),'<qa-108@example.invalid>')");
+  await db.query("INSERT INTO email_followup_drafts(id,source_sent_id,recipient,subject,body) VALUES('qa-draft-109','qa-followup-109','qa-109@example.invalid','Re: QA quotation','fixture')");
+  const oldCount = Number((await db.query(eligibleFollowupQuery(false,false,true))).rows[0].total);
+  assert.equal(oldCount,105);
+  for (const page of [1,2,3]) {
+    const oldRows = (await db.query(eligibleFollowupQuery(),[(page-1)*100])).rows;
+    const newPage = await readFollowupPage(replayReader,page);
+    assert.equal(newPage.candidateCount,oldCount);
+    assert.deepEqual(newPage.candidates,oldRows);
+  }
+  const selected = (await db.query(eligibleFollowupQuery(false,false,false,"selected"),[["qa-followup-1","qa-followup-2","qa-followup-106","qa-followup-107","qa-followup-108","qa-followup-109"]])).rows;
+  assert.deepEqual(selected.map(row=>row.id).sort(),["qa-followup-1","qa-followup-2"]);
+  console.log("PASS real PostgreSQL follow-up count/page parity, empty page, selected eligibility and reply/draft guards");
   console.log("PASS real PostgreSQL fixture schema and catalogue");
 } finally { await db.end(); }
 
