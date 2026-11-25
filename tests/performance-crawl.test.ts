@@ -24,8 +24,11 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   assert.doesNotMatch(productsHub, /countContent\(env, 'parts'\)/);
   assert.match(brandsHub, /listBrands\(env\)/);
   assert.doesNotMatch(brandsHub, /listProductSummaries/);
-  assert.match(category, /listProductSummaries\(env, \{ category: currentCategory\.canonicalValue, limit: 1000 \}\)/);
-  assert.match(subcategory, /listProductSummaries\(env, \{[\s\S]*category: parent\.canonicalValue,[\s\S]*subcategory: currentSubcategory\.value,[\s\S]*limit: 1000[\s\S]*\}\)/);
+  const categoryData = await source("src/lib/server/category-page-data.ts");
+  assert.match(category, /getCategoryPageData\(env, Astro\.locals/);
+  assert.match(subcategory, /getSubcategoryPageData\(env, Astro\.locals/);
+  assert.match(categoryData, /readProductSummaries\(sql, \{ category: currentCategory\.canonicalValue, limit: 1000 \}\)/);
+  assert.match(categoryData, /readProductSummaries\(sql, \{[\s\S]*category: parent\.canonicalValue,[\s\S]*subcategory: result\.subcategory\.value,[\s\S]*limit: 1000[\s\S]*\}\)/);
   assert.match(brand, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
   assert.match(product, /getProductPageData\(env, slug\)/);
   assert.match(repository, /withDatabaseReader\(env, async \(sql\) => \{[\s\S]*readContentBySlug\(sql, "products", slug\)[\s\S]*readRelatedProductSummaries\(sql, product\)/);

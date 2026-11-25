@@ -16,8 +16,9 @@ test("known marine brands resolve to real logo assets", () => {
 test("top-level category page keeps the brand/model directory implementation behind the approved-category gate", async () => {
   const page = await source("src/pages/category/[category].astro");
 
-  assert.match(page, /shouldShowCategoryBrandDirectory\(currentCategory\)/);
-  assert.match(page, /showBrandModelDirectory \? listBrandLogos\(env\) : Promise\.resolve\(\[\]\)/);
+  const data = await source("src/lib/server/category-page-data.ts");
+  assert.match(data, /shouldShowCategoryBrandDirectory\(currentCategory\)/);
+  assert.match(data, /showBrandModelDirectory\s*\? mapBrandLogoRows\(await sql\.query/);
   assert.match(page, /showBrandModelDirectory && brandModelDirectory\.length > 0/);
   assert.match(page, /brandModelDirectory/);
   assert.match(page, /categoryProducts\.reduce/);

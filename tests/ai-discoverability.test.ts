@@ -27,7 +27,7 @@ test("brand and category pages keep canonical inventory SEO without added dashbo
   assert.doesNotMatch(brand, /brand-category-links/);
 
   assert.match(category, /noindex=\{categoryProducts\.length === 0\}/);
-  assert.match(category, /listProductSummaries/);
+  assert.match(category, /getCategoryPageData/);
   assert.doesNotMatch(category, /Current online inventory:/);
   assert.doesNotMatch(category, /buyer-guidance/);
 });

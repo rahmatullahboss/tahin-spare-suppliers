@@ -44,7 +44,7 @@ test("category pages use the earlier FAQ presentation and keep technical indexab
 
   assert.match(categoryPage, /Frequently Asked Questions/);
   assert.match(categoryPage, /noindex=\{categoryProducts\.length === 0\}/);
-  assert.match(categoryPage, /listProductSummaries/);
+  assert.match(categoryPage, /getCategoryPageData/);
   assert.doesNotMatch(categoryPage, /buyer-guidance/);
   assert.doesNotMatch(categoryPage, /category-quote-link/);
 });

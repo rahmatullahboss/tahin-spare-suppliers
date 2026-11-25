@@ -5,12 +5,11 @@ import CategoryIntroSection from '../../../components/CategoryIntroSection.astro
 import { getCategoryIntroCopy, getCategoryIntroImage } from '../../../lib/category-intro';
 import { toUrlSlug } from '../../../lib/seo';
 import { getRuntimeEnv } from '../../../lib/server/env';
-import { listProductSummaries } from '../../../lib/server/repository';
-import { findSubcategoryBySlug } from '../../../lib/server/categories';
+import { getSubcategoryPageData } from '../../../lib/server/category-page-data';
 
 const { category, subcategory } = Astro.params;
 const env = getRuntimeEnv(Astro.locals);
-const result = await findSubcategoryBySlug(env, category ?? '', subcategory ?? '', Astro.locals);
+const result = await getSubcategoryPageData(env, Astro.locals, category ?? '', subcategory ?? '');
 
 if (!result) {
   return new Response('Subcategory not found', {
@@ -19,13 +18,7 @@ if (!result) {
   });
 }
 
-const { parent, subcategory: currentSubcategory } = result;
-
-const filteredProducts = await listProductSummaries(env, {
-  category: parent.canonicalValue,
-  subcategory: currentSubcategory.value,
-  limit: 1000
-});
+const { parent, subcategory: currentSubcategory, filteredProducts } = result;
 const PRODUCT_PAGE_SIZE = 12;
 const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCT_PAGE_SIZE));
 

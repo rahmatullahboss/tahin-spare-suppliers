@@ -48,6 +48,9 @@ try {
   await db.query("INSERT INTO category_presentations(category_slug,label) VALUES('spare-parts','QA Spare Parts')");
   await db.query("INSERT INTO categories(id,name,slug) VALUES('qa-custom','QA Custom Category','qa-custom')");
   await db.query("INSERT INTO category_presentations(category_slug,label,sort_order) VALUES('qa-custom','QA Custom Display',0)");
+  await db.query("INSERT INTO categories(id,name,slug,parent_id) VALUES('qa-child','QA Child','qa-child','qa-custom')");
+  await db.query("INSERT INTO products(id,slug,name,brand,category,subcategory) VALUES('qa-child-item','qa-child-item','QA Child Item','Caterpillar','QA Custom Category','QA Child')");
+  await db.query("INSERT INTO product_category_assignments(product_id,category_name,subcategory_name) VALUES('qa-manual','QA Custom Category','QA Child')");
   for (const state of ["pending", "processing", "failed", "forwarded"]) {
     await db.query("INSERT INTO inbound_emails(id,from_address,to_address,subject,resend_email_id,forward_status) VALUES($1,'fixture@example.invalid','fixture@example.invalid','QA',$1,$2)", [`qa-replay-${state}`, state]);
   }
@@ -144,6 +147,17 @@ try {
   assert.ok(pages[1].includes('rel="canonical" href="https://tahinspare.com/category/spare-parts?page=2"'));
   assert.ok(pages[0].includes('/products/qa-page-30'), "full maker/model directory is retained");
   console.log("PASS crawlable category pagination, 35 products across 3 distinct pages");
+  const parentResponse = await fetch(base+"/category/qa-custom");
+  assert.equal(parentResponse.status,200);
+  const parentBody = await parentResponse.text();
+  assert.ok(parentBody.includes("/category/qa-custom/qa-child"));
+  const childResponse = await fetch(base+"/category/qa-custom/qa-child");
+  assert.equal(childResponse.status,200);
+  const childBody = await childResponse.text();
+  const childCards = [...childBody.matchAll(/href="\/products\/([^"]+)" class="product-card"/g)].map(match => match[1]);
+  assert.deepEqual(childCards.sort(),["qa-child-item","qa-manual"]);
+  assert.equal((await fetch(base+"/category/qa-custom/nonexistent")).status,404);
+  console.log("PASS custom parent/child, primary and additional category assignments, and missing subcategory");
   const admin=await fetch(base+"/admin",{redirect:"manual"});
   assert.ok([301,302,303,307,308].includes(admin.status),"unauthenticated admin must redirect");
   console.log("PASS local unauthenticated admin redirect");

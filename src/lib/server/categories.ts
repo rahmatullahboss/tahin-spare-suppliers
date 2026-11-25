@@ -1,5 +1,6 @@
 import { isReservedCategorySlug, mergeCategories, type CustomCategory, type DisplayCategory } from "../categories";
 import { ensureSchema, getDb } from "./db";
+import type { DatabaseReader } from "./pg-adapter";
 import type { RuntimeEnv } from "./env";
 import { slugify } from "./slug";
 import { createRequestMemo } from "./request-memo";
@@ -174,7 +175,10 @@ export async function findCategoryBySlug(env: RuntimeEnv, slug: string, requestS
 
 export async function listSubcategories(env: RuntimeEnv, parentId: string): Promise<CustomCategory[]> {
   await ensureSchema(env);
-  const sql = getDb(env);
+  return readSubcategories(getDb(env), parentId);
+}
+
+export async function readSubcategories(sql: DatabaseReader, parentId: string): Promise<CustomCategory[]> {
   const rows = await sql.query(
     `SELECT id, name, slug, image_url, image_key, parent_id, created_at FROM categories WHERE parent_id = $1 ORDER BY name`,
     [parentId]
@@ -247,6 +251,10 @@ export async function findSubcategoryBySlug(
   if (!parent || !parent.id) return null;
 
   const subcategories = await listSubcategories(env, parent.id);
+  return resolveSubcategory(parent, subcategories, subcategorySlug);
+}
+
+export function resolveSubcategory(parent: DisplayCategory, subcategories: CustomCategory[], subcategorySlug: string): { parent: DisplayCategory; subcategory: DisplayCategory } | null {
   const subcategory = subcategories.find((s) => s.slug === subcategorySlug);
   if (!subcategory) return null;
 

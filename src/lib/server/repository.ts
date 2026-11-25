@@ -349,7 +349,13 @@ export async function listProductSummaries(
   options?: { page?: number; limit?: number; category?: string; subcategory?: string }
 ): Promise<ProductSummary[]> {
   await ensureSchema(env);
-  const sql = getDb(env);
+  return readProductSummaries(getDb(env), options);
+}
+
+export async function readProductSummaries(
+  sql: DatabaseReader,
+  options?: { page?: number; limit?: number; category?: string; subcategory?: string }
+): Promise<ProductSummary[]> {
   const page = Math.max(1, options?.page ?? 1);
   const limit = normalizeContentLimit(options?.limit);
   const offset = (page - 1) * limit;

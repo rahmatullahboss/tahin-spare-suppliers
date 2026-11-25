@@ -41,7 +41,7 @@ test("subcategory and sitemap surfaces use assignment-aware product lookup", asy
     source("src/lib/server/sitemap-data.ts")
   ]);
 
-  assert.match(subcategoryPage, /listProductSummaries\(env, \{[\s\S]*subcategory:/);
+  assert.match(subcategoryPage, /getSubcategoryPageData\(env, Astro\.locals/);
   assert.doesNotMatch(subcategoryPage, /filter\(\(p\) => p\.subcategory === currentSubcategory\.value\)/);
   assert.match(sitemap, /product_category_assignments/);
   assert.match(sitemap, /categoryAssignments/);

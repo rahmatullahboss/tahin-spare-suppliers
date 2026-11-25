@@ -30,7 +30,7 @@ test("category hub keeps real-brand canonical links in the category brand-model 
   assert.match(categoryPage, /const brandSlug = toUrlSlug\(group\.brand\)/);
   assert.match(categoryPage, /href=\{`\/brands\/\$\{group\.brandSlug\}`\}/);
   assert.match(categoryPage, /getBrandLogoAsset\(group\.brand\)/);
-  assert.match(categoryPage, /listProductSummaries/);
+  assert.match(categoryPage, /getCategoryPageData/);
   assert.doesNotMatch(categoryPage, /Find by Model or Part Number/);
 });
 
