@@ -149,6 +149,21 @@ try {
     }
     console.log("PASS local Worker",path,response.headers.get("x-tahin-catalogue-cache")??"cache unreported");
   }
+  const entryHit = await fetch(base+"/");
+  assert.equal(entryHit.status,200);
+  assert.equal(entryHit.headers.get("x-tahin-catalogue-cache"),"HIT");
+  assert.equal(entryHit.headers.get("x-frame-options"),"DENY");
+  assert.equal(entryHit.headers.get("cache-control"),"private, no-store");
+  await entryHit.text();
+  const bypass = await fetch(base+"/",{headers:{"Cache-Control":"no-cache"}});
+  assert.equal(bypass.status,200);
+  assert.equal(bypass.headers.get("x-tahin-catalogue-cache"),null);
+  await bypass.text();
+  const cookieBypass = await fetch(base+"/",{headers:{Cookie:"tahin_admin_session=synthetic-invalid"}});
+  assert.equal(cookieBypass.status,200);
+  assert.equal(cookieBypass.headers.get("x-tahin-catalogue-cache"),null);
+  await cookieBypass.text();
+  console.log("PASS entry cache HIT security headers, no-cache and session cookie bypass");
   const heroSection = await fetch(base+"/api/page-content/home/hero");
   assert.equal(heroSection.status,200);
   const heroJson = await heroSection.json();

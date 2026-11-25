@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tahin-spare-suppliers",
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-03-29",
   "compatibility_flags": ["nodejs_compat"],
   "routes": [

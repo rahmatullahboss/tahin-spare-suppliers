@@ -3,7 +3,8 @@ import { env } from 'cloudflare:workers';
 import { getCanonicalRedirectUrl, getPublicPreviewImageUrl } from './lib/canonical-url';
 import { getRuntimeEnv } from './lib/server/env';
 import { isCutoverReadAllowed } from './lib/cutover-fence';
-import { invalidateCatalogOnWrite, serveCatalogHtml } from './lib/server/cache-policy';
+import { invalidateCatalogOnWrite } from './lib/server/cache-policy';
+import { SECURITY_HEADERS, addSecurityHeaders } from './lib/server/security-headers';
 
 const RASTER_CONTENT_TYPES = new Map([
   ['.jpg', 'image/jpeg'],
@@ -15,22 +16,6 @@ const RASTER_CONTENT_TYPES = new Map([
 function getContentType(pathname: string) {
   const entry = [...RASTER_CONTENT_TYPES.entries()].find(([extension]) => pathname.endsWith(extension));
   return entry?.[1] ?? 'application/octet-stream';
-}
-
-const SECURITY_HEADERS: Record<string, string> = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'X-XSS-Protection': '1; mode=block',
-};
-
-function addSecurityHeaders(response: Response): Response {
-  const newResponse = new Response(response.body, response);
-  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-    newResponse.headers.set(key, value);
-  }
-  return newResponse;
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -202,16 +187,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const cacheStore = env.SESSION;
-  const edgeCache = typeof caches !== 'undefined' ? caches.default : undefined;
-  const response = cutoverFrozen ? await next() : await serveCatalogHtml({
-    request: context.request,
-    render: () => next(),
-    versionStore: cacheStore,
-    cache: edgeCache,
-    waitUntil: context.locals.cfContext?.waitUntil
-      ? (promise) => context.locals.cfContext!.waitUntil(promise)
-      : undefined,
-  });
+  const response = await next();
 
   try {
     await invalidateCatalogOnWrite(context.request, response, cacheStore);
