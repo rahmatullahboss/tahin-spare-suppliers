@@ -11,6 +11,12 @@ import { isCompletedInboundReplay } from "../src/lib/server/inbound-replay.ts";
 import { markInboundMessagesRead, readInboundCounts } from "../src/lib/server/inbound-read-state.ts";
 import { withPostgresReader } from "../src/lib/server/pg-adapter.ts";
 
+// The hot entrypoint must not eagerly import the Astro application runtime.
+const builtEntry = await readFile(new URL("../dist/server/entry.mjs", import.meta.url), "utf8");
+assert.ok(builtEntry.length < 10000, "Worker entrypoint unexpectedly contains the Astro runtime");
+assert.match(builtEntry, /await import\(["\x27]\.\/chunks\/handler_[^"\x27]+\.mjs["\x27]\)/);
+console.log("PASS compiled lazy Astro runtime boundary");
+
 const uri = process.env.PG_ADAPTER_TEST_URL;
 assert.ok(uri, "Set PG_ADAPTER_TEST_URL to a disposable local fixture database");
 const target = new URL(uri);
