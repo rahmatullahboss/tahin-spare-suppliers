@@ -71,13 +71,21 @@ export function listAllCategories(env: RuntimeEnv, requestScope?: object): Promi
 }
 
 async function loadAllCategories(env: RuntimeEnv): Promise<DisplayCategory[]> {
-  const baseCategories = mergeCategories(await listCustomCategories(env));
   await ensureSchema(env);
   const sql = getDb(env);
-  const rows = await sql.query(
-    `SELECT category_slug, label, image_url, image_key, sort_order FROM category_presentations`
-  );
-  const presentations = new Map(rows.map((row) => [String(row.category_slug), row] as const));
+  // One connection and one consistent read for both sources; keep their original ordering.
+  const rows = await sql.query(`
+    SELECT 'category' AS row_kind, id, name, slug, image_url, image_key, parent_id, created_at,
+           NULL::text AS category_slug, NULL::text AS label, NULL::integer AS sort_order
+    FROM categories WHERE parent_id IS NULL
+    UNION ALL
+    SELECT 'presentation', NULL, NULL, NULL, image_url, image_key, NULL, NULL,
+           category_slug, label, sort_order
+    FROM category_presentations
+    ORDER BY row_kind, name
+  `);
+  const baseCategories = mergeCategories(rows.filter((row) => row.row_kind === "category").map(mapCustomCategory));
+  const presentations = new Map(rows.filter((row) => row.row_kind === "presentation").map((row) => [String(row.category_slug), row] as const));
 
   return baseCategories
     .map((category, baseIndex) => {

@@ -34,7 +34,8 @@
   },
   "devDependencies": {
     "@types/pg": "^8.23.1",
-    "wrangler": "^4.118.0"
+    "wrangler": "^4.118.0",
+    "ws": "8.22.0"
   },
   "overrides": {
     "miniflare": {

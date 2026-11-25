@@ -6,7 +6,7 @@ import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { normalizeHomepageCtaUrl } from '../lib/page-content';
 import { getRuntimeEnv } from '../lib/server/env';
 import { listAllCategories } from '../lib/server/categories';
-import { listBrands } from '../lib/server/brands';
+import { listBrandLogos } from '../lib/server/brands';
 import { getHomepageContent } from '../lib/server/page-content';
 import { isAuthenticated } from '../lib/server/session';
 
@@ -14,7 +14,7 @@ const env = getRuntimeEnv(Astro.locals);
 const [categories, homeContent, managedBrands, authenticated] = await Promise.all([
   listAllCategories(env, Astro.locals),
   getHomepageContent(env),
-  listBrands(env),
+  listBrandLogos(env),
   isAuthenticated(Astro.cookies, env.SESSION_SECRET),
 ]);
 const homepageBrands = managedBrands.filter((brand) => brand.displayLogoUrl);

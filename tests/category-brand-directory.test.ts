@@ -17,7 +17,7 @@ test("top-level category page keeps the brand/model directory implementation beh
   const page = await source("src/pages/category/[category].astro");
 
   assert.match(page, /shouldShowCategoryBrandDirectory\(currentCategory\)/);
-  assert.match(page, /showBrandModelDirectory \? listBrands\(env\) : Promise\.resolve\(\[\]\)/);
+  assert.match(page, /showBrandModelDirectory \? listBrandLogos\(env\) : Promise\.resolve\(\[\]\)/);
   assert.match(page, /showBrandModelDirectory && brandModelDirectory\.length > 0/);
   assert.match(page, /brandModelDirectory/);
   assert.match(page, /categoryProducts\.reduce/);
@@ -64,7 +64,7 @@ test("custom category naming variants still keep the approved generator director
 test("homepage restores the running brand-logo marquee without moving the brand-model directory back home", async () => {
   const homepage = await source("src/pages/index.astro");
   assert.match(homepage, /brands-marquee/);
-  assert.match(homepage, /listBrands\(env\)/);
+  assert.match(homepage, /listBrandLogos\(env\)/);
   assert.match(homepage, /brand\.displayLogoUrl/);
   assert.match(homepage, /@keyframes marquee-scroll/);
   assert.match(homepage, /\.recent-shipments-track[\s\S]*animation: marquee-scroll/);

@@ -1,0 +1,102 @@
+// Local-only Worker smoke against a disposable, empty PostgreSQL database.
+import assert from "node:assert/strict";
+import { readFile, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { spawn } from "node:child_process";
+import { createServer } from "node:net";
+import pg from "pg";
+import { profileLocalWorker } from "./profile-local-worker.mjs";
+
+const uri = process.env.PG_ADAPTER_TEST_URL;
+assert.ok(uri, "Set PG_ADAPTER_TEST_URL to a disposable local fixture database");
+const target = new URL(uri);
+assert.equal(target.hostname, "127.0.0.1");
+assert.equal(target.pathname, "/tahin_qa");
+const db = new pg.Client({ connectionString: uri });
+await db.connect();
+try {
+  const existing = await db.query("SELECT count(*)::int AS n FROM pg_tables WHERE schemaname='public'");
+  assert.equal(existing.rows[0].n, 0, "Fixture requires an empty database; never overwrite an existing snapshot");
+  const schema = await readFile(new URL("../src/lib/server/schema.sql", import.meta.url), "utf8");
+  await db.query(schema);
+  let hash = 2166136261;
+  for (let i = 0; i < schema.length; i++) {
+    hash ^= schema.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  const fingerprint = "fnv1a-" + (hash >>> 0).toString(16).padStart(8, "0");
+  await db.query("CREATE TABLE app_schema_meta(key TEXT PRIMARY KEY,version TEXT NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
+  await db.query("INSERT INTO app_schema_meta(key,version) VALUES('main',$1)", [fingerprint]);
+  const fixtures = [
+    ["qa-target","Caterpillar","Spare Parts","2026-11-24T01:00:00Z",'["qa-manual"]'],
+    ["qa-manual","Other","Marine Pump","2026-11-23T01:00:00Z","[]"],
+    ["qa-alias","CAT","Spare Parts","2026-11-22T01:00:00Z","[]"],
+    ["qa-second","Caterpiller","Spare Parts","2026-11-21T01:00:00Z","[]"],
+    ["qa-extra","Caterpillar","Spare Parts","2026-11-20T01:00:00Z","[]"],
+    ["qa-wrong","Yanmar","Spare Parts","2026-11-19T01:00:00Z","[]"],
+  ];
+  for (const [id,brand,category,updated,related] of fixtures) {
+    await db.query("INSERT INTO products(id,slug,name,brand,category,updated_at,related_products) VALUES($1,$1,$1,$2,$3,$4,$5)",[id,brand,category,updated,related]);
+  }
+  await db.query("INSERT INTO brands(id,name,slug) VALUES('qa-brand','Caterpillar','caterpillar')");
+  await db.query("INSERT INTO category_presentations(category_slug,label) VALUES('spare-parts','QA Spare Parts')");
+  await db.query("INSERT INTO categories(id,name,slug) VALUES('qa-custom','QA Custom Category','qa-custom')");
+  await db.query("INSERT INTO category_presentations(category_slug,label,sort_order) VALUES('qa-custom','QA Custom Display',0)");
+  console.log("PASS real PostgreSQL fixture schema and catalogue");
+} finally { await db.end(); }
+
+const socket = createServer();
+await new Promise((resolve, reject) => {socket.once("error", reject);socket.listen(0,"127.0.0.1",resolve)});
+const port = socket.address().port;
+await new Promise(resolve => socket.close(resolve));
+const inspectorSocket = createServer();
+await new Promise((resolve, reject) => {inspectorSocket.once("error", reject);inspectorSocket.listen(0,"127.0.0.1",resolve)});
+const inspectorPort = inspectorSocket.address().port;
+await new Promise(resolve => inspectorSocket.close(resolve));
+const persistence = await mkdtemp(join(tmpdir(),"tahin-local-qa-"));
+const worker = spawn("node_modules/.bin/wrangler",[
+  "dev","--local","--ip","127.0.0.1","--host","127.0.0.1","--port",String(port),"--persist-to",persistence,
+  "--inspector-ip","127.0.0.1","--inspector-port",String(inspectorPort),
+  "--show-interactive-dev-session=false","--var","SESSION_SECRET:local-fixture-only",
+  "--var","ADMIN_PASSWORD:local-fixture-only","--var","RESEND_API_KEY:local-fixture-only",
+],{env:{...process.env,CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_SUPABASE_HYPERDRIVE:uri},stdio:["ignore","pipe","pipe"]});
+let logs = "";
+worker.stdout.on("data",d=>{logs=(logs+d).slice(-8000)});
+worker.stderr.on("data",d=>{logs=(logs+d).slice(-8000)});
+const base="http://127.0.0.1:"+port;
+try {
+  let ready=false;
+  for(let i=0;i<40;i++){
+    if(worker.exitCode!==null) break;
+    try { const response=await fetch(base+"/",{signal:AbortSignal.timeout(1500),redirect:"manual"}); if(response.ok){await response.text();ready=true;break} } catch {}
+    await new Promise(resolve=>setTimeout(resolve,500));
+  }
+  assert.ok(ready,"Worker did not become ready");
+  for(const path of ["/","/products","/category/spare-parts","/brands","/sitemap.xml","/api/products?page=1&limit=20","/products/qa-target"]){
+    const response=await fetch(base+path,{signal:AbortSignal.timeout(10000),redirect:"manual"});
+    assert.equal(response.status,200,path);
+    const body=await response.text();
+    if(path==="/products/qa-target"){
+      for(const slug of ["qa-manual","qa-alias","qa-second"]) assert.ok(body.includes("/products/"+slug),slug);
+      for(const slug of ["qa-extra","qa-wrong"]) assert.ok(!body.includes("/products/"+slug),slug);
+    }
+    if(path==="/") {
+      assert.ok(body.includes("QA Spare Parts"));
+      assert.ok(body.includes("QA Custom Display"));
+      assert.ok(body.includes("/category/qa-custom"));
+    }
+    console.log("PASS local Worker",path,response.headers.get("x-tahin-catalogue-cache")??"cache unreported");
+  }
+  const admin=await fetch(base+"/admin",{redirect:"manual"});
+  assert.ok([301,302,303,307,308].includes(admin.status),"unauthenticated admin must redirect");
+  console.log("PASS local unauthenticated admin redirect");
+  if (process.env.TAHIN_CPU_PROFILE === "1") await profileLocalWorker(inspectorPort, base, ["/", "/category/spare-parts", "/products", "/products/qa-target"]);
+} catch(error) {
+  console.error(logs);
+  throw error;
+} finally {
+  worker.kill("SIGTERM");
+  await new Promise(resolve=>{if(worker.exitCode!==null)resolve();else{worker.once("exit",resolve);setTimeout(resolve,2500).unref()}});
+  await rm(persistence,{recursive:true,force:true});
+}
