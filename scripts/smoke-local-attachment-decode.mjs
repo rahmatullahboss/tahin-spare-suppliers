@@ -17,9 +17,21 @@ let worker;
 let log="";
 try {
   await build({stdin:{contents:`import { decodeBase64, storeSentEmailAttachments } from "./src/lib/server/sent-email-attachments.ts";
+import { servePublicImage } from "./src/lib/server/public-image.ts";
 export default {async fetch(request,env){
  const mode=new URL(request.url).pathname;
  if(mode==="/ready") return new Response("ok");
+ if(mode==="/seed-image"){
+  await env.TEST_BUCKET.put("images/qa-public.png",new Uint8Array([1,2,3,4]),{httpMetadata:{contentType:"image/png"}});
+  return new Response("ok");
+ }
+ if(mode==="/remove-image"){
+  await env.TEST_BUCKET.delete("images/qa-public.png");
+  return new Response("ok");
+ }
+ if(mode.startsWith("/images/") || mode.startsWith("/email/")){
+  return (await servePublicImage(request,{MEDIA_BUCKET:env.TEST_BUCKET},caches.default)) ?? new Response("missing",{status:404});
+ }
  const data=await request.text();
  const headers={"x-native":typeof Uint8Array.fromBase64};
  if(mode==="/store"){
@@ -62,6 +74,24 @@ export default {async fetch(request,env){
   const stored=await fetch(base+"/store",{method:"POST",body:encoded});
   assert.equal(stored.status,200);
   assert.deepEqual(Buffer.from(await stored.arrayBuffer()),data);
+  assert.equal((await fetch(base+"/seed-image")).status,200);
+  const image=await fetch(base+"/images/qa-public.png");
+  assert.equal(image.status,200);
+  assert.equal(image.headers.get("content-type"),"image/png");
+  assert.equal(image.headers.get("x-frame-options"),"DENY");
+  assert.equal(image.headers.get("cache-control"),"public, max-age=31536000, immutable");
+  assert.ok(image.headers.get("etag"));
+  assert.deepEqual(Buffer.from(await image.arrayBuffer()),Buffer.from([1,2,3,4]));
+  assert.equal((await fetch(base+"/remove-image")).status,200);
+  const hit=await fetch(base+"/images/qa-public.png");
+  assert.equal(hit.status,200);
+  assert.equal(hit.headers.get("cache-control"),"public, max-age=604800");
+  assert.deepEqual(Buffer.from(await hit.arrayBuffer()),Buffer.from([1,2,3,4]));
+  const bypass=await fetch(base+"/images/qa-public.png?qa=1");
+  assert.equal(bypass.status,404);
+  const privatePath=await fetch(base+"/email/sent/synthetic-email/synthetic-file");
+  assert.equal(privatePath.status,404);
+  console.log("PASS public R2 media/cache byte integrity, cache query bypass and private path exclusion");
   console.log(JSON.stringify({nativeWorker:true,localEndToEndMs:timings,storageByteParity:"PASS",invalidInputParity:"PASS"}));
 } catch(error){console.error(log);throw error}
 finally{

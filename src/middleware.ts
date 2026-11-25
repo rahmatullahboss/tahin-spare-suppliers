@@ -4,19 +4,8 @@ import { getCanonicalRedirectUrl, getPublicPreviewImageUrl } from './lib/canonic
 import { getRuntimeEnv } from './lib/server/env';
 import { isCutoverReadAllowed } from './lib/cutover-fence';
 import { invalidateCatalogOnWrite } from './lib/server/cache-policy';
-import { SECURITY_HEADERS, addSecurityHeaders } from './lib/server/security-headers';
-
-const RASTER_CONTENT_TYPES = new Map([
-  ['.jpg', 'image/jpeg'],
-  ['.jpeg', 'image/jpeg'],
-  ['.png', 'image/png'],
-  ['.webp', 'image/webp'],
-]);
-
-function getContentType(pathname: string) {
-  const entry = [...RASTER_CONTENT_TYPES.entries()].find(([extension]) => pathname.endsWith(extension));
-  return entry?.[1] ?? 'application/octet-stream';
-}
+import { addSecurityHeaders } from './lib/server/security-headers';
+import { servePublicImage } from './lib/server/public-image';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const url = new URL(context.request.url);
@@ -119,71 +108,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }));
   }
 
-  const pathname = url.pathname.toLowerCase();
-
-  // Handle R2 image serving
-  if (pathname.startsWith('/images/')) {
-    const isRasterAsset = [...RASTER_CONTENT_TYPES.keys()].some((extension) => pathname.endsWith(extension));
-
-    if (isRasterAsset) {
-      // Image content is public. CDN-cache it at the edge to avoid repeat R2 reads.
-      // Bypass range/query requests; never cache uploads or arbitrary API content.
-      const imageCache = context.request.method === 'GET' && !context.request.headers.has('Range') && !url.search
-        ? (typeof caches !== 'undefined' ? caches.default : undefined)
-        : undefined;
-      if (imageCache) {
-        try {
-          const hit = await imageCache.match(context.request);
-          if (hit) return addSecurityHeaders(hit);
-        } catch (error) {
-          console.error('Image edge cache lookup failed', error);
-        }
-      }
-      const bucket = env.MEDIA_BUCKET;
-      const mediaBaseUrl = env.MEDIA_PUBLIC_URL?.replace(/\/$/, '');
-
-      if (bucket) {
-        try {
-          const object = await bucket.get(url.pathname.slice(1));
-
-          if (object) {
-            const headers = new Headers();
-            object.writeHttpMetadata(headers);
-            headers.set('content-type', headers.get('content-type') ?? getContentType(pathname));
-            headers.set('cache-control', 'public, max-age=31536000, immutable');
-            headers.set('etag', object.httpEtag);
-
-            // Add security headers to image responses too
-            for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-              headers.set(key, value);
-            }
-
-            const imageResponse = new Response(object.body, { headers });
-            if (imageCache) {
-              const stored = imageResponse.clone();
-              // Keep edge copy for seven days; the browser keeps immutable image URLs.
-              stored.headers.set('Cache-Control', 'public, max-age=604800');
-              const saving = imageCache.put(context.request, stored).catch((error: unknown) => {
-                console.error('Image edge cache write failed', error);
-              });
-              if (context.locals.cfContext?.waitUntil) context.locals.cfContext.waitUntil(saving);
-              else await saving;
-            }
-            return imageResponse;
-          }
-        } catch {
-          // R2 error — fall through to CDN or next()
-        }
-      }
-
-      if (mediaBaseUrl) {
-        const cdnResponse = await fetch(`${mediaBaseUrl}${url.pathname}`, {
-          headers: context.request.headers,
-          method: 'GET',
-        });
-        return addSecurityHeaders(cdnResponse);
-      }
-    }
+  // Normal runtime handles public raster media at the Worker entrypoint.
+  // Frozen requests still pass through the existing maintenance checks above.
+  if (cutoverFrozen) {
+    const image = await servePublicImage(context.request, env,
+      typeof caches !== 'undefined' ? caches.default : undefined,
+      context.locals.cfContext?.waitUntil ? promise => context.locals.cfContext.waitUntil(promise) : undefined);
+    if (image) return image;
   }
 
   const cacheStore = env.SESSION;
