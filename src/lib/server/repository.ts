@@ -6,6 +6,7 @@ import { parseRelatedProductSlugs, resolveProductSeo, stringifyRelatedProductSlu
 import { canonicalizeBrand, cleanProductTitle, normalizeVerificationDate } from "../inventory-quality";
 import { ensureBrandExists } from "./brands";
 import { selectRelatedProductRows } from "./related-product-rows";
+import { mapProductSummary, type ProductSummary } from "./product-summary";
 
 const CONTENT_TABLES = {
   products: {
@@ -345,7 +346,7 @@ export async function listContent(
 export async function listProductSummaries(
   env: RuntimeEnv,
   options?: { page?: number; limit?: number; category?: string; subcategory?: string }
-): Promise<ContentRecord[]> {
+): Promise<ProductSummary[]> {
   await ensureSchema(env);
   const sql = getDb(env);
   const page = Math.max(1, options?.page ?? 1);
@@ -376,11 +377,11 @@ export async function listProductSummaries(
 
   query += ` ORDER BY p.updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
   const rows = await sql.query(query, params.length ? params : undefined);
-  return rows.map((row) => mapRecord("products", row));
+  return rows.map(mapProductSummary);
 }
 
 /** Related cards need at most three fully mapped summaries, not the entire catalogue. */
-export async function listRelatedProductSummaries(env: RuntimeEnv, product: ContentRecord): Promise<ContentRecord[]> {
+export async function listRelatedProductSummaries(env: RuntimeEnv, product: ContentRecord): Promise<ProductSummary[]> {
   const slugs = product.relatedProducts ?? [];
   if (slugs.length === 0 && !product.brand) return [];
   await ensureSchema(env);
@@ -398,7 +399,7 @@ export async function listRelatedProductSummaries(env: RuntimeEnv, product: Cont
            ($3::boolean AND COALESCE(NULLIF(recent.category, ''), 'Uncategorized') = $4))
     ORDER BY recent.updated_at DESC
   `, [product.id, slugs, Boolean(product.brand), product.category ?? ""]);
-  return selectRelatedProductRows(rows, product).map((row) => mapRecord("products", row));
+  return selectRelatedProductRows(rows, product).map(mapProductSummary);
 }
 
 export async function listAllContent(env: RuntimeEnv, type: ContentType): Promise<ContentRecord[]> {

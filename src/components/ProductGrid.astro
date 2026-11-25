@@ -1,14 +1,14 @@
 ---
-import type { ContentRecord } from '../lib/server/repository';
+import type { ProductSummary } from '../lib/server/product-summary';
 
 interface Props {
-  products: ContentRecord[];
+  products: ProductSummary[];
   basePath?: string;
 }
 const { products, basePath = '/products' } = Astro.props;
 
 // Group products by brand
-const groupedProducts = products.reduce<Record<string, ContentRecord[]>>((acc, product) => {
+const groupedProducts = products.reduce<Record<string, ProductSummary[]>>((acc, product) => {
   const brandName = product.brand || 'Other / Generic';
   if (!acc[brandName]) acc[brandName] = [];
   acc[brandName].push(product);
