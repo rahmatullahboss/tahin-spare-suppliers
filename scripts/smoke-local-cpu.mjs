@@ -98,6 +98,8 @@ try {
   const selected = (await db.query(eligibleFollowupQuery(false,false,false,"selected"),[["qa-followup-1","qa-followup-2","qa-followup-106","qa-followup-107","qa-followup-108","qa-followup-109"]])).rows;
   assert.deepEqual(selected.map(row=>row.id).sort(),["qa-followup-1","qa-followup-2"]);
   console.log("PASS real PostgreSQL follow-up count/page parity, empty page, selected eligibility and reply/draft guards");
+  await db.query("INSERT INTO inbound_emails(id,from_address,to_address,subject,body,created_at) VALUES ('qa-thread-in','Fixture <thread@example.invalid>','local@example.invalid','QA Conversation','QA inbound body',NOW()-INTERVAL '2 days'),('qa-thread-in2','thread@example.invalid','local@example.invalid','Re: QA Conversation','QA second inbound',NOW()-INTERVAL '1 day'),('qa-thread-other','other@example.invalid','local@example.invalid','QA Conversation','QA excluded body',NOW())");
+  await db.query("INSERT INTO sent_emails(id,to_address,subject,body,in_reply_to_inbound_id,created_at) VALUES('qa-thread-sent','thread@example.invalid','Re: QA Conversation','<p>QA sent body</p>','qa-thread-in',NOW())");
   console.log("PASS real PostgreSQL fixture schema and catalogue");
 } finally { await db.end(); }
 
@@ -264,6 +266,26 @@ try {
   const admin=await fetch(base+"/admin",{redirect:"manual"});
   assert.ok([301,302,303,307,308].includes(admin.status),"unauthenticated admin must redirect");
   console.log("PASS local unauthenticated admin redirect");
+  const login=await fetch(base+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:"local-fixture-only"})});
+  assert.equal(login.status,200);
+  const cookie=login.headers.get("set-cookie")?.split(";")[0];
+  assert.ok(cookie);
+  await login.text();
+  for(const route of ["/admin/emails/thread/inbound/qa-thread-in","/admin/emails/thread/sent/qa-thread-sent"]){
+    const response=await fetch(base+route,{headers:{Cookie:cookie},redirect:"manual"});
+    assert.equal(response.status,200,route);
+    const body=await response.text();
+    for(const expected of ["QA inbound body","QA second inbound","QA sent body","3 messages"]) assert.ok(body.includes(expected),expected);
+    assert.ok(!body.includes("QA excluded body"));
+  }
+  const readback=new pg.Client({connectionString:uri});
+  await readback.connect();
+  try{
+    const result=await readback.query("SELECT id,is_read FROM inbound_emails WHERE id LIKE 'qa-thread-%' ORDER BY id");
+    assert.deepEqual(result.rows.map(row=>[row.id,row.is_read]),[["qa-thread-in",true],["qa-thread-in2",true],["qa-thread-other",false]]);
+  }finally{await readback.end()}
+  console.log("PASS authenticated local email conversation, isolation and read-state replay");
+
   if (process.env.TAHIN_CPU_PROFILE === "1") await profileLocalWorker(inspectorPort, base, ["/", "/category/spare-parts", "/products", "/products/qa-target"]);
 } catch(error) {
   console.error(logs);

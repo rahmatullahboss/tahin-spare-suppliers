@@ -82,71 +82,57 @@ function toMessage(row: DbRow, messageSource: EmailSource): ThreadMessage {
 }
 
 const anchorResult = source === "inbound"
-  ? await sql.query(
-      `SELECT id, from_address, to_address, '' as cc_address, subject, body, html_body, attachments_json,
-              created_at, '' as in_reply_to_inbound_id
-       FROM inbound_emails WHERE id = $1`,
-      [id]
-    )
-  : await sql.query(
-      `SELECT id, from_address, to_address, cc_address, subject, body, '' as html_body,
-              attachments_json, created_at, in_reply_to_inbound_id
-       FROM sent_emails WHERE id = $1`,
-      [id]
-    );
+  ? await sql.query("SELECT id, from_address, to_address, subject FROM inbound_emails WHERE id = $1", [id])
+  : await sql.query("SELECT id, from_address, to_address, subject FROM sent_emails WHERE id = $1", [id]);
 
 if (anchorResult.length === 0) {
   return Astro.redirect("/admin/emails");
 }
 
-const anchor = toMessage(anchorResult[0] as DbRow, source);
-const customerEmail = extractEmailAddress(source === "inbound" ? anchor.from : anchor.to);
+const anchorRow = anchorResult[0];
+const anchor = { id: asString(anchorRow.id), subject: asString(anchorRow.subject) };
+const customerEmail = extractEmailAddress(asString(source === "inbound" ? anchorRow.from_address : anchorRow.to_address));
 const subjectKey = normalizeEmailSubject(anchor.subject);
 
-// Query this conversation directly rather than fetching the last 500 emails
-// globally: older client threads must not disappear as the mailbox grows.
+// Keep the original independent 500-message limits and conversation matching.
+// Fetch both sets on one database connection and sanitize only included rows.
+const rows = await sql.query(`
+  SELECT * FROM (
+    SELECT 'inbound' AS message_source, id, from_address, to_address, '' AS cc_address,
+           subject, body, html_body, attachments_json, created_at, '' AS in_reply_to_inbound_id
+    FROM inbound_emails
+    WHERE lower(substring(from_address from '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}')) = $1
+      AND ${normalizedEmailSubjectSql("subject")} = $2
+    ORDER BY created_at DESC LIMIT 500
+  ) inbound
+  UNION ALL
+  SELECT * FROM (
+    SELECT 'sent' AS message_source, id, from_address, to_address, cc_address,
+           subject, body, '' AS html_body, attachments_json, created_at, in_reply_to_inbound_id
+    FROM sent_emails
+    WHERE lower(to_address) = $1 AND ${normalizedEmailSubjectSql("subject")} = $2
+    ORDER BY created_at DESC LIMIT 500
+  ) sent
+  ORDER BY created_at DESC
+`, [customerEmail, subjectKey]);
 
-const [inboundRows, sentRows] = await Promise.all([
-  sql.query(
-    `SELECT id, from_address, to_address, '' as cc_address, subject, body, html_body, attachments_json,
-            created_at, '' as in_reply_to_inbound_id
-     FROM inbound_emails
-     WHERE lower(substring(from_address from '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}')) = $1
-       AND ${normalizedEmailSubjectSql("subject")} = $2
-     ORDER BY created_at DESC
-     LIMIT 500`,
-    [customerEmail, subjectKey]
-  ),
-  sql.query(
-    `SELECT id, from_address, to_address, cc_address, subject, body, '' as html_body,
-            attachments_json, created_at, in_reply_to_inbound_id
-     FROM sent_emails
-     WHERE lower(to_address) = $1 AND ${normalizedEmailSubjectSql("subject")} = $2
-     ORDER BY created_at DESC
-     LIMIT 500`,
-    [customerEmail, subjectKey]
-  ),
-]);
+const inboundMessages = rows
+  .filter(row => row.message_source === "inbound"
+    && extractEmailAddress(asString(row.from_address)) === customerEmail
+    && normalizeEmailSubject(asString(row.subject)) === subjectKey)
+  .map(row => toMessage(row, "inbound"));
 
-const inboundMessages = (inboundRows as DbRow[])
-  .map((row) => toMessage(row, "inbound"))
-  .filter((message) => {
-    return extractEmailAddress(message.from) === customerEmail
-      && normalizeEmailSubject(message.subject) === subjectKey;
-  });
+const inboundIds = new Set(inboundMessages.map(message => message.id));
 
-const inboundIds = new Set(inboundMessages.map((message) => message.id));
-
-const sentMessages = (sentRows as DbRow[])
-  .map((row) => toMessage(row, "sent"))
-  .filter((message) => {
-    const sameCustomer = extractEmailAddress(message.to) === customerEmail
-      && normalizeEmailSubject(message.subject) === subjectKey;
-    const linkedReply = message.inReplyToInboundId
-      ? inboundIds.has(message.inReplyToInboundId) || message.inReplyToInboundId === anchor.id
-      : false;
-    return sameCustomer || linkedReply;
-  });
+const sentMessages = rows
+  .filter(row => {
+    if (row.message_source !== "sent") return false;
+    const sameCustomer = extractEmailAddress(asString(row.to_address)) === customerEmail
+      && normalizeEmailSubject(asString(row.subject)) === subjectKey;
+    const linkedId = asString(row.in_reply_to_inbound_id);
+    return sameCustomer || Boolean(linkedId && (inboundIds.has(linkedId) || linkedId === anchor.id));
+  })
+  .map(row => toMessage(row, "sent"));
 
 const thread = [...inboundMessages, ...sentMessages].sort((a, b) => {
   return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
