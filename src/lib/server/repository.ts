@@ -8,7 +8,7 @@ import { normalizeContentLimit } from "./content-limit";
 import { parseRelatedProductSlugs, resolveProductSeo, stringifyRelatedProductSlugs, toUrlSlug } from "../seo";
 import { canonicalizeBrand, cleanProductTitle, normalizeVerificationDate } from "../inventory-quality";
 import { ensureBrandExists } from "./brands";
-import { selectRelatedProductRows } from "./related-product-rows";
+import { readRelatedProductSummaries } from "./related-product-data";
 import { mapProductSummary, mapProductDirectoryEntry, type ProductSummary } from "./product-summary";
 
 const CONTENT_TABLES = {
@@ -450,24 +450,6 @@ export async function listRelatedProductSummaries(env: RuntimeEnv, product: Cont
   return withDatabaseReader(env, (sql) => readRelatedProductSummaries(sql, product));
 }
 
-async function readRelatedProductSummaries(sql: DatabaseReader, product: ContentRecord): Promise<ProductSummary[]> {
-  const slugs = product.relatedProducts ?? [];
-  if (slugs.length === 0 && !product.brand) return [];
-  // Preserve the old newest-1000 candidate window and category/brand semantics.
-  // Filter category and explicit slugs in SQL; normalize legacy brand aliases in JS.
-  const rows = await sql.query(`
-    SELECT recent.* FROM (
-      SELECT p.id, p.slug, p.name, p.short_description, p.image_url, p.updated_at,
-             p.category, p.subcategory, p.brand, p.model_number, p.part_number, p.image_alt
-      FROM products p ORDER BY p.updated_at DESC LIMIT 1000
-    ) recent
-    WHERE recent.id <> $1
-      AND (recent.slug = ANY($2::text[]) OR
-           ($3::boolean AND COALESCE(NULLIF(recent.category, ''), 'Uncategorized') = $4))
-    ORDER BY recent.updated_at DESC
-  `, [product.id, slugs, Boolean(product.brand), product.category ?? ""]);
-  return selectRelatedProductRows(rows, product).map(mapProductSummary);
-}
 
 export async function listAllContent(env: RuntimeEnv, type: ContentType): Promise<ContentRecord[]> {
   const batchSize = 1000;

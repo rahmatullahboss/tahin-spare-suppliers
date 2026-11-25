@@ -38,7 +38,9 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   assert.match(product, /getProductPageData\(env, slug,/);
   assert.match(repository, /withDatabaseReader\(env, async \(sql\) => \{[\s\S]*readContentBySlug\(sql, "products", slug\)[\s\S]*readRelatedProductSummaries\(sql, product\)/);
   assert.doesNotMatch(product, /listProductSummaries/);
-  assert.match(repository, /selectRelatedProductRows\(rows, product\)\.map/);
+  const relatedData = await source("src/lib/server/related-product-data.ts");
+  assert.match(relatedData, /SELECT p\.id, p\.slug, p\.updated_at, p\.category, p\.brand/);
+  assert.match(relatedData, /selectRelatedProductRows\(ordered, product\)\.map/);
   assert.match(inventoryCombination, /listBrandProductSummaries\(env, brand, currentCategory\.canonicalValue\)/);
 });
 

@@ -10,6 +10,9 @@ import { profileLocalWorker } from "./profile-local-worker.mjs";
 import { isCompletedInboundReplay } from "../src/lib/server/inbound-replay.ts";
 import { markInboundMessagesRead, readInboundCounts } from "../src/lib/server/inbound-read-state.ts";
 import { eligibleFollowupQuery, readFollowupPage } from "../src/lib/server/email-followup-query.ts";
+import { readRelatedProductSummaries } from "../src/lib/server/related-product-data.ts";
+import { selectRelatedProductRows } from "../src/lib/server/related-product-rows.ts";
+import { mapProductSummary } from "../src/lib/server/product-summary.ts";
 import { withPostgresReader } from "../src/lib/server/pg-adapter.ts";
 
 // The hot entrypoint must not eagerly import the Astro application runtime.
@@ -100,6 +103,27 @@ try {
   console.log("PASS real PostgreSQL follow-up count/page parity, empty page, selected eligibility and reply/draft guards");
   await db.query("INSERT INTO inbound_emails(id,from_address,to_address,subject,body,created_at) VALUES ('qa-thread-in','Fixture <thread@example.invalid>','local@example.invalid','QA Conversation','QA inbound body',NOW()-INTERVAL '2 days'),('qa-thread-in2','thread@example.invalid','local@example.invalid','Re: QA Conversation','QA second inbound',NOW()-INTERVAL '1 day'),('qa-thread-other','other@example.invalid','local@example.invalid','QA Conversation','QA excluded body',NOW())");
   await db.query("INSERT INTO sent_emails(id,to_address,subject,body,in_reply_to_inbound_id,created_at) VALUES('qa-thread-sent','thread@example.invalid','Re: QA Conversation','<p>QA sent body</p>','qa-thread-in',NOW())");
+  // Isolated large-catalogue benchmark in a rolled-back transaction.
+  await db.query("BEGIN");
+  try {
+    await db.query("INSERT INTO products(id,slug,name,brand,category,short_description,updated_at) SELECT 'qa-related-' || i,'qa-related-' || i,'QA related ' || i,CASE WHEN i%10=0 THEN 'CAT' ELSE 'Other' END,'QA benchmark',repeat('x',2048),TIMESTAMPTZ '2026-11-01' - i * INTERVAL '1 minute' FROM generate_series(1,900) AS i");
+    const identities=[{id:"qa-target",brand:"Caterpillar",category:"Spare Parts",relatedProducts:["qa-manual"]},{id:"qa-none",brand:"Caterpillar",category:"QA benchmark",relatedProducts:["qa-related-1"]},{id:"qa-none",category:"QA benchmark",relatedProducts:["qa-related-1"]},{id:"qa-none",brand:"Nonexistent",category:"QA benchmark"}];
+    let beforeBytes=0,afterBytes=0;
+    for(const identity of identities){
+      const params=[identity.id,identity.relatedProducts??[],Boolean(identity.brand),identity.category??""];
+      const previous=await replayReader.query(`SELECT recent.* FROM (
+        SELECT id,slug,name,short_description,image_url,updated_at,category,subcategory,brand,model_number,part_number,image_alt
+        FROM products ORDER BY updated_at DESC LIMIT 1000
+      ) recent WHERE recent.id <> $1 AND (recent.slug=ANY($2::text[]) OR ($3::boolean AND COALESCE(NULLIF(recent.category,''),'Uncategorized')=$4))
+      ORDER BY recent.updated_at DESC`,params);
+      const reader={query:async(text,params)=>{const rows=await replayReader.query(text,params);afterBytes+=Buffer.byteLength(JSON.stringify(rows));return rows}};
+      const actual=await readRelatedProductSummaries(reader,identity);
+      assert.deepEqual(actual,selectRelatedProductRows(previous,identity).map(mapProductSummary));
+      beforeBytes+=Buffer.byteLength(JSON.stringify(previous));
+    }
+    assert.ok(afterBytes<beforeBytes);
+    console.log(JSON.stringify({relatedProductParity:"PASS",previousSerializedRowsBytes:beforeBytes,optimizedSerializedRowsBytes:afterBytes}));
+  } finally { await db.query("ROLLBACK"); }
   console.log("PASS real PostgreSQL fixture schema and catalogue");
 } finally { await db.end(); }
 
