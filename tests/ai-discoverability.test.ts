@@ -22,7 +22,7 @@ test("brand and category pages keep canonical inventory SEO without added dashbo
 
   assert.match(brand, /canonicalizeBrand/);
   assert.match(brand, /canonicalUrl=\{absoluteUrl\(canonicalPath\)\}/);
-  assert.match(brand, /listProductSummaries/);
+  assert.match(brand, /listBrandProductSummaries/);
   assert.doesNotMatch(brand, /Current online inventory:/);
   assert.doesNotMatch(brand, /brand-category-links/);
 

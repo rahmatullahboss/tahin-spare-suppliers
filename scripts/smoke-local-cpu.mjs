@@ -46,6 +46,7 @@ try {
   await db.query("INSERT INTO brands(id,name,slug,logo_url) VALUES('qa-brand-custom','QA Brand','qa-brand','/images/qa-custom-brand.webp')");
   await db.query("INSERT INTO page_sections(page_key,section_key,content_json) VALUES('home','hero',$1::jsonb)", [JSON.stringify({headlineAccent:"QA CMS Headline"})]);
   await db.query("INSERT INTO category_presentations(category_slug,label) VALUES('spare-parts','QA Spare Parts')");
+  await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/products',$1::jsonb)",[JSON.stringify({"#main-content>section:nth-of-type(1)>div:nth-of-type(1)>h1:nth-of-type(1)":{type:"text",text:"QA existing override"}})]);
   await db.query("INSERT INTO categories(id,name,slug) VALUES('qa-custom','QA Custom Category','qa-custom')");
   await db.query("INSERT INTO category_presentations(category_slug,label,sort_order) VALUES('qa-custom','QA Custom Display',0)");
   await db.query("INSERT INTO categories(id,name,slug,parent_id) VALUES('qa-child','QA Child','qa-child','qa-custom')");
@@ -132,6 +133,25 @@ try {
     }
     console.log("PASS local Worker",path,response.headers.get("x-tahin-catalogue-cache")??"cache unreported");
   }
+  const brandPage = await fetch(base+"/brands/caterpillar");
+  assert.equal(brandPage.status,200);
+  const brandHtml = await brandPage.text();
+  const brandCards = [...brandHtml.matchAll(/href="\/products\/([^"]+)" class="product-card"/g)].map(match=>match[1]);
+  assert.deepEqual(brandCards.sort(),["qa-alias","qa-child-item","qa-extra","qa-second","qa-target"]);
+  assert.ok(brandHtml.includes("caterpillar-logo2.svg"));
+  const inventoryPage = await fetch(base+"/inventory/caterpillar-spare-parts");
+  assert.equal(inventoryPage.status,200);
+  const inventoryCards = [...(await inventoryPage.text()).matchAll(/href="\/products\/([^"]+)" class="product-card"/g)].map(match=>match[1]);
+  assert.deepEqual(inventoryCards.sort(),["qa-alias","qa-extra","qa-second","qa-target"]);
+  assert.ok(!brandHtml.includes("const saved = overrides"));
+  assert.ok(!brandHtml.includes("Edit this page"));
+  assert.equal((await fetch(base+"/brands/nonexistent")).status,404);
+  const aliasResponse = await fetch(base+"/brands/cat",{redirect:"manual"});
+  assert.equal(aliasResponse.status,301);
+  assert.ok(aliasResponse.headers.get("location").endsWith("/brands/caterpillar"));
+  const overriddenPage = await fetch(base+"/products");
+  assert.ok((await overriddenPage.text()).includes("QA existing override"));
+  console.log("PASS brand aliases, exact selected cards, managed logo, missing brand, anonymous editor omission and saved override");
   const page1 = await fetch(base+"/category/spare-parts");
   const page2 = await fetch(base+"/category/spare-parts?page=2");
   const page3 = await fetch(base+"/category/spare-parts?page=3");

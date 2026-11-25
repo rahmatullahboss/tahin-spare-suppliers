@@ -2,9 +2,8 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
-import { toUrlSlug } from '../../lib/seo';
 import { getRuntimeEnv } from '../../lib/server/env';
-import { listProductSummaries } from '../../lib/server/repository';
+import { listBrandProductSummaries } from '../../lib/server/repository';
 import { findCategoryBySlug } from '../../lib/server/categories';
 
 const { brand, category } = Astro.params;
@@ -18,11 +17,7 @@ if (!currentCategory || !brand) {
   });
 }
 
-const liveProducts = await listProductSummaries(env, { category: currentCategory.value, limit: 1000 });
-const categoryProducts = liveProducts.filter((product) => (
-  Boolean(product.brand)
-  && toUrlSlug(product.brand ?? '') === brand
-));
+const categoryProducts = await listBrandProductSummaries(env, brand, currentCategory.canonicalValue);
 
 if (categoryProducts.length === 0) {
   return new Response('Inventory combination not found', {

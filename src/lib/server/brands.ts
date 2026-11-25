@@ -114,6 +114,12 @@ export async function listBrands(env: RuntimeEnv): Promise<BrandRecord[]> {
   return rows.map((row) => mapBrand(row, Number(row.product_count ?? 0)));
 }
 
+export async function getBrandLogoBySlug(env: RuntimeEnv, slug: string) {
+  await ensureSchema(env);
+  const rows = await getDb(env).query("SELECT name, slug, logo_url FROM brands WHERE slug = $1 LIMIT 1", [slug]);
+  return mapBrandLogoRows(rows)[0] ?? null;
+}
+
 export async function getBrandBySlug(env: RuntimeEnv, slug: string): Promise<BrandRecord | null> {
   const brands = await listBrands(env);
   return brands.find((brand) => brand.slug === slug) ?? null;

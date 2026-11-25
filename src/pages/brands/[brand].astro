@@ -5,8 +5,8 @@ import ProductGrid from "../../components/ProductGrid.astro";
 import { absoluteUrl, toUrlSlug } from "../../lib/seo";
 import { canonicalizeBrand } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
-import { listProductSummaries } from "../../lib/server/repository";
-import { getBrandBySlug } from "../../lib/server/brands";
+import { listBrandProductSummaries } from "../../lib/server/repository";
+import { getBrandLogoBySlug } from "../../lib/server/brands";
 
 const env = getRuntimeEnv(Astro.locals);
 const brandSlug = Astro.params.brand ?? "";
@@ -17,11 +17,10 @@ if (canonicalBrandSlug && canonicalBrandSlug !== brandSlug) {
   return Astro.redirect(`/brands/${canonicalBrandSlug}`, 301);
 }
 
-const [products, managedBrand] = await Promise.all([
-  listProductSummaries(env, { limit: 1000 }),
-  getBrandBySlug(env, brandSlug)
+const [brandProducts, managedBrand] = await Promise.all([
+  listBrandProductSummaries(env, brandSlug),
+  getBrandLogoBySlug(env, brandSlug)
 ]);
-const brandProducts = products.filter((product) => product.brand && toUrlSlug(product.brand) === brandSlug);
 const brandName = managedBrand?.name || brandProducts[0]?.brand?.trim() || "";
 
 if (!brandName || brandProducts.length === 0) {

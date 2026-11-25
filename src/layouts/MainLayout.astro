@@ -41,13 +41,18 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
 const isHomepage = Astro.url.pathname === '/';
 const runtimeEnv = getRuntimeEnv(Astro.locals);
 const pagePath = Astro.url.pathname;
-const pageOverrides = isHomepage ? {} : await getPageOverrides(runtimeEnv, pagePath).catch(() => ({}));
-const pageEditingAuthenticated = isHomepage ? false : await isAuthenticated(Astro.cookies, runtimeEnv.SESSION_SECRET);
+const [pageOverrides, pageEditingAuthenticated] = isHomepage
+  ? [{}, false] as const
+  : await Promise.all([
+      getPageOverrides(runtimeEnv, pagePath).catch(() => ({})),
+      isAuthenticated(Astro.cookies, runtimeEnv.SESSION_SECRET)
+    ]);
+const needsPageEditor = pageEditingAuthenticated || Object.keys(pageOverrides).length > 0;
 const googleAnalyticsId = runtimeEnv.GOOGLE_ANALYTICS_ID?.trim() ?? '';
 const googleSiteVerification = runtimeEnv.GOOGLE_SITE_VERIFICATION?.trim() ?? '';
 const bingSiteVerification = runtimeEnv.BING_SITE_VERIFICATION?.trim() ?? '';
 const hasGoogleAnalytics = /^G-[A-Z0-9]+$/i.test(googleAnalyticsId);
-const organizationSchema = {
+const organizationSchema = isHomepage ? {
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -99,7 +104,7 @@ const organizationSchema = {
       ]
     }
   ]
-};
+} : null;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -155,7 +160,7 @@ const organizationSchema = {
     <main id="main-content">
       <slot />
     </main>
-    {!isHomepage && <UniversalPageEditor pageKey={pagePath} overrides={pageOverrides} editable={pageEditingAuthenticated} />}
+    {!isHomepage && needsPageEditor && <UniversalPageEditor pageKey={pagePath} overrides={pageOverrides} editable={pageEditingAuthenticated} />}
     <FloatingWhatsApp />
     <Footer />
   </body>

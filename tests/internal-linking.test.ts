@@ -18,7 +18,7 @@ test("brand hub keeps canonical brand normalization without the later equipment-
 
   assert.match(brandPage, /canonicalizeBrand/);
   assert.match(brandPage, /Astro\.redirect\(`\/brands\/\$\{canonicalBrandSlug\}`/);
-  assert.match(brandPage, /listProductSummaries/);
+  assert.match(brandPage, /listBrandProductSummaries/);
   assert.doesNotMatch(brandPage, /Browse .* by Equipment Type/);
   assert.doesNotMatch(brandPage, /brand-category-grid/);
 });

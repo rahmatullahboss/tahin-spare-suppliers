@@ -3,7 +3,7 @@ import type { DatabaseReader } from "./pg-adapter";
 import { slugify } from "./slug";
 import type { RuntimeEnv } from "./env";
 import { normalizeContentLimit } from "./content-limit";
-import { parseRelatedProductSlugs, resolveProductSeo, stringifyRelatedProductSlugs } from "../seo";
+import { parseRelatedProductSlugs, resolveProductSeo, stringifyRelatedProductSlugs, toUrlSlug } from "../seo";
 import { canonicalizeBrand, cleanProductTitle, normalizeVerificationDate } from "../inventory-quality";
 import { ensureBrandExists } from "./brands";
 import { selectRelatedProductRows } from "./related-product-rows";
@@ -419,6 +419,28 @@ export async function readCategoryProductPage(sql: DatabaseReader, options: { ca
     directoryProducts: rows.map(mapProductDirectoryEntry),
     visibleProducts: rows.filter(row => row.is_card === true).map(mapProductSummary),
   };
+}
+
+/** Match original JS brand aliases before loading full card columns.
+ * Keep the existing newest-1,000 candidate window and assignment-aware filter.
+ */
+export async function listBrandProductSummaries(env: RuntimeEnv, brandSlug: string, category?: string): Promise<ProductSummary[]> {
+  return withDatabaseReader(env, async sql => {
+    const { where, params } = productSummaryFilter({ category });
+    const candidates = await sql.query(
+      "SELECT p.id, p.brand FROM products p" + where + " ORDER BY p.updated_at DESC, p.id ASC LIMIT 1000",
+      params
+    );
+    const ids = candidates.filter(row => toUrlSlug(canonicalizeBrand(row.brand)) === brandSlug).map(row => String(row.id));
+    if (!ids.length) return [];
+    const idParam = "$" + (params.length + 1);
+    const rows = await sql.query(
+      "SELECT p.id, p.slug, p.name, p.short_description, p.image_url, p.updated_at, p.category, p.subcategory, p.brand, p.model_number, p.part_number, p.image_alt FROM products p" +
+      where + (where ? " AND " : " WHERE ") + `p.id = ANY(${idParam}::text[]) ORDER BY array_position(${idParam}::text[], p.id)`,
+      [...params, ids]
+    );
+    return rows.map(mapProductSummary).filter(product => toUrlSlug(product.brand) === brandSlug);
+  });
 }
 
 /** Related cards need at most three fully mapped summaries, not the entire catalogue. */

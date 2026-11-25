@@ -13,7 +13,8 @@ test("all non-home public pages receive the authenticated universal page editor"
   ]);
 
   assert.match(layout, /UniversalPageEditor/);
-  assert.match(layout, /!isHomepage && <UniversalPageEditor/);
+  assert.match(layout, /!isHomepage && needsPageEditor && <UniversalPageEditor/);
+  assert.match(layout, /pageEditingAuthenticated \|\| Object.keys\(pageOverrides\).length > 0/);
   assert.match(layout, /isAuthenticated\(Astro\.cookies/);
   assert.match(schema, /CREATE TABLE IF NOT EXISTS page_overrides/);
   assert.match(editor, /Edit this page/);
