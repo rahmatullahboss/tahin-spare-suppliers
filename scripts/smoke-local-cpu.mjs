@@ -7,6 +7,7 @@ import { spawn } from "node:child_process";
 import { createServer } from "node:net";
 import pg from "pg";
 import { profileLocalWorker } from "./profile-local-worker.mjs";
+import { isCompletedInboundReplay } from "../src/lib/server/inbound-replay.ts";
 
 const uri = process.env.PG_ADAPTER_TEST_URL;
 assert.ok(uri, "Set PG_ADAPTER_TEST_URL to a disposable local fixture database");
@@ -46,6 +47,14 @@ try {
   await db.query("INSERT INTO category_presentations(category_slug,label) VALUES('spare-parts','QA Spare Parts')");
   await db.query("INSERT INTO categories(id,name,slug) VALUES('qa-custom','QA Custom Category','qa-custom')");
   await db.query("INSERT INTO category_presentations(category_slug,label,sort_order) VALUES('qa-custom','QA Custom Display',0)");
+  for (const state of ["pending", "processing", "failed", "forwarded"]) {
+    await db.query("INSERT INTO inbound_emails(id,from_address,to_address,subject,resend_email_id,forward_status) VALUES($1,'fixture@example.invalid','fixture@example.invalid','QA',$1,$2)", [`qa-replay-${state}`, state]);
+  }
+  const replayReader = { query: async (sql, params) => (await db.query(sql, params)).rows };
+  for (const state of ["pending", "processing", "failed", "forwarded", "missing"]) {
+    assert.equal(await isCompletedInboundReplay(replayReader, `qa-replay-${state}`), state === "forwarded");
+  }
+  console.log("PASS real PostgreSQL completed-inbound replay state isolation");
   console.log("PASS real PostgreSQL fixture schema and catalogue");
 } finally { await db.end(); }
 

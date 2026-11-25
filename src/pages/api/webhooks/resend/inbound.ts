@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getRuntimeEnv } from "../../../../lib/server/env";
 import { ensureSchema, getDb } from "../../../../lib/server/db";
+import { isCompletedInboundReplay } from "../../../../lib/server/inbound-replay";
 import { readInboundThreadHeaders, blockAnsweredFollowups } from "../../../../lib/server/email-followups";
 import {
   forwardInboundEmail,
@@ -62,9 +63,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response("OK", { status: 200 });
     }
 
+    const startedAt = performance.now();
     await ensureSchema(env);
     const sql = getDb(env);
+    if (await isCompletedInboundReplay(sql, payload.data.email_id)) {
+      console.info("Inbound webhook timing", { outcome: "completed-replay", elapsedMs: Math.round(performance.now() - startedAt) });
+      return new Response("OK", { status: 200 });
+    }
+    const fetchStartedAt = performance.now();
     const received = await getReceivedEmail(env, payload.data.email_id);
+    const fetchMs = Math.round(performance.now() - fetchStartedAt);
+    const persistStartedAt = performance.now();
     const id = crypto.randomUUID();
     const headers = readInboundThreadHeaders(received.headers);
 
@@ -111,11 +120,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
       [received.id]
     );
 
+    const persistMs = Math.round(performance.now() - persistStartedAt);
     if (claimed.length === 0) {
+      console.info("Inbound webhook timing", { outcome: "not-claimed", fetchMs, persistMs });
       return new Response("OK", { status: 200 });
     }
 
     const inboundId = claimed[0].id as string;
+    const forwardStartedAt = performance.now();
+    let forwardOutcome = "failed";
     try {
       await forwardInboundEmail(env, received.id);
       await sql.query(
@@ -124,6 +137,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
          WHERE id = $1`,
         [inboundId]
       );
+      forwardOutcome = "forwarded";
     } catch (error) {
       const message = error instanceof Error
         ? error.message.slice(0, 2000)
@@ -135,6 +149,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
         [inboundId, message]
       );
       throw error;
+    } finally {
+      // Wall-time stages only. Correlate with the platform's invocation CPU metric.
+      // Never log email contents, addresses, IDs, or signed attachment URLs.
+      console.info("Inbound webhook timing", {
+        outcome: forwardOutcome,
+        fetchMs,
+        persistMs,
+        forwardMs: Math.round(performance.now() - forwardStartedAt),
+        elapsedMs: Math.round(performance.now() - startedAt),
+        attachmentCount: received.attachments?.length ?? 0,
+      });
     }
 
     return new Response("OK", { status: 200 });
