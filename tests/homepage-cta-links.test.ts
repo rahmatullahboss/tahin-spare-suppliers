@@ -44,7 +44,8 @@ test("both homepage quote CTAs normalize their URLs at render and saved CMS cont
 
   assert.match(homepage, /href=\{normalizeHomepageCtaUrl\(homeContent\.hero\.ctaUrl\)\}/);
   assert.match(homepage, /href=\{normalizeHomepageCtaUrl\(homeContent\["export-logistics"\]\.ctaUrl\)\}/);
-  assert.match(server, /content\.hero\.ctaUrl = normalizeHomepageCtaUrl\(content\.hero\.ctaUrl\)/);
-  assert.match(server, /content\["export-logistics"\]\.ctaUrl = normalizeHomepageCtaUrl/);
+  const merge = await readFile(new URL("../src/lib/server/homepage-merge.ts", import.meta.url), "utf8");
+  assert.match(merge, /content\.hero\.ctaUrl = normalizeHomepageCtaUrl\(content\.hero\.ctaUrl\)/);
+  assert.match(merge, /content\["export-logistics"\]\.ctaUrl = normalizeHomepageCtaUrl/);
   assert.match(server, /merged\.ctaUrl = normalizeHomepageCtaUrl\(merged\.ctaUrl\)/);
 });

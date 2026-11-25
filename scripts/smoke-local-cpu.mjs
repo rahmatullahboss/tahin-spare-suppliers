@@ -136,6 +136,14 @@ try {
     }
     console.log("PASS local Worker",path,response.headers.get("x-tahin-catalogue-cache")??"cache unreported");
   }
+  const heroSection = await fetch(base+"/api/page-content/home/hero");
+  assert.equal(heroSection.status,200);
+  const heroJson = await heroSection.json();
+  assert.equal(heroJson.content.headlineAccent,"QA CMS Headline");
+  assert.ok(heroJson.content.slides.length>0);
+  const missingSection = await fetch(base+"/api/page-content/home/unknown");
+  assert.equal(missingSection.status,404);
+  console.log("PASS individual homepage section API with persisted value and defaults");
   const brandPage = await fetch(base+"/brands/caterpillar");
   assert.equal(brandPage.status,200);
   const brandHtml = await brandPage.text();

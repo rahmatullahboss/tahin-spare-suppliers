@@ -1,38 +1,14 @@
-import { HOMEPAGE_DEFAULTS, HOMEPAGE_SECTION_ORDER, normalizeHomepageCtaUrl, type HomepageContent, type HomepageSectionKey } from "../page-content";
+import { HOMEPAGE_DEFAULTS, normalizeHomepageCtaUrl, type HomepageContent, type HomepageSectionKey } from "../page-content";
 import type { RuntimeEnv } from "./env";
 import { ensureSchema, getDb } from "./db";
+import { deepMerge, parseStoredJson, mapHomepageContentRows, mapHomepageSection } from "./homepage-merge";
+export { mapHomepageContentRows } from "./homepage-merge";
 
 const MAX_JSON_BYTES = 120_000;
 const MAX_STRING_LENGTH = 8_000;
 const MAX_ARRAY_LENGTH = 40;
 const URL_KEY_PATTERN = /(?:^|_)(?:url|href)$/i;
 const CAMEL_URL_KEY_PATTERN = /(?:Url|URL)$/;
-
-function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
-
-function deepMerge<T>(base: T, override: unknown): T {
-  if (!override || typeof override !== "object" || Array.isArray(override)) return clone(base);
-  const output: Record<string, unknown> = clone(base) as Record<string, unknown>;
-  for (const [key, value] of Object.entries(override as Record<string, unknown>)) {
-    if (value === undefined) continue;
-    const baseValue = output[key];
-    if (
-      baseValue &&
-      value &&
-      typeof baseValue === "object" &&
-      typeof value === "object" &&
-      !Array.isArray(baseValue) &&
-      !Array.isArray(value)
-    ) {
-      output[key] = deepMerge(baseValue, value);
-    } else {
-      output[key] = value;
-    }
-  }
-  return output as T;
-}
 
 function sanitizeUrl(value: string): string {
   const trimmed = value.trim();
@@ -66,20 +42,6 @@ function sanitizeValue(value: unknown, key = "", depth = 0): unknown {
   return null;
 }
 
-function parseStoredJson(value: unknown): Record<string, unknown> {
-  if (!value) return {};
-  if (typeof value === "object" && !Array.isArray(value)) return value as Record<string, unknown>;
-  if (typeof value === "string") {
-    try {
-      const parsed = JSON.parse(value);
-      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
-    } catch {
-      return {};
-    }
-  }
-  return {};
-}
-
 export async function getHomepageContent(env: RuntimeEnv): Promise<HomepageContent> {
   await ensureSchema(env);
   const sql = getDb(env);
@@ -90,22 +52,13 @@ export async function getHomepageContent(env: RuntimeEnv): Promise<HomepageConte
   return mapHomepageContentRows(rows);
 }
 
-export function mapHomepageContentRows(rows: Record<string, unknown>[]): HomepageContent {
-  const byKey = new Map(rows.map((row) => [String(row.section_key), parseStoredJson(row.content_json)]));
-  const content = clone(HOMEPAGE_DEFAULTS);
-  for (const key of HOMEPAGE_SECTION_ORDER) {
-    const stored = byKey.get(key);
-    if (stored) content[key] = deepMerge(content[key], stored) as never;
-  }
-  // Normalize legacy values on read; no production data migration is required.
-  content.hero.ctaUrl = normalizeHomepageCtaUrl(content.hero.ctaUrl);
-  content["export-logistics"].ctaUrl = normalizeHomepageCtaUrl(content["export-logistics"].ctaUrl);
-  return content;
-}
-
 export async function getHomepageSection(env: RuntimeEnv, section: HomepageSectionKey) {
-  const content = await getHomepageContent(env);
-  return content[section];
+  await ensureSchema(env);
+  const rows = await getDb(env).query(
+    "SELECT content_json FROM page_sections WHERE page_key = $1 AND section_key = $2",
+    ["home", section]
+  );
+  return mapHomepageSection(section, rows[0]?.content_json);
 }
 
 export async function saveHomepageSection(env: RuntimeEnv, section: HomepageSectionKey, rawContent: unknown) {
