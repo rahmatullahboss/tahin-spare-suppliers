@@ -1,5 +1,5 @@
 import { neon } from "@neondatabase/serverless";
-import { createPostgresSql } from "./pg-adapter";
+import { createPostgresSql, withPostgresReader, type DatabaseReader } from "./pg-adapter";
 import { resolveSupabaseConnection } from "./supabase-connection";
 import schemaSql from "./schema.sql?raw";
 import type { RuntimeEnv } from "./env";
@@ -30,6 +30,21 @@ export function getDb(env: RuntimeEnv): ReturnType<typeof neon> {
   }
   if (!env.DATABASE_URL) throw new Error("Neon database URL is missing");
   return neon(env.DATABASE_URL);
+}
+
+/** Explicit read scope; existing writers and transactions keep their original adapter. */
+export async function withDatabaseReader<T>(env: RuntimeEnv, operation: (reader: DatabaseReader) => Promise<T>): Promise<T> {
+  await ensureSchema(env);
+  if (env.DB_PROVIDER === "supabase") {
+    const connection = resolveSupabaseConnection(env);
+    return withPostgresReader(connection.connectionString, { requireTls: connection.requireTls }, operation);
+  }
+  if (env.DB_PROVIDER === "aiven") {
+    if (!env.AIVEN_HYPERDRIVE?.connectionString) throw new Error("Aiven selected, but AIVEN_HYPERDRIVE binding is unavailable");
+    return withPostgresReader(env.AIVEN_HYPERDRIVE.connectionString, {}, operation);
+  }
+  const sql = getDb(env);
+  return operation({ query: async (text, params) => await sql.query(text, params) });
 }
 
 export async function ensureSchema(env: RuntimeEnv) {

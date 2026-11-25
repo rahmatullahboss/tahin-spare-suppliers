@@ -8,6 +8,7 @@ import { createServer } from "node:net";
 import pg from "pg";
 import { profileLocalWorker } from "./profile-local-worker.mjs";
 import { isCompletedInboundReplay } from "../src/lib/server/inbound-replay.ts";
+import { withPostgresReader } from "../src/lib/server/pg-adapter.ts";
 
 const uri = process.env.PG_ADAPTER_TEST_URL;
 assert.ok(uri, "Set PG_ADAPTER_TEST_URL to a disposable local fixture database");
@@ -57,6 +58,30 @@ try {
   console.log("PASS real PostgreSQL completed-inbound replay state isolation");
   console.log("PASS real PostgreSQL fixture schema and catalogue");
 } finally { await db.end(); }
+
+// Prove connection reuse and teardown using actual backend session identities.
+let escapedReader;
+const firstPid = await withPostgresReader(uri, {}, async reader => {
+  escapedReader = reader;
+  const first = (await reader.query("SELECT pg_backend_pid() AS pid"))[0].pid;
+  const second = (await reader.query("SELECT pg_backend_pid() AS pid"))[0].pid;
+  assert.equal(first, second);
+  return first;
+});
+await assert.rejects(escapedReader.query("SELECT 1"), /scope has ended/);
+let failedReader;
+await assert.rejects(withPostgresReader(uri, {}, async reader => {
+  failedReader = reader;
+  await reader.query("SELECT 1");
+  throw new Error("synthetic read interruption");
+}), /synthetic read interruption/);
+await assert.rejects(failedReader.query("SELECT 1"), /scope has ended/);
+const pids = await Promise.all([0, 1].map(() => withPostgresReader(uri, {}, async reader =>
+  (await reader.query("SELECT pg_backend_pid() AS pid"))[0].pid
+)));
+assert.notEqual(pids[0], pids[1]);
+assert.ok(pids.every(pid => pid !== firstPid));
+console.log("PASS PostgreSQL connection reuse, concurrent scope isolation and error cleanup");
 
 const socket = createServer();
 await new Promise((resolve, reject) => {socket.once("error", reject);socket.listen(0,"127.0.0.1",resolve)});

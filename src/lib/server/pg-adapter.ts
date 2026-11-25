@@ -57,15 +57,47 @@ type AdapterSql = {
   unsafe(text: string): RawFragment;
 };
 
-export function createPostgresSql(connectionString: string, options: { requireTls?: boolean } = {}): AdapterSql {
+type ConnectionOptions = { requireTls?: boolean };
+export type DatabaseReader = { query(text: string, params?: unknown[]): Promise<SqlRow[]> };
+
+function createClient(connectionString: string, options: ConnectionOptions) {
   if (!connectionString) throw new Error("PostgreSQL connection string is missing");
-  const createClient = () => new pg.Client({
+  return new pg.Client({
     connectionString,
     ...(options.requireTls ? { ssl: { rejectUnauthorized: true }, connectionTimeoutMillis: 10000 } : {}),
   });
+}
+
+/** Reuse a connection for an explicitly bounded sequence of reads only.
+ * Never retain this client in an isolate or expose it outside the callback.
+ */
+export async function withPostgresReader<T>(
+  connectionString: string,
+  options: ConnectionOptions,
+  operation: (reader: DatabaseReader) => Promise<T>
+): Promise<T> {
+  const client = createClient(connectionString, options);
+  await client.connect();
+  let active = true;
+  try {
+    return await operation({
+      query: async (text, values = []) => {
+        if (!active) throw new Error("Database reader scope has ended");
+        const result = await client.query(text, values);
+        return normalizeRows(result.rows as SqlRow[]);
+      },
+    });
+  } finally {
+    active = false;
+    await client.end();
+  }
+}
+
+export function createPostgresSql(connectionString: string, options: ConnectionOptions = {}): AdapterSql {
+  if (!connectionString) throw new Error("PostgreSQL connection string is missing");
 
   const run: SqlExecute = async (text, values) => {
-    const client = createClient();
+    const client = createClient(connectionString, options);
     await client.connect();
     try {
       const result = await client.query(text, [...values]);
@@ -94,7 +126,7 @@ export function createPostgresSql(connectionString: string, options: { requireTl
   tagged.unsafe = (text) => new RawFragment(text);
 
   tagged.transaction = async (statements) => {
-    const client = createClient();
+    const client = createClient(connectionString, options);
     await client.connect();
     try {
       await client.query("BEGIN");

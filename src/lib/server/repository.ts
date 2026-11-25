@@ -1,4 +1,5 @@
-import { ensureSchema, getDb } from "./db";
+import { ensureSchema, getDb, withDatabaseReader } from "./db";
+import type { DatabaseReader } from "./pg-adapter";
 import { slugify } from "./slug";
 import type { RuntimeEnv } from "./env";
 import { normalizeContentLimit } from "./content-limit";
@@ -382,10 +383,12 @@ export async function listProductSummaries(
 
 /** Related cards need at most three fully mapped summaries, not the entire catalogue. */
 export async function listRelatedProductSummaries(env: RuntimeEnv, product: ContentRecord): Promise<ProductSummary[]> {
+  return withDatabaseReader(env, (sql) => readRelatedProductSummaries(sql, product));
+}
+
+async function readRelatedProductSummaries(sql: DatabaseReader, product: ContentRecord): Promise<ProductSummary[]> {
   const slugs = product.relatedProducts ?? [];
   if (slugs.length === 0 && !product.brand) return [];
-  await ensureSchema(env);
-  const sql = getDb(env);
   // Preserve the old newest-1000 candidate window and category/brand semantics.
   // Filter category and explicit slugs in SQL; normalize legacy brand aliases in JS.
   const rows = await sql.query(`
@@ -438,6 +441,10 @@ export async function countContent(env: RuntimeEnv, type: ContentType, search?: 
 export async function getContentBySlug(env: RuntimeEnv, type: ContentType, slug: string) {
   await ensureSchema(env);
   const sql = getDb(env);
+  return readContentBySlug({query: async (text, params) => await sql.query(text, params)}, type, slug);
+}
+
+async function readContentBySlug(sql: DatabaseReader, type: ContentType, slug: string) {
   const { table } = CONTENT_TABLES[type];
   const query = type === "products"
     ? `SELECT p.*, COALESCE((
@@ -447,6 +454,15 @@ export async function getContentBySlug(env: RuntimeEnv, type: ContentType, slug:
     : `SELECT * FROM ${table} WHERE slug = $1 ${type === "blog" ? "AND deleted_at IS NULL" : ""} LIMIT 1`;
   const rows = await sql.query(query, [slug]);
   return rows[0] ? mapRecord(type, rows[0]) : null;
+}
+
+/** Sequential detail and related-item reads share one bounded connection. */
+export async function getProductPageData(env: RuntimeEnv, slug: string) {
+  return withDatabaseReader(env, async (sql) => {
+    const product = await readContentBySlug(sql, "products", slug);
+    const relatedProducts = product ? await readRelatedProductSummaries(sql, product) : [];
+    return { product, relatedProducts };
+  });
 }
 
 export async function getContentById(env: RuntimeEnv, type: ContentType, id: string) {

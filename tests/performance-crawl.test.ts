@@ -27,7 +27,8 @@ test("public inventory hot paths use lightweight product summaries instead of fu
   assert.match(category, /listProductSummaries\(env, \{ category: currentCategory\.canonicalValue, limit: 1000 \}\)/);
   assert.match(subcategory, /listProductSummaries\(env, \{[\s\S]*category: parent\.canonicalValue,[\s\S]*subcategory: currentSubcategory\.value,[\s\S]*limit: 1000[\s\S]*\}\)/);
   assert.match(brand, /listProductSummaries\(env, \{ limit: 1000 \}\)/);
-  assert.match(product, /listRelatedProductSummaries\(env, product\)/);
+  assert.match(product, /getProductPageData\(env, slug\)/);
+  assert.match(repository, /withDatabaseReader\(env, async \(sql\) => \{[\s\S]*readContentBySlug\(sql, "products", slug\)[\s\S]*readRelatedProductSummaries\(sql, product\)/);
   assert.doesNotMatch(product, /listProductSummaries/);
   assert.match(repository, /selectRelatedProductRows\(rows, product\)\.map/);
   assert.match(inventoryCombination, /listProductSummaries\(env, \{ category: currentCategory\.value, limit: 1000 \}\)/);

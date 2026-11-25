@@ -6,11 +6,11 @@ import { getCategorySlug } from "../../lib/categories";
 import { absoluteUrl, resolveLegacyProductRedirect, schemaConditionUrl } from "../../lib/seo";
 import { inventoryVerificationMaxAgeDays, resolvePublicAvailability } from "../../lib/inventory-quality";
 import { getRuntimeEnv } from "../../lib/server/env";
-import { getContentBySlug, listRelatedProductSummaries } from "../../lib/server/repository";
+import { getProductPageData } from "../../lib/server/repository";
 
 const env = getRuntimeEnv(Astro.locals);
 const slug = Astro.params.slug;
-const product = slug ? await getContentBySlug(env, "products", slug) : null;
+const { product, relatedProducts } = slug ? await getProductPageData(env, slug) : { product: null, relatedProducts: [] };
 
 if (!product) {
   const legacyRedirect = resolveLegacyProductRedirect(slug);
@@ -21,8 +21,6 @@ if (!product) {
     headers: { "Content-Type": "text/plain; charset=utf-8" }
   });
 }
-
-const relatedProducts = await listRelatedProductSummaries(env, product);
 
 const categorySlug = getCategorySlug(product.category ?? "");
 const productImages = [
