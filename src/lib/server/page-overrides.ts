@@ -69,7 +69,7 @@ function sanitizeOverrides(value: unknown): PageOverrides {
   return output;
 }
 
-function parseOverrides(value: unknown): PageOverrides {
+export function parseOverrides(value: unknown): PageOverrides {
   if (!value) return {};
   if (typeof value === "object" && !Array.isArray(value)) return value as PageOverrides;
   if (typeof value === "string") {

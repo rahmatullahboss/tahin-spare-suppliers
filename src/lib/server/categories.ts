@@ -64,6 +64,10 @@ export async function listCustomCategories(env: RuntimeEnv): Promise<CustomCateg
 
 const categoriesByRequest = createRequestMemo<DisplayCategory[]>();
 
+export function hasCategoryMemo(scope: object): boolean {
+  return categoriesByRequest.has(scope);
+}
+
 // Only page rendering passes its request scope. Mutation readbacks remain uncached.
 export function listAllCategories(env: RuntimeEnv, requestScope?: object): Promise<DisplayCategory[]> {
   return requestScope

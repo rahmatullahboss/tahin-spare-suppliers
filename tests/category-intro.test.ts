@@ -67,7 +67,8 @@ test("the existing authenticated page editor can update intro text and replace a
     source("src/lib/server/page-overrides.ts"),
     source("src/pages/api/upload.ts")
   ]);
-  assert.match(layout, /getPageOverrides/);
+  assert.match(layout, /getLayoutOverrides/);
+  assert.match(await source("src/lib/server/layout-snapshot.ts"), /getPageOverrides\(env, rawPageKey\)/);
   assert.match(layout, /editable=\{pageEditingAuthenticated\}/);
   assert.match(editor, /root.querySelectorAll\('section'\)/);
   assert.match(editor, /h1,h2,h3,h4,h5,h6,p,li,[^']*img/);

@@ -7,7 +7,7 @@ import UniversalPageEditor from '../components/admin/UniversalPageEditor.astro';
 import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { getRuntimeEnv } from '../lib/server/env';
 import { isAuthenticated } from '../lib/server/session';
-import { getPageOverrides } from '../lib/server/page-overrides';
+import { getLayoutOverrides } from '../lib/server/layout-snapshot';
 import '../styles/global.css';
 
 interface Props {
@@ -44,7 +44,7 @@ const pagePath = Astro.url.pathname;
 const [pageOverrides, pageEditingAuthenticated] = isHomepage
   ? [{}, false] as const
   : await Promise.all([
-      getPageOverrides(runtimeEnv, pagePath).catch(() => ({})),
+      getLayoutOverrides(runtimeEnv, Astro.locals, pagePath).catch(() => ({})),
       isAuthenticated(Astro.cookies, runtimeEnv.SESSION_SECRET)
     ]);
 const needsPageEditor = pageEditingAuthenticated || Object.keys(pageOverrides).length > 0;

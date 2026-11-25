@@ -46,7 +46,7 @@ try {
   await db.query("INSERT INTO brands(id,name,slug,logo_url) VALUES('qa-brand-custom','QA Brand','qa-brand','/images/qa-custom-brand.webp')");
   await db.query("INSERT INTO page_sections(page_key,section_key,content_json) VALUES('home','hero',$1::jsonb)", [JSON.stringify({headlineAccent:"QA CMS Headline"})]);
   await db.query("INSERT INTO category_presentations(category_slug,label) VALUES('spare-parts','QA Spare Parts')");
-  await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/products',$1::jsonb)",[JSON.stringify({"#main-content>section:nth-of-type(1)>div:nth-of-type(1)>h1:nth-of-type(1)":{type:"text",text:"QA existing override"}})]);
+  await db.query("INSERT INTO page_overrides(page_key,overrides_json) VALUES('/products',$1::jsonb),('/products/qa-target',$2::jsonb)",[JSON.stringify({"#main-content>section:nth-of-type(1)>div:nth-of-type(1)>h1:nth-of-type(1)":{type:"text",text:"QA existing override"}}),JSON.stringify({"#main-content>section:nth-of-type(1)>h1:nth-of-type(1)":{type:"text",text:"QA detail override"}})]);
   await db.query("INSERT INTO categories(id,name,slug) VALUES('qa-custom','QA Custom Category','qa-custom')");
   await db.query("INSERT INTO category_presentations(category_slug,label,sort_order) VALUES('qa-custom','QA Custom Display',0)");
   await db.query("INSERT INTO categories(id,name,slug,parent_id) VALUES('qa-child','QA Child','qa-child','qa-custom')");
@@ -120,6 +120,9 @@ try {
     assert.equal(response.status,200,path);
     const body=await response.text();
     if(path==="/products/qa-target"){
+      assert.ok(body.includes("QA detail override"));
+      assert.ok(body.includes("QA Custom Display"));
+      assert.ok(body.includes("/category/qa-custom"));
       for(const slug of ["qa-manual","qa-alias","qa-second"]) assert.ok(body.includes("/products/"+slug),slug);
       for(const slug of ["qa-extra","qa-wrong"]) assert.ok(!body.includes("/products/"+slug),slug);
     }
