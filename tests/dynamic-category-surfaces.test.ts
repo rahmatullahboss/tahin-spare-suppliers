@@ -13,7 +13,7 @@ test("all public category-list surfaces read the canonical configured category l
     source("src/pages/enquiry.astro")
   ]);
 
-  assert.match(homepage, /listAllCategories/);
+  assert.match(homepage, /getHomepageSnapshot/);
   assert.match(homepage, /categories\.map/);
   assert.match(products, /listAllCategories/);
   assert.match(products, /categories\.map/);

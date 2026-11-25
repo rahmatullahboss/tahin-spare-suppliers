@@ -87,6 +87,10 @@ export async function getHomepageContent(env: RuntimeEnv): Promise<HomepageConte
     "SELECT section_key, content_json FROM page_sections WHERE page_key = $1",
     ["home"]
   );
+  return mapHomepageContentRows(rows);
+}
+
+export function mapHomepageContentRows(rows: Record<string, unknown>[]): HomepageContent {
   const byKey = new Map(rows.map((row) => [String(row.section_key), parseStoredJson(row.content_json)]));
   const content = clone(HOMEPAGE_DEFAULTS);
   for (const key of HOMEPAGE_SECTION_ORDER) {

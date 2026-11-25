@@ -12,8 +12,7 @@ test("homepage keeps the client content structure without the category-specific 
     source("src/lib/page-content.ts")
   ]);
 
-  assert.match(homepage, /getHomepageContent/);
-  assert.match(homepage, /listAllCategories/);
+  assert.match(homepage, /getHomepageSnapshot/);
   assert.match(homepage, /categories\.map/);
   assert.doesNotMatch(homepage, /liveCategories/);
   assert.doesNotMatch(homepage, /listProductSummaries/);

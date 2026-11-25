@@ -64,7 +64,7 @@ test("custom category naming variants still keep the approved generator director
 test("homepage restores the running brand-logo marquee without moving the brand-model directory back home", async () => {
   const homepage = await source("src/pages/index.astro");
   assert.match(homepage, /brands-marquee/);
-  assert.match(homepage, /listBrandLogos\(env\)/);
+  assert.match(homepage, /getHomepageSnapshot\(env, Astro\.locals\)/);
   assert.match(homepage, /brand\.displayLogoUrl/);
   assert.match(homepage, /@keyframes marquee-scroll/);
   assert.match(homepage, /\.recent-shipments-track[\s\S]*animation: marquee-scroll/);

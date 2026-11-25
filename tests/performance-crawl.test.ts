@@ -17,7 +17,7 @@ test("public inventory hot paths use lightweight product summaries instead of fu
 
   assert.match(repository, /export async function listProductSummaries/);
   assert.match(repository, /SELECT p\.id, p\.slug, p\.name, p\.short_description, p\.image_url, p\.updated_at, p\.category, p\.subcategory, p\.brand, p\.model_number, p\.part_number, p\.image_alt FROM products p/);
-  assert.match(homepage, /listAllCategories\(env, Astro\.locals\)/);
+  assert.match(homepage, /getHomepageSnapshot\(env, Astro\.locals\)/);
   assert.doesNotMatch(homepage, /listProductSummaries/);
   assert.match(productsHub, /listAllCategories\(env, Astro\.locals\)/);
   assert.doesNotMatch(productsHub, /listProductSummaries/);

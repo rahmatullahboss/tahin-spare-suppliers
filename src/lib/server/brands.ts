@@ -74,7 +74,10 @@ export async function ensureBrandExists(env: RuntimeEnv, rawName: string): Promi
 // Public logo-only surfaces do not need inventory counts or admin metadata.
 export async function listBrandLogos(env: RuntimeEnv): Promise<Pick<BrandRecord, "name" | "slug" | "displayLogoUrl">[]> {
   await ensureSchema(env);
-  const rows = await getDb(env).query("SELECT name, slug, logo_url FROM brands ORDER BY name");
+  return mapBrandLogoRows(await getDb(env).query("SELECT name, slug, logo_url FROM brands ORDER BY name"));
+}
+
+export function mapBrandLogoRows(rows: Record<string, unknown>[]): Pick<BrandRecord, "name" | "slug" | "displayLogoUrl">[] {
   return rows.map((row) => {
     const name = asString(row.name);
     return {

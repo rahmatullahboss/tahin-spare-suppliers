@@ -70,11 +70,8 @@ export function listAllCategories(env: RuntimeEnv, requestScope?: object): Promi
     : loadAllCategories(env);
 }
 
-async function loadAllCategories(env: RuntimeEnv): Promise<DisplayCategory[]> {
-  await ensureSchema(env);
-  const sql = getDb(env);
-  // One connection and one consistent read for both sources; keep their original ordering.
-  const rows = await sql.query(`
+// Shared projection for category reads and the homepage snapshot.
+export const CATEGORY_DISPLAY_ROWS_SQL = `
     SELECT 'category' AS row_kind, id, name, slug, image_url, image_key, parent_id, created_at,
            NULL::text AS category_slug, NULL::text AS label, NULL::integer AS sort_order
     FROM categories WHERE parent_id IS NULL
@@ -83,7 +80,18 @@ async function loadAllCategories(env: RuntimeEnv): Promise<DisplayCategory[]> {
            category_slug, label, sort_order
     FROM category_presentations
     ORDER BY row_kind, name
-  `);
+  `;
+
+async function loadAllCategories(env: RuntimeEnv): Promise<DisplayCategory[]> {
+  await ensureSchema(env);
+  return mapCategoryDisplayRows(await getDb(env).query(CATEGORY_DISPLAY_ROWS_SQL));
+}
+
+export function rememberCategoryRows(scope: object, rows: Record<string, unknown>[]): Promise<DisplayCategory[]> {
+  return categoriesByRequest(scope, async () => mapCategoryDisplayRows(rows));
+}
+
+export function mapCategoryDisplayRows(rows: Record<string, unknown>[]): DisplayCategory[] {
   const baseCategories = mergeCategories(rows.filter((row) => row.row_kind === "category").map(mapCustomCategory));
   const presentations = new Map(rows.filter((row) => row.row_kind === "presentation").map((row) => [String(row.category_slug), row] as const));
 

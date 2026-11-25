@@ -5,16 +5,12 @@ import InlinePageEditor from '../components/admin/InlinePageEditor.astro';
 import { BUSINESS_PROFILE } from '../lib/business-profile';
 import { normalizeHomepageCtaUrl } from '../lib/page-content';
 import { getRuntimeEnv } from '../lib/server/env';
-import { listAllCategories } from '../lib/server/categories';
-import { listBrandLogos } from '../lib/server/brands';
-import { getHomepageContent } from '../lib/server/page-content';
+import { getHomepageSnapshot } from '../lib/server/homepage-snapshot';
 import { isAuthenticated } from '../lib/server/session';
 
 const env = getRuntimeEnv(Astro.locals);
-const [categories, homeContent, managedBrands, authenticated] = await Promise.all([
-  listAllCategories(env, Astro.locals),
-  getHomepageContent(env),
-  listBrandLogos(env),
+const [{ categories, homeContent, managedBrands }, authenticated] = await Promise.all([
+  getHomepageSnapshot(env, Astro.locals),
   isAuthenticated(Astro.cookies, env.SESSION_SECRET),
 ]);
 const homepageBrands = managedBrands.filter((brand) => brand.displayLogoUrl);

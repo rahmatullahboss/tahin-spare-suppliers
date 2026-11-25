@@ -41,6 +41,8 @@ try {
   }
   await db.query("INSERT INTO products(id,slug,name,brand,category,updated_at) SELECT 'qa-page-' || i, 'qa-page-' || i, 'QA page ' || i, 'QA Other', 'Spare Parts', TIMESTAMPTZ '2026-01-01' - i * INTERVAL '1 day' FROM generate_series(1,30) AS i");
   await db.query("INSERT INTO brands(id,name,slug) VALUES('qa-brand','Caterpillar','caterpillar')");
+  await db.query("INSERT INTO brands(id,name,slug,logo_url) VALUES('qa-brand-custom','QA Brand','qa-brand','/images/qa-custom-brand.webp')");
+  await db.query("INSERT INTO page_sections(page_key,section_key,content_json) VALUES('home','hero',$1::jsonb)", [JSON.stringify({headlineAccent:"QA CMS Headline"})]);
   await db.query("INSERT INTO category_presentations(category_slug,label) VALUES('spare-parts','QA Spare Parts')");
   await db.query("INSERT INTO categories(id,name,slug) VALUES('qa-custom','QA Custom Category','qa-custom')");
   await db.query("INSERT INTO category_presentations(category_slug,label,sort_order) VALUES('qa-custom','QA Custom Display',0)");
@@ -85,6 +87,9 @@ try {
     if(path==="/") {
       assert.ok(body.includes("QA Spare Parts"));
       assert.ok(body.includes("QA Custom Display"));
+      assert.ok(body.includes("QA CMS Headline"));
+      assert.ok(body.includes("/images/qa-custom-brand.webp"));
+      assert.ok(body.includes("caterpillar-logo2.svg"));
       assert.ok(body.includes("/category/qa-custom"));
     }
     console.log("PASS local Worker",path,response.headers.get("x-tahin-catalogue-cache")??"cache unreported");
